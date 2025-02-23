@@ -1,0 +1,12 @@
+name: rocket
+version: '1.0-SNAPSHOT'
+main: dev.znci.rocket.Rocket
+api-version: '1.21'
+load: STARTUP
+
+commands:
+  rocket:
+    description: Control rocket scripts
+    usage: "/rocket <reload|disable> <scriptName>"
+    permission: rocket.use
+    aliases: [rk]
