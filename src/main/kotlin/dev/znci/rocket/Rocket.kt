@@ -1,6 +1,7 @@
 package dev.znci.rocket
 
 import dev.znci.rocket.commands.RocketCommand
+import dev.znci.rocket.scripting.events.EventListener
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 
@@ -15,6 +16,8 @@ class Rocket : JavaPlugin() {
         }
 
         this.getCommand("rocket")?.setExecutor(RocketCommand(this))
+
+        EventListener.registerAllEvents()
     }
 
     override fun onDisable() {
