@@ -13,13 +13,7 @@ class LuaEvents : LuaTable() {
                 val eventClass = EventListener.getEventByName(eventName.tojstring())
 
                 if (eventClass != null) {
-                    try {
-                        val eventInstance = eventClass.getDeclaredConstructor().newInstance()
-
-                        ScriptManager.usedEvents.put(eventInstance, callback.checkfunction())
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
+                    ScriptManager.usedEvents[eventClass] = callback.checkfunction()
                 }
 
                 return LuaValue.NIL
