@@ -2,12 +2,16 @@ package dev.znci.rocket.scripting.events
 
 import dev.znci.rocket.scripting.ScriptManager
 import org.bukkit.Bukkit
+import org.bukkit.event.Cancellable
 import org.bukkit.event.Event
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.plugin.Plugin
+import org.luaj.vm2.LuaBoolean
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
+import org.luaj.vm2.lib.OneArgFunction
+import org.luaj.vm2.lib.ZeroArgFunction
 
 object EventListener : Listener {
     private val plugin: Plugin? = Bukkit.getPluginManager().getPlugin("rocket")
@@ -94,6 +98,15 @@ object EventListener : Listener {
                 luaTable.set("targetBlockTemperature", LuaValue.valueOf(block.temperature))
                 luaTable.set("targetBlockHumidity", LuaValue.valueOf(block.humidity))
             }
+        }
+
+        if (event is Cancellable) {
+            luaTable.set("cancel", object : ZeroArgFunction() {
+                override fun call(): LuaValue {
+                    event.isCancelled = true
+                    return LuaBoolean.valueOf(event.isCancelled)
+                }
+            })
         }
 
         return luaTable
