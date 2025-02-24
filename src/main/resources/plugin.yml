@@ -10,3 +10,7 @@ commands:
     usage: "/rocket <reload|disable> <scriptName>"
     permission: rocket.use
     aliases: [rk]
+
+softdepend:
+  - LuckPerms
+  - Vault

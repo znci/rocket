@@ -20,6 +20,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.luaj:luaj-jse:3.0.1")
+    implementation("net.luckperms:api:5.4")
 }
 
 val targetJavaVersion = 21

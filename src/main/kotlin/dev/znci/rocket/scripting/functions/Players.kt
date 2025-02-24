@@ -1,5 +1,6 @@
 package dev.znci.rocket.scripting.functions
 
+import dev.znci.rocket.scripting.PermissionsManager
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
@@ -155,6 +156,14 @@ class LuaPlayers : LuaTable() {
                 playerTable.set("getTabListName", object : ZeroArgFunction() {
                     override fun call(): LuaValue {
                         return LuaValue.valueOf(player.playerListName().toString())
+                    }
+                })
+
+                playerTable.set("hasPermission", object : OneArgFunction() {
+                    override fun call(value: LuaValue): LuaValue? {
+                        return LuaValue.valueOf(
+                            PermissionsManager.hasPermission(player, value.tojstring())
+                        )
                     }
                 })
 
