@@ -1,11 +1,15 @@
 package dev.znci.rocket.scripting
 
+import dev.znci.rocket.scripting.classes.Command
+import dev.znci.rocket.scripting.functions.LuaCommands
 import dev.znci.rocket.scripting.functions.LuaEvents
 import dev.znci.rocket.scripting.functions.LuaPlayers
+import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import java.io.File
 import org.luaj.vm2.Globals
 import org.luaj.vm2.LuaError
+import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.jse.JsePlatform
 
@@ -14,6 +18,7 @@ object ScriptManager {
     val globals: Globals = JsePlatform.standardGlobals()
 
     val usedEvents = mutableMapOf<Class<out Event>, LuaValue>()
+    val enabledCommands = mutableMapOf<String, Command>()
 
     fun setFolder(folder: File) {
         scriptsFolder = folder
@@ -33,6 +38,7 @@ object ScriptManager {
         try {
             globals.set("players", LuaPlayers())
             globals.set("events", LuaEvents())
+            globals.set("commands", LuaCommands())
             val scriptResult = globals.load(text, "script", globals)
 
             scriptResult.call()
