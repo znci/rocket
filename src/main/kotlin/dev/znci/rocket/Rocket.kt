@@ -17,6 +17,7 @@ class Rocket : JavaPlugin() {
 
         this.getCommand("rocket")?.setExecutor(RocketCommand(this))
 
+        logger.info("Rocket plugin enabled")
         EventListener.registerAllEvents()
     }
 
