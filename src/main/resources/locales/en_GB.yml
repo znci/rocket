@@ -1,0 +1,30 @@
+
+messages:
+  bracket_color: "&7"
+  bracket_opening_text: "["
+  bracket_closing_text: "]"
+  main_color: "&a"
+  main_text: "Rocket"
+  prefix: "{bracket_color}{bracket_opening_text}{main_color}{main_text}{bracket_color}{bracket_closing_text}"
+  prefix_error: "{bracket_color}{bracket_opening_text}{error_color}{main_text}{bracket_color}{bracket_closing_text}"
+
+  error_color: "&c"
+  alt_error_color: "&e"
+  generic_error: "Error: %s"
+
+  success_color: "&a"
+
+  invalid_action: "Invalid action."
+  usage_template: "{error_color}Usage: "
+  rocket_command:
+    usage: "{prefix_error} {usage_template}/rocket <reload|disable> <script_name|config>"
+    scripts_folder_not_found: "{prefix} {error_color}Scripts folder not found."
+    script_not_found: "{prefix_error} {error_color}Script '%s' not found."
+    disabled_script: "{prefix} {success_color}Script '%s' was disabled."
+    already_disabled: "{prefix_error} {error_color}Script '%s' is already disabled."
+    enabled_script: "{prefix} {success_color}Script '%s' was enabled."
+    already_enabled: "{prefix_error} {error_color}Script '%s' is already enabled."
+
+    script_reloaded: "{prefix} {success_color}Script '%s' reloaded."
+
+    config_reloaded: "{prefix} {success_color}Successfully reloaded config."
