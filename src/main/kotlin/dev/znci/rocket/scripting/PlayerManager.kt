@@ -68,7 +68,10 @@ object PlayerManager {
         val table = LuaTable()
         table.set("send", object : OneArgFunction() {
             override fun call(message: LuaValue): LuaValue {
-                val messageComponent = Component.text(message.tojstring())
+                val messageComponent = Component.text(
+                    message.tojstring()
+                        .replace("&", "§")
+                )
                 player.sendMessage(messageComponent)
                 return LuaValue.TRUE
             }
