@@ -7,7 +7,7 @@ jobs:
   gradle:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
@@ -18,7 +18,8 @@ jobs:
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
-
+    - name: Permissions
+      run: chmod +x ./gradlew
     - name: Build Dev
       run: ./gradlew build
     - name: Upload artifacts
