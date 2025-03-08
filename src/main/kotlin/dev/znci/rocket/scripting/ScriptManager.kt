@@ -16,10 +16,7 @@
 package dev.znci.rocket.scripting
 
 import dev.znci.rocket.scripting.classes.Command
-import dev.znci.rocket.scripting.functions.LuaCommands
-import dev.znci.rocket.scripting.functions.LuaEvents
-import dev.znci.rocket.scripting.functions.LuaHTTPClient
-import dev.znci.rocket.scripting.functions.LuaPlayers
+import dev.znci.rocket.scripting.functions.*
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import java.io.File
@@ -56,6 +53,7 @@ object ScriptManager {
             globals.set("events", LuaEvents())
             globals.set("commands", LuaCommands())
             globals.set("http", LuaHTTPClient())
+            globals.set("location", LuaLocations())
             val scriptResult = globals.load(text, "script", globals)
 
             scriptResult.call()
