@@ -22,7 +22,7 @@ jobs:
       with:
         gradle-version: 'wrapper' 
     - name: Build Dev
-      run: ./gradlew build
+      run: ./gradlew jar
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       if: always()
