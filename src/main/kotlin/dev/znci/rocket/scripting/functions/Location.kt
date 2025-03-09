@@ -89,6 +89,14 @@ class LuaLocation(x: Double, y: Double, z: Double, worldName: String) : LuaTable
         })
     }
 
+    fun toBukkit(): Location? {
+        val world = Bukkit.getWorld(get("world").tojstring()) ?: return null
+        val x = get("x").todouble()
+        val y = get("y").todouble()
+        val z = get("z").todouble()
+        return Location(world, x, y, z)
+    }
+
     companion object {
         fun fromBukkit(location: Location): LuaLocation {
             return LuaLocation(location.x, location.y, location.z, location.world.name)
