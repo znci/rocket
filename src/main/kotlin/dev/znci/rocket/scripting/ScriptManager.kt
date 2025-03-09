@@ -17,14 +17,13 @@ package dev.znci.rocket.scripting
 
 import dev.znci.rocket.scripting.classes.Command
 import dev.znci.rocket.scripting.functions.*
-import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import java.io.File
 import org.luaj.vm2.Globals
 import org.luaj.vm2.LuaError
-import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.jse.JsePlatform
+import java.util.ArrayList
 
 object ScriptManager {
     var scriptsFolder: File = File("")
@@ -45,6 +44,17 @@ object ScriptManager {
                 println(content)
             }
         }
+    }
+
+    fun getAllScripts(includeDisabled: Boolean = true): List<String> {
+        val list = ArrayList<String>()
+        scriptsFolder.walkTopDown().forEach { file ->
+            if (file.isFile) {
+                if (includeDisabled && file.startsWith("-")) return@forEach
+                list.add(file.path.removePrefix("plugins/rocket/scripts/"))
+            }
+        }
+        return list
     }
 
     fun runScript(text: String): String? {

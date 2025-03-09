@@ -17,6 +17,7 @@ package dev.znci.rocket
 
 import dev.znci.rocket.commands.RocketCommand
 import dev.znci.rocket.i18n.LocaleManager
+import dev.znci.rocket.scripting.ScriptManager
 import dev.znci.rocket.scripting.events.EventListener
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
@@ -44,6 +45,8 @@ class Rocket : JavaPlugin() {
         if (!scriptsFolder.exists()) {
             scriptsFolder.mkdirs()
         }
+
+        ScriptManager.scriptsFolder = scriptsFolder
 
         // Register commands
         this.getCommand("rocket")?.setExecutor(RocketCommand(this))
