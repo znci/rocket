@@ -15,8 +15,6 @@
  */
 package dev.znci.rocket.scripting.functions
 
-import dev.znci.rocket.scripting.PlayerManager
-import org.bukkit.Bukkit
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.OneArgFunction
