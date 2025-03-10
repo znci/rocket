@@ -24,6 +24,7 @@ import org.luaj.vm2.Varargs
 import org.luaj.vm2.lib.OneArgFunction
 import org.luaj.vm2.lib.TwoArgFunction
 import org.luaj.vm2.lib.VarArgFunction
+import java.util.*
 
 class LuaLocations : LuaTable() {
     init {
@@ -35,23 +36,56 @@ class LuaLocations : LuaTable() {
                 val x = args.arg(1).todouble()
                 val y = args.arg(2).todouble()
                 val z = args.arg(3).todouble()
-                // get first world, could be replaced with getting the world specified in server.properties, I don't know if this does that
-                val world = if (args.narg() >= 4) args.arg(4).checkjstring() else Bukkit.getWorlds()[0].name
+
+                val worldArg = if (args.narg() >= 4) args.arg(4).checkjstring() else null
+                val world = resolveWorld(worldArg)
+
                 val yaw = if (args.narg() >= 5) args.arg(5).tofloat() else 0f
                 val pitch = if (args.narg() >= 6) args.arg(6).tofloat() else 0f
-                return LuaLocation(x, y, z, world, yaw, pitch)
+
+                return LuaLocation(x, y, z, world.uid.toString(), yaw, pitch)
             }
         })
     }
+
+    private fun resolveWorld(identifier: String?): World {
+        if (identifier.isNullOrBlank()) {
+            return Bukkit.getWorlds().firstOrNull() ?: throw IllegalStateException("No worlds are loaded on the server!")
+        }
+
+        val worldByName = Bukkit.getWorld(identifier)
+        if (worldByName != null) return worldByName
+
+        return try {
+            val uuid = UUID.fromString(identifier)
+            Bukkit.getWorld(uuid) ?: throw IllegalArgumentException("World with UUID '$uuid' not found!")
+        } catch (e: IllegalArgumentException) {
+            throw IllegalArgumentException("Invalid world identifier: '$identifier'")
+        }
+    }
 }
 
-class LuaLocation(x: Double, y: Double, z: Double, worldName: String, yaw: Float, pitch: Float) : LuaTable() {
-    private var world: World? = Bukkit.getWorld(worldName)
+class LuaLocation(
+    x: Double,
+    y: Double,
+    z: Double,
+    worldUID: String,
+    yaw: Float = 0f,
+    pitch: Float = 0f
+) : LuaTable() {
+    private var world: World? = Bukkit.getWorld(UUID.fromString(worldUID))
     private var location: Location = Location(world, x, y, z, yaw, pitch)
 
     companion object {
         fun fromBukkit(location: Location): LuaLocation {
-            return LuaLocation(location.x, location.y, location.z, location.world.name, location.yaw, location.pitch)
+            return LuaLocation(
+                location.x,
+                location.y,
+                location.z,
+                location.world.uid.toString(),
+                location.yaw,
+                location.pitch
+            )
         }
     }
 
@@ -63,7 +97,9 @@ class LuaLocation(x: Double, y: Double, z: Double, worldName: String, yaw: Float
                         "x" -> LuaValue.valueOf(location.x)
                         "y" -> LuaValue.valueOf(location.y)
                         "z" -> LuaValue.valueOf(location.z)
+                        // eventually we would want a World class here
                         "world" -> LuaValue.valueOf(location.world.name)
+                        "worldUUID" -> LuaValue.valueOf(worldUID)
                         "yaw" -> LuaValue.valueOf(location.yaw.toDouble())
                         "pitch" -> LuaValue.valueOf(location.pitch.toDouble())
                         else -> LuaValue.NIL
@@ -99,7 +135,7 @@ class LuaLocation(x: Double, y: Double, z: Double, worldName: String, yaw: Float
             override fun call(value: LuaValue): LuaValue {
                 val worldArg = value.checkjstring()
                 val newWorld = Bukkit.getWorld(worldArg) ?: return LuaValue.FALSE
-                location = Location(newWorld, location.x, location.y, location.z, location.yaw, location.pitch)
+                location.world = newWorld
                 return LuaValue.valueOf(newWorld.name)
             }
         })
@@ -119,13 +155,7 @@ class LuaLocation(x: Double, y: Double, z: Double, worldName: String, yaw: Float
         })
     }
 
-    fun toBukkit(): Location? {
-        val world = Bukkit.getWorld(get("world").tojstring()) ?: return null
-        val x = get("x").todouble()
-        val y = get("y").todouble()
-        val z = get("z").todouble()
-        val yaw = get("yaw").tofloat()
-        val pitch = get("pitch").tofloat()
-        return Location(world, x, y, z, yaw, pitch)
+    fun toBukkit(): Location {
+        return location.clone()
     }
 }
