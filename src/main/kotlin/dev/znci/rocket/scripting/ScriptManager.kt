@@ -51,10 +51,24 @@ object ScriptManager {
         scriptsFolder.walkTopDown().forEach { file ->
             if (file.isFile) {
                 if (includeDisabled && file.startsWith("-")) return@forEach
-                list.add(file.path.removePrefix("plugins/rocket/scripts/"))
+                list.add(file.path.removePrefix(if (file.path.startsWith("plugins/rocket/scripts/")) "plugins/rocket/scripts/" else "plugins\\rocket\\scripts\\"))
             }
         }
         return list
+    }
+
+    fun loadAll(): List<String?> {
+        val results = mutableListOf<String?>()
+        getAllScripts(false).forEach { script ->
+            results.add(loadScript(File("plugins/rocket/scripts/", script)))
+        }
+        return results
+    }
+
+    fun loadScript(scriptFile: File): String? {
+        val content = scriptFile.readText()
+        val result = runScript(content)
+        return result
     }
 
     fun runScript(text: String): String? {

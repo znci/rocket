@@ -51,6 +51,13 @@ class RocketCommand(private val plugin: JavaPlugin) : TabExecutor {
 
                     sender.sendMessage(LocaleManager.getMessageAsComponent("rocket_command.config_reloaded"))
                     return true
+                } else if (scriptName.lowercase() == "all") {
+                    val results = ScriptManager.loadAll()
+                    if (results.isNotEmpty()) {
+                        results.forEach { error ->
+                            sender.sendMessage(LocaleManager.getMessageAsComponent("generic_error", error ?: "Unknown error"))
+                        }
+                    }
                 }
 
                 val scriptFile = File(scriptsFolder, scriptName)
@@ -59,8 +66,7 @@ class RocketCommand(private val plugin: JavaPlugin) : TabExecutor {
                     return true
                 }
 
-                val content = scriptFile.readText()
-                val result = ScriptManager.runScript(content)
+                val result = ScriptManager.loadScript(scriptFile)
 
                 if (result !== "") {
                     sender.sendMessage(LocaleManager.getMessageAsComponent("generic_error", result ?: "Unknown error"))
@@ -89,6 +95,8 @@ class RocketCommand(private val plugin: JavaPlugin) : TabExecutor {
         return true
     }
 
+
+
     @Suppress("SENSELESS_COMPARISON")
     override fun onTabComplete(
         sender: CommandSender,
@@ -101,9 +109,11 @@ class RocketCommand(private val plugin: JavaPlugin) : TabExecutor {
         if (args.size == 1) {
             return mutableListOf("reload", "disable")
         } else if (args.size == 2) {
-            return if (args[0] == "reload") ScriptManager.getAllScripts().toMutableList()
-            else if (args[0] == "disable") ScriptManager.getAllScripts(false).toMutableList()
-            else null
+            val list: MutableList<String>? =
+                if (args[0] == "reload") ScriptManager.getAllScripts().toMutableList().also { it.add("config") }
+                else if (args[0] == "disable") ScriptManager.getAllScripts(false).toMutableList().also { it.add("config") }
+                else null
+            return list
         }
         return null
 
