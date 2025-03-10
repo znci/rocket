@@ -15,9 +15,12 @@
  */
 package dev.znci.rocket.scripting
 
+import dev.znci.rocket.scripting.functions.LuaLocation
+import dev.znci.rocket.scripting.functions.LuaLocation.Companion.fromBukkit
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
+import org.bukkit.Location
 import org.bukkit.entity.Player
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
@@ -44,7 +47,7 @@ object PlayerManager {
         table.set("gameMode", LuaValue.valueOf(player.gameMode.toString()))
         table.set("xp", LuaValue.valueOf(player.exp.toDouble()))
         table.set("level", LuaValue.valueOf(player.level))
-        table.set("location", LuaValue.valueOf(player.location.toString()))
+        table.set("location", fromBukkit(player.location))
         table.set("world", LuaValue.valueOf(player.world.name))
         table.set("ip", LuaValue.valueOf(player.address?.hostString))
         table.set("isOp", LuaValue.valueOf(player.isOp))
@@ -58,11 +61,7 @@ object PlayerManager {
 
         if (block != null) {
             table.set("targetBlockType", LuaValue.valueOf(block.type.toString()))
-            table.set("targetBlockLocation", LuaValue.valueOf(block.location.toString()))
-            table.set("targetBlockWorld", LuaValue.valueOf(block.world.name))
-            table.set("targetBlockX", LuaValue.valueOf(block.x))
-            table.set("targetBlockY", LuaValue.valueOf(block.y))
-            table.set("targetBlockZ", LuaValue.valueOf(block.z))
+            table.set("targetBlockLocation", fromBukkit(block.location))
             table.set("targetBlockLightLevel", LuaValue.valueOf(block.lightLevel.toDouble()))
             table.set("targetBlockTemperature", LuaValue.valueOf(block.temperature))
             table.set("targetBlockHumidity", LuaValue.valueOf(block.humidity))
@@ -180,6 +179,15 @@ object PlayerManager {
         table.set("deop", object : ZeroArgFunction() {
             override fun call(): LuaValue {
                 player.isOp = false
+                return LuaValue.TRUE
+            }
+        })
+
+        table.set("teleport", object : OneArgFunction() {
+            override fun call(value: LuaValue): LuaValue {
+                if (value !is LuaLocation) return LuaValue.FALSE
+                val location = value.toBukkit() ?: return LuaValue.FALSE
+                player.teleport(location)
                 return LuaValue.TRUE
             }
         })
