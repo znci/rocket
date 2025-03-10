@@ -21,13 +21,10 @@ import dev.znci.rocket.scripting.util.defineProperty
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
-import org.bukkit.Location
 import org.bukkit.entity.Player
-import org.luaj.vm2.Lua
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.OneArgFunction
-import org.luaj.vm2.lib.TwoArgFunction
 import org.luaj.vm2.lib.ZeroArgFunction
 
 object PlayerManager {
@@ -42,106 +39,7 @@ object PlayerManager {
     fun getPlayerTable(player: Player): LuaTable {
         val table = LuaTable()
 
-        // read-only properties
-        defineProperty(table, "name", { LuaValue.valueOf(player.name) })
-        defineProperty(table, "uuid", { LuaValue.valueOf(player.uniqueId.toString()) })
-        defineProperty(table, "world", { LuaValue.valueOf(player.world.name) })
-        defineProperty(table, "ip", { LuaValue.valueOf(player.address?.hostString) })
-        defineProperty(table, "isFlying", { LuaValue.valueOf(player.isFlying) })
-        defineProperty(table, "isSneaking", { LuaValue.valueOf(player.isSneaking) })
-        defineProperty(table, "isSprinting", { LuaValue.valueOf(player.isSprinting) })
-        defineProperty(table, "isBlocking", { LuaValue.valueOf(player.isBlocking) })
-        defineProperty(table, "isSleeping", { LuaValue.valueOf(player.isSleeping) })
-        val block = player.getTargetBlockExact(100)
-        if (block != null) {
-            defineProperty(table, "targetBlockType", { LuaValue.valueOf(block.type.toString()) })
-            defineProperty(table, "targetBlockLocation", { fromBukkit(block.location) })
-            defineProperty(table, "targetBlockLightLevel", { LuaValue.valueOf(block.lightLevel.toDouble()) })
-            defineProperty(table, "targetBlockTemperature", { LuaValue.valueOf(block.temperature) })
-            defineProperty(table, "targetBlockHumidity", { LuaValue.valueOf(block.humidity) })
-        }
-        // writable properties
-        defineProperty(
-            table, "health",
-            getter = { LuaValue.valueOf(player.health) },
-            setter = { value -> player.health = value.todouble() },
-            validator = { value -> value.isnumber() && value.todouble() >= 0 } // health must be a non-negative number
-        )
-
-        defineProperty(
-            table, "foodLevel",
-            getter = { LuaValue.valueOf(player.foodLevel) },
-            setter = { value -> player.foodLevel = value.toint() },
-            validator = { value -> value.isint() && value.toint() >= 0 && value.toint() <= 20 } // food level must be an integer between 0 and 20
-        )
-
-        defineProperty(
-            table, "gameMode",
-            getter = { LuaValue.valueOf(player.gameMode.toString()) },
-            setter = { value -> player.gameMode = GameMode.valueOf(value.tojstring()) },
-            validator = { value ->
-                value.isstring() && listOf("SURVIVAL", "CREATIVE", "ADVENTURE", "SPECTATOR").contains(value.tojstring())
-            }
-        )
-
-        defineProperty(
-            table, "xp",
-            getter = { LuaValue.valueOf(player.exp.toDouble()) },
-            setter = { value -> player.exp = value.tofloat() },
-            validator = { value -> value.isnumber() && value.todouble() >= 0 && value.todouble() <= 1 } // XP must be a non-negative number
-        )
-
-        defineProperty(
-            table, "level",
-            getter = { LuaValue.valueOf(player.level) },
-            setter = { value -> player.level = value.toint() },
-            validator = { value -> value.isint() && value.toint() >= 0 }
-        )
-
-        defineProperty(
-            table, "location",
-            getter = { fromBukkit(player.location) },
-            setter = { value ->
-                if (value is LuaLocation) player.teleport(value.toBukkit())
-            },
-            validator = { value -> value is LuaLocation }
-        )
-
-        defineProperty(
-            table, "isOp",
-            getter = { LuaValue.valueOf(player.isOp) },
-            setter = { value -> player.isOp = value.toboolean() },
-            validator = { value -> value.isboolean() } // isOp must be a boolean
-        )
-
-        defineProperty(
-            table, "saturation",
-            getter = { LuaValue.valueOf(player.saturation.toDouble()) },
-            setter = { value -> player.saturation = value.tofloat() },
-            validator = { value -> value.isnumber() && value.todouble() >= 0 }
-        )
-
-        defineProperty(
-            table, "exhaustion",
-            getter = { LuaValue.valueOf(player.exhaustion.toDouble()) },
-            setter = { value -> player.exhaustion = value.tofloat() },
-            validator = { value -> value.isnumber() && value.todouble() >= 0 }
-        )
-
-        defineProperty(
-            table, "displayName",
-            getter = { LuaValue.valueOf(player.displayName().toString()) },
-            setter = { value -> player.displayName(Component.text(value.tojstring())) },
-            validator = { value -> value.isstring() }
-        )
-
-        defineProperty(
-            table, "tabListName",
-            getter = { LuaValue.valueOf(player.playerListName().toString()) },
-            setter = { value -> player.playerListName(Component.text(value.tojstring())) },
-            validator = { value -> value.isstring() }
-        )
-
+        // methods should be defined before properties
         table.set("send", object : OneArgFunction() {
             override fun call(message: LuaValue): LuaValue {
                 val messageComponent = Component.text(
@@ -178,7 +76,7 @@ object PlayerManager {
         table.set("teleport", object : OneArgFunction() {
             override fun call(value: LuaValue): LuaValue {
                 if (value !is LuaLocation) return LuaValue.FALSE
-                val location = value.toBukkit() ?: return LuaValue.FALSE
+                val location = value.toBukkit()
                 player.teleport(location)
                 return LuaValue.TRUE
             }
@@ -199,6 +97,106 @@ object PlayerManager {
                 )
             }
         })
+
+        // read-only properties
+        defineProperty(table, "name", { LuaValue.valueOf(player.name) })
+        defineProperty(table, "uuid", { LuaValue.valueOf(player.uniqueId.toString()) })
+        defineProperty(table, "world", { LuaValue.valueOf(player.world.name) })
+        defineProperty(table, "ip", { LuaValue.valueOf(player.address?.hostString) })
+        defineProperty(table, "isFlying", { LuaValue.valueOf(player.isFlying) })
+        defineProperty(table, "isSneaking", { LuaValue.valueOf(player.isSneaking) })
+        defineProperty(table, "isSprinting", { LuaValue.valueOf(player.isSprinting) })
+        defineProperty(table, "isBlocking", { LuaValue.valueOf(player.isBlocking) })
+        defineProperty(table, "isSleeping", { LuaValue.valueOf(player.isSleeping) })
+        val block = player.getTargetBlockExact(100)
+        if (block != null) {
+            defineProperty(table, "targetBlockType", { LuaValue.valueOf(block.type.toString()) })
+            defineProperty(table, "targetBlockLocation", { fromBukkit(block.location) })
+            defineProperty(table, "targetBlockLightLevel", { LuaValue.valueOf(block.lightLevel.toDouble()) })
+            defineProperty(table, "targetBlockTemperature", { LuaValue.valueOf(block.temperature) })
+            defineProperty(table, "targetBlockHumidity", { LuaValue.valueOf(block.humidity) })
+        }
+        // writable properties
+        defineProperty(
+            table, "health",
+            getter = { LuaValue.valueOf(player.health) },
+            setter = { value -> player.health = value.todouble() },
+            validator = { value -> value.isnumber() && value.todouble() >= 0 }
+        )
+
+        defineProperty(
+            table, "foodLevel",
+            getter = { LuaValue.valueOf(player.foodLevel) },
+            setter = { value -> player.foodLevel = value.toint() },
+            validator = { value -> value.isint() && value.toint() >= 0 && value.toint() <= 20 }
+        )
+
+        defineProperty(
+            table, "gameMode",
+            getter = { LuaValue.valueOf(player.gameMode.toString()) },
+            setter = { value -> player.gameMode = GameMode.valueOf(value.tojstring()) },
+            validator = { value ->
+                value.isstring() && listOf("SURVIVAL", "CREATIVE", "ADVENTURE", "SPECTATOR").contains(value.tojstring())
+            }
+        )
+
+        defineProperty(
+            table, "xp",
+            getter = { LuaValue.valueOf(player.exp.toDouble()) },
+            setter = { value -> player.exp = value.tofloat() },
+            validator = { value -> value.isnumber() && value.todouble() >= 0 && value.todouble() <= 1 }
+        )
+
+        defineProperty(
+            table, "level",
+            getter = { LuaValue.valueOf(player.level) },
+            setter = { value -> player.level = value.toint() },
+            validator = { value -> value.isint() && value.toint() >= 0 }
+        )
+
+        defineProperty(
+            table, "location",
+            getter = { fromBukkit(player.location) },
+            setter = { value ->
+                if (value is LuaLocation) player.teleport(value.toBukkit())
+            },
+            validator = { value -> value is LuaLocation }
+        )
+
+        defineProperty(
+            table, "isOp",
+            getter = { LuaValue.valueOf(player.isOp) },
+            setter = { value -> player.isOp = value.toboolean() },
+            validator = { value -> value.isboolean() }
+        )
+
+        defineProperty(
+            table, "saturation",
+            getter = { LuaValue.valueOf(player.saturation.toDouble()) },
+            setter = { value -> player.saturation = value.tofloat() },
+            validator = { value -> value.isnumber() && value.todouble() >= 0 }
+        )
+
+        defineProperty(
+            table, "exhaustion",
+            getter = { LuaValue.valueOf(player.exhaustion.toDouble()) },
+            setter = { value -> player.exhaustion = value.tofloat() },
+            validator = { value -> value.isnumber() && value.todouble() >= 0 }
+        )
+
+        defineProperty(
+            table, "displayName",
+            getter = { LuaValue.valueOf(player.displayName().toString()) },
+            setter = { value -> player.displayName(Component.text(value.tojstring())) },
+            validator = { value -> value.isstring() }
+        )
+
+        defineProperty(
+            table, "tabListName",
+            getter = { LuaValue.valueOf(player.playerListName().toString()) },
+            setter = { value -> player.playerListName(Component.text(value.tojstring())) },
+            validator = { value -> value.isstring() }
+        )
 
         return table
     }
