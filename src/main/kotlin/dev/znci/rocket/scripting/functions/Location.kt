@@ -16,6 +16,7 @@
 package dev.znci.rocket.scripting.functions
 
 import dev.znci.rocket.scripting.util.defineProperty
+import dev.znci.rocket.scripting.util.getWorldByNameOrUUID
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.World
@@ -34,7 +35,8 @@ class LuaLocations : LuaTable() {
                 val y = args.arg(2).todouble()
                 val z = args.arg(3).todouble()
                 val worldUUID = if (args.narg() >= 4) {
-                    Bukkit.getWorld(args.arg(4).checkjstring())?.uid.toString()
+                    val worldNameOrUUID = args.arg(4).checkjstring()
+                    getWorldByNameOrUUID(worldNameOrUUID).uid.toString()
                 } else {
                     Bukkit.getWorlds().first().uid.toString()
                 }
@@ -46,7 +48,14 @@ class LuaLocations : LuaTable() {
     }
 }
 
-class LuaLocation(x: Double, y: Double, z: Double, worldUUID: String, yaw: Float = 0f, pitch: Float = 0f) : LuaTable() {
+class LuaLocation(
+    x: Double,
+    y: Double,
+    z: Double,
+    worldUUID: String,
+    yaw: Float = 0f,
+    pitch: Float = 0f
+) : LuaTable() {
     private var world: World? = Bukkit.getWorld(UUID.fromString(worldUUID))
     private var location: Location = Location(world, x, y, z, yaw, pitch)
 
@@ -62,18 +71,42 @@ class LuaLocation(x: Double, y: Double, z: Double, worldUUID: String, yaw: Float
             ).getLocationTable()
         }
     }
+
     fun getLocationTable(): LuaTable {
         val table = LuaTable()
-        defineProperty(table, "x", { LuaValue.valueOf(location.x) })
-        defineProperty(table, "y", { LuaValue.valueOf(location.y) })
-        defineProperty(table, "z", { LuaValue.valueOf(location.z) })
-        defineProperty(table, "world", { LuaValue.valueOf(location.world.name) })
-        defineProperty(table, "worldUUID", { LuaValue.valueOf(location.world.uid.toString()) })
-        defineProperty(table, "yaw", { LuaValue.valueOf(location.yaw.toDouble()) })
-        defineProperty(table, "pitch", { LuaValue.valueOf(location.pitch.toDouble()) })
+
+        defineProperty(table, "x", { LuaValue.valueOf(location.x) }, { value -> location.x = value.todouble() })
+        defineProperty(table, "y", { LuaValue.valueOf(location.y) }, { value -> location.y = value.todouble() })
+        defineProperty(table, "z", { LuaValue.valueOf(location.z) }, { value -> location.z = value.todouble() })
+        defineProperty(table, "world", { LuaValue.valueOf(location.world.name) }, { value -> location.world = Bukkit.getWorld(UUID.fromString(value.tojstring())) })
+        defineProperty(table, "worldUUID", { LuaValue.valueOf(location.world.uid.toString()) }, { value -> location.world = Bukkit.getWorld(UUID.fromString(value.tojstring())) })
+        defineProperty(table, "yaw", { LuaValue.valueOf(location.yaw.toDouble()) }, { value -> location.yaw = value.tofloat() })
+        defineProperty(table, "pitch", { LuaValue.valueOf(location.pitch.toDouble()) }, { value -> location.pitch = value.tofloat() })
+
         return table
     }
-    fun toBukkit(): Location {
-        return location.clone()
+}
+
+fun LuaValue.toBukkitLocation(): Location {
+    if (this !is LuaTable) {
+        error("Expected a LuaTable, got ${this.typename()} (value: ${this.tojstring()})")
+    }
+
+    return try {
+        val x = this.get("x").todouble()
+        val y = this.get("y").todouble()
+        val z = this.get("z").todouble()
+        val worldUUIDStr = this.get("worldUUID").tojstring()
+        val worldUUID = try {
+            UUID.fromString(worldUUIDStr)
+        } catch (e: IllegalArgumentException) {
+            error("Invalid 'worldUUID': Not a valid UUID (value: $worldUUIDStr)")
+        }
+        val world = Bukkit.getWorld(worldUUID)
+        val yaw = this.get("yaw").tofloat()
+        val pitch = this.get("pitch").tofloat()
+        Location(world, x, y, z, yaw, pitch)
+    } catch (e: Exception) {
+        error("LuaTable does not represent a valid location: ${e.message}")
     }
 }

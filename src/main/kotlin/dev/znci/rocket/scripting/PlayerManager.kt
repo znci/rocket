@@ -15,8 +15,8 @@
  */
 package dev.znci.rocket.scripting
 
-import dev.znci.rocket.scripting.functions.LuaLocation
 import dev.znci.rocket.scripting.functions.LuaLocation.Companion.fromBukkit
+import dev.znci.rocket.scripting.functions.toBukkitLocation
 import dev.znci.rocket.scripting.util.defineProperty
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
@@ -75,10 +75,16 @@ object PlayerManager {
 
         table.set("teleport", object : OneArgFunction() {
             override fun call(value: LuaValue): LuaValue {
-                if (value !is LuaLocation) return LuaValue.FALSE
-                val location = value.toBukkit()
-                player.teleport(location)
-                return LuaValue.TRUE
+                if (value is LuaTable) {
+                    try {
+                        val bukkitLocation = value.toBukkitLocation()
+                        player.teleport(bukkitLocation)
+                        return LuaValue.TRUE
+                    } catch (e: Exception) {
+                        return LuaValue.FALSE
+                    }
+                }
+                return LuaValue.FALSE
             }
         })
 
@@ -158,9 +164,11 @@ object PlayerManager {
             table, "location",
             getter = { fromBukkit(player.location) },
             setter = { value ->
-                if (value is LuaLocation) player.teleport(value.toBukkit())
+                player.teleport(value.toBukkitLocation())
             },
-            validator = { value -> value is LuaLocation }
+            validator = { value ->
+                value is LuaTable && runCatching { value.toBukkitLocation() }.isSuccess
+            }
         )
 
         defineProperty(
