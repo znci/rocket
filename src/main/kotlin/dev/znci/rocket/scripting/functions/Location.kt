@@ -49,6 +49,12 @@ class LuaLocation(x: Double, y: Double, z: Double, worldName: String, yaw: Float
     private var world: World? = Bukkit.getWorld(worldName)
     private var location: Location = Location(world, x, y, z, yaw, pitch)
 
+    companion object {
+        fun fromBukkit(location: Location): LuaLocation {
+            return LuaLocation(location.x, location.y, location.z, location.world.name, location.yaw, location.pitch)
+        }
+    }
+
     init {
         val metaTable = LuaTable().apply {
             set("__index", object : TwoArgFunction() {
@@ -121,11 +127,5 @@ class LuaLocation(x: Double, y: Double, z: Double, worldName: String, yaw: Float
         val yaw = get("yaw").tofloat()
         val pitch = get("pitch").tofloat()
         return Location(world, x, y, z, yaw, pitch)
-    }
-
-    companion object {
-        fun fromBukkit(location: Location): LuaLocation {
-            return LuaLocation(location.x, location.y, location.z, location.world.name, location.yaw, location.pitch)
-        }
     }
 }
