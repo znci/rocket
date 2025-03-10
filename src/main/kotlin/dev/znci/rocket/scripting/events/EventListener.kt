@@ -109,7 +109,7 @@ object EventListener : Listener {
         }
 
         if (player != null) {
-            luaTable.set("player", PlayerManager.getPlayerOverallTable(player))
+            luaTable.set("player", PlayerManager.getPlayerTable(player))
         }
 
         // Interaction event

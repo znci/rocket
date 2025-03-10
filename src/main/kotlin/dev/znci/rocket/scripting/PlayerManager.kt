@@ -15,6 +15,9 @@
  */
 package dev.znci.rocket.scripting
 
+import dev.znci.rocket.scripting.functions.LuaLocation.Companion.fromBukkit
+import dev.znci.rocket.scripting.functions.toBukkitLocation
+import dev.znci.rocket.scripting.util.defineProperty
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
@@ -27,60 +30,16 @@ import org.luaj.vm2.lib.ZeroArgFunction
 object PlayerManager {
 
     /**
-     * Returns a LuaTable with general information about the player
-     * This function is used for all the player getters.
-     * Setters are in PlayerManager.getPlayerManagementTable
+     * Returns a LuaTable with general and management information about the player
+     *
      *
      * @param player The player to get information from
      * @return LuaTable
      */
-    fun getPlayerGeneralTable(player: Player): LuaTable {
+    fun getPlayerTable(player: Player): LuaTable {
         val table = LuaTable()
 
-        table.set("name", LuaValue.valueOf(player.name))
-        table.set("uuid", LuaValue.valueOf(player.uniqueId.toString()))
-        table.set("health", LuaValue.valueOf(player.health))
-        table.set("foodLevel", LuaValue.valueOf(player.foodLevel))
-        table.set("gameMode", LuaValue.valueOf(player.gameMode.toString()))
-        table.set("xp", LuaValue.valueOf(player.exp.toDouble()))
-        table.set("level", LuaValue.valueOf(player.level))
-        table.set("location", LuaValue.valueOf(player.location.toString()))
-        table.set("world", LuaValue.valueOf(player.world.name))
-        table.set("ip", LuaValue.valueOf(player.address?.hostString))
-        table.set("isOp", LuaValue.valueOf(player.isOp))
-        table.set("isFlying", LuaValue.valueOf(player.isFlying))
-        table.set("isSneaking", LuaValue.valueOf(player.isSneaking))
-        table.set("isSprinting", LuaValue.valueOf(player.isSprinting))
-        table.set("isBlocking", LuaValue.valueOf(player.isBlocking))
-        table.set("isSleeping", LuaValue.valueOf(player.isSleeping))
-
-        val block = player.getTargetBlockExact(100)
-
-        if (block != null) {
-            table.set("targetBlockType", LuaValue.valueOf(block.type.toString()))
-            table.set("targetBlockLocation", LuaValue.valueOf(block.location.toString()))
-            table.set("targetBlockWorld", LuaValue.valueOf(block.world.name))
-            table.set("targetBlockX", LuaValue.valueOf(block.x))
-            table.set("targetBlockY", LuaValue.valueOf(block.y))
-            table.set("targetBlockZ", LuaValue.valueOf(block.z))
-            table.set("targetBlockLightLevel", LuaValue.valueOf(block.lightLevel.toDouble()))
-            table.set("targetBlockTemperature", LuaValue.valueOf(block.temperature))
-            table.set("targetBlockHumidity", LuaValue.valueOf(block.humidity))
-        }
-
-        return table
-    }
-
-    /**
-     * Returns a LuaTable with functions to manage the player
-     * This function is used for all the player setters.
-     * Getters are in PlayerManager.getPlayerGeneralTable
-     *
-     * @param player The player to manage
-     * @return LuaTable
-     */
-    fun getPlayerManagementTable(player: Player): LuaTable {
-        val table = LuaTable()
+        // methods should be defined before properties
         table.set("send", object : OneArgFunction() {
             override fun call(message: LuaValue): LuaValue {
                 val messageComponent = Component.text(
@@ -88,76 +47,6 @@ object PlayerManager {
                         .replace("&", "§")
                 )
                 player.sendMessage(messageComponent)
-                return LuaValue.TRUE
-            }
-        })
-
-        table.set("setXP", object : OneArgFunction() {
-            override fun call(value: LuaValue): LuaValue {
-                if (!value.isnumber()) return LuaValue.FALSE
-                player.exp = value.tofloat()
-                return LuaValue.TRUE
-            }
-        })
-
-        table.set("setLevel", object : OneArgFunction() {
-            override fun call(value: LuaValue): LuaValue {
-                if (!value.isnumber()) return LuaValue.FALSE
-                player.level = value.toint()
-                return LuaValue.TRUE
-            }
-        })
-
-        table.set("setHealth", object : OneArgFunction() {
-            override fun call(value: LuaValue): LuaValue {
-                if (!value.isnumber()) return LuaValue.FALSE
-                player.health = value.todouble()
-                return LuaValue.TRUE
-            }
-        })
-
-        table.set("setFoodLevel", object : OneArgFunction() {
-            override fun call(value: LuaValue): LuaValue {
-                if (!value.isnumber()) return LuaValue.FALSE
-                player.foodLevel = value.toint()
-                return LuaValue.TRUE
-            }
-        })
-
-        table.set("setSaturation", object : OneArgFunction() {
-            override fun call(value: LuaValue): LuaValue {
-                if (!value.isnumber()) return LuaValue.FALSE
-                player.saturation = value.tofloat()
-                return LuaValue.TRUE
-            }
-        })
-
-        table.set("setExhaustion", object : OneArgFunction() {
-            override fun call(value: LuaValue): LuaValue {
-                if (!value.isnumber()) return LuaValue.FALSE
-                player.exhaustion = value.tofloat()
-                return LuaValue.TRUE
-            }
-        })
-
-        table.set("setGameMode", object : OneArgFunction() {
-            override fun call(value: LuaValue): LuaValue {
-                if (!value.isnumber()) return LuaValue.FALSE
-                player.gameMode = GameMode.entries.toTypedArray()[value.toint()]
-                return LuaValue.TRUE
-            }
-        })
-
-        table.set("setDisplayName", object : OneArgFunction() {
-            override fun call(value: LuaValue): LuaValue {
-                player.displayName(Component.text(value.tojstring()))
-                return LuaValue.TRUE
-            }
-        })
-
-        table.set("setTabListName", object : OneArgFunction() {
-            override fun call(value: LuaValue): LuaValue {
-                player.playerListName(Component.text(value.tojstring()))
                 return LuaValue.TRUE
             }
         })
@@ -184,6 +73,21 @@ object PlayerManager {
             }
         })
 
+        table.set("teleport", object : OneArgFunction() {
+            override fun call(value: LuaValue): LuaValue {
+                if (value is LuaTable) {
+                    try {
+                        val bukkitLocation = value.toBukkitLocation()
+                        player.teleport(bukkitLocation)
+                        return LuaValue.TRUE
+                    } catch (e: Exception) {
+                        return LuaValue.FALSE
+                    }
+                }
+                return LuaValue.FALSE
+            }
+        })
+
         table.set("hasPermission", object : OneArgFunction() {
             override fun call(value: LuaValue): LuaValue {
                 return LuaValue.valueOf(
@@ -200,29 +104,108 @@ object PlayerManager {
             }
         })
 
+        // read-only properties
+        defineProperty(table, "name", { LuaValue.valueOf(player.name) })
+        defineProperty(table, "uuid", { LuaValue.valueOf(player.uniqueId.toString()) })
+        defineProperty(table, "world", { LuaValue.valueOf(player.world.name) })
+        defineProperty(table, "ip", { LuaValue.valueOf(player.address?.hostString) })
+        defineProperty(table, "isFlying", { LuaValue.valueOf(player.isFlying) })
+        defineProperty(table, "isSneaking", { LuaValue.valueOf(player.isSneaking) })
+        defineProperty(table, "isSprinting", { LuaValue.valueOf(player.isSprinting) })
+        defineProperty(table, "isBlocking", { LuaValue.valueOf(player.isBlocking) })
+        defineProperty(table, "isSleeping", { LuaValue.valueOf(player.isSleeping) })
+        val block = player.getTargetBlockExact(100)
+        if (block != null) {
+            defineProperty(table, "targetBlockType", { LuaValue.valueOf(block.type.toString()) })
+            defineProperty(table, "targetBlockLocation", { fromBukkit(block.location) })
+            defineProperty(table, "targetBlockLightLevel", { LuaValue.valueOf(block.lightLevel.toDouble()) })
+            defineProperty(table, "targetBlockTemperature", { LuaValue.valueOf(block.temperature) })
+            defineProperty(table, "targetBlockHumidity", { LuaValue.valueOf(block.humidity) })
+        }
+        // writable properties
+        defineProperty(
+            table, "health",
+            getter = { LuaValue.valueOf(player.health) },
+            setter = { value -> player.health = value.todouble() },
+            validator = { value -> value.isnumber() && value.todouble() >= 0 }
+        )
+
+        defineProperty(
+            table, "foodLevel",
+            getter = { LuaValue.valueOf(player.foodLevel) },
+            setter = { value -> player.foodLevel = value.toint() },
+            validator = { value -> value.isint() && value.toint() >= 0 && value.toint() <= 20 }
+        )
+
+        defineProperty(
+            table, "gameMode",
+            getter = { LuaValue.valueOf(player.gameMode.toString()) },
+            setter = { value -> player.gameMode = GameMode.valueOf(value.tojstring()) },
+            validator = { value ->
+                value.isstring() && listOf("SURVIVAL", "CREATIVE", "ADVENTURE", "SPECTATOR").contains(value.tojstring())
+            }
+        )
+
+        defineProperty(
+            table, "xp",
+            getter = { LuaValue.valueOf(player.exp.toDouble()) },
+            setter = { value -> player.exp = value.tofloat() },
+            validator = { value -> value.isnumber() && value.todouble() >= 0 && value.todouble() <= 1 }
+        )
+
+        defineProperty(
+            table, "level",
+            getter = { LuaValue.valueOf(player.level) },
+            setter = { value -> player.level = value.toint() },
+            validator = { value -> value.isint() && value.toint() >= 0 }
+        )
+
+        defineProperty(
+            table, "location",
+            getter = { fromBukkit(player.location) },
+            setter = { value ->
+                player.teleport(value.toBukkitLocation())
+            },
+            validator = { value ->
+                value is LuaTable && runCatching { value.toBukkitLocation() }.isSuccess
+            }
+        )
+
+        defineProperty(
+            table, "isOp",
+            getter = { LuaValue.valueOf(player.isOp) },
+            setter = { value -> player.isOp = value.toboolean() },
+            validator = { value -> value.isboolean() }
+        )
+
+        defineProperty(
+            table, "saturation",
+            getter = { LuaValue.valueOf(player.saturation.toDouble()) },
+            setter = { value -> player.saturation = value.tofloat() },
+            validator = { value -> value.isnumber() && value.todouble() >= 0 }
+        )
+
+        defineProperty(
+            table, "exhaustion",
+            getter = { LuaValue.valueOf(player.exhaustion.toDouble()) },
+            setter = { value -> player.exhaustion = value.tofloat() },
+            validator = { value -> value.isnumber() && value.todouble() >= 0 }
+        )
+
+        defineProperty(
+            table, "displayName",
+            getter = { LuaValue.valueOf(player.displayName().toString()) },
+            setter = { value -> player.displayName(Component.text(value.tojstring())) },
+            validator = { value -> value.isstring() }
+        )
+
+        defineProperty(
+            table, "tabListName",
+            getter = { LuaValue.valueOf(player.playerListName().toString()) },
+            setter = { value -> player.playerListName(Component.text(value.tojstring())) },
+            validator = { value -> value.isstring() }
+        )
+
         return table
     }
-
-    /**
-     * Returns a LuaTable with general and management information about the player
-     *
-     * @param player The player to get information from
-     * @return LuaTable
-     */
-    fun getPlayerOverallTable(player: Player): LuaTable {
-        val table = LuaTable()
-
-        val generalTable = getPlayerGeneralTable(player)
-        for (key in generalTable.keys()) {
-            table.set(key, generalTable.get(key))
-        }
-
-        val managementTable = getPlayerManagementTable(player)
-        for (key in managementTable.keys()) {
-            table.set(key, managementTable.get(key))
-        }
-
-        return table
-    }
-
 }

@@ -13,22 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.znci.rocket.scripting.functions
+package dev.znci.rocket.scripting.util
 
-import dev.znci.rocket.scripting.PlayerManager
 import org.bukkit.Bukkit
-import org.luaj.vm2.LuaTable
-import org.luaj.vm2.LuaValue
-import org.luaj.vm2.lib.OneArgFunction
+import org.bukkit.World
+import java.util.*
 
-class LuaPlayers : LuaTable() {
-    init {
-        set("get", object : OneArgFunction() {
-            override fun call(playerName: LuaValue): LuaValue {
-                val player = Bukkit.getPlayer(playerName.tojstring()) ?: return LuaValue.NIL
-
-                return PlayerManager.getPlayerTable(player)
-            }
-        })
-    }
+fun getWorldByNameOrUUID(worldNameOrUUID: String): World {
+    return Bukkit.getWorld(worldNameOrUUID) ?:
+    try {
+        Bukkit.getWorld(UUID.fromString(worldNameOrUUID))
+    } catch (e: IllegalArgumentException) {
+        null
+    } ?: error("World '$worldNameOrUUID' not found!")
 }

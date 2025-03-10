@@ -40,7 +40,7 @@ class LuaCommands : LuaTable() {
                 val returnedTable = luaCallback.call()
                 val customCommand = object : BukkitCommand(commandStr) {
                     override fun execute(sender: CommandSender, commandLabel: String, args: Array<out String>): Boolean {
-                        val table = PlayerManager.getPlayerOverallTable(sender as Player)
+                        val table = PlayerManager.getPlayerTable(sender as Player)
                         val luaArgs = convertArgsToLua(args)
 
                         returnedTable.get("executor_function").checkfunction().call(table, luaArgs)
@@ -97,7 +97,7 @@ class LuaCommands : LuaTable() {
 
                             commandReference.executor = CommandExecutor { sender, _, _, args ->
                                 val luaArgs = convertArgsToLua(args)
-                                val senderTable = PlayerManager.getPlayerOverallTable(sender as Player)
+                                val senderTable = PlayerManager.getPlayerTable(sender as Player)
 
                                 luaCallback.call(senderTable, luaArgs)
                                 return@CommandExecutor true

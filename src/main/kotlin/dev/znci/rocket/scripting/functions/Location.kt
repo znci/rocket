@@ -15,83 +15,98 @@
  */
 package dev.znci.rocket.scripting.functions
 
+import dev.znci.rocket.scripting.util.defineProperty
+import dev.znci.rocket.scripting.util.getWorldByNameOrUUID
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.World
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.Varargs
-import org.luaj.vm2.lib.OneArgFunction
 import org.luaj.vm2.lib.VarArgFunction
+import java.util.*
 
 class LuaLocations : LuaTable() {
     init {
         set("new", object : VarArgFunction() {
             override fun invoke(args: Varargs): LuaValue {
-                if (args.narg() < 4) {
-                    return LuaValue.FALSE
-                }
+                if (args.narg() < 3) return LuaValue.FALSE
                 val x = args.arg(1).todouble()
                 val y = args.arg(2).todouble()
                 val z = args.arg(3).todouble()
-                val worldName = args.arg(4).checkjstring()
-                return LuaLocation(x, y, z, worldName)
+                val worldUUID = if (args.narg() >= 4) {
+                    val worldNameOrUUID = args.arg(4).checkjstring()
+                    getWorldByNameOrUUID(worldNameOrUUID).uid.toString()
+                } else {
+                    Bukkit.getWorlds().first().uid.toString()
+                }
+                val yaw = if (args.narg() >= 5) args.arg(5).tofloat() else 0f
+                val pitch = if (args.narg() >= 6) args.arg(6).tofloat() else 0f
+                return LuaLocation(x, y, z, worldUUID, yaw, pitch).getLocationTable()
             }
         })
     }
 }
 
-class LuaLocation(x: Double, y: Double, z: Double, worldName: String) : LuaTable() {
-    private var world: World? = Bukkit.getWorld(worldName)
-    private var location: Location? = world?.let { Location(it, x, y, z) }
-
-    init {
-        set("x", LuaValue.valueOf(x))
-        set("y", LuaValue.valueOf(y))
-        set("z", LuaValue.valueOf(z))
-        set("world", LuaValue.valueOf(worldName))
-
-        set("setX", object : OneArgFunction() {
-            override fun call(value: LuaValue): LuaValue {
-                val newX = value.todouble()
-                location?.x = newX
-                set("x", LuaValue.valueOf(newX))
-                return LuaValue.valueOf(newX)
-            }
-        })
-
-        set("setY", object : OneArgFunction() {
-            override fun call(value: LuaValue): LuaValue {
-                val newY = value.todouble()
-                location?.y = newY
-                set("y", LuaValue.valueOf(newY))
-                return LuaValue.valueOf(newY)
-            }
-        })
-
-        set("setZ", object : OneArgFunction() {
-            override fun call(value: LuaValue): LuaValue {
-                val newZ = value.todouble()
-                location?.z = newZ
-                set("z", LuaValue.valueOf(newZ))
-                return LuaValue.valueOf(newZ)
-            }
-        })
-
-        set("setWorld", object : OneArgFunction() {
-            override fun call(value: LuaValue): LuaValue {
-                val worldArg = value.checkjstring()
-                val newWorld = Bukkit.getWorld(worldArg) ?: return LuaValue.FALSE
-                location = Location(newWorld, location?.x ?: 0.0, location?.y ?: 0.0, location?.z ?: 0.0)
-                set("world", value)
-                return LuaValue.valueOf(newWorld.name)
-            }
-        })
-    }
+class LuaLocation(
+    x: Double,
+    y: Double,
+    z: Double,
+    worldUUID: String,
+    yaw: Float = 0f,
+    pitch: Float = 0f
+) : LuaTable() {
+    private var world: World? = Bukkit.getWorld(UUID.fromString(worldUUID))
+    private var location: Location = Location(world, x, y, z, yaw, pitch)
 
     companion object {
-        fun fromBukkit(location: Location): LuaLocation {
-            return LuaLocation(location.x, location.y, location.z, location.world.name)
+        fun fromBukkit(location: Location): LuaTable {
+            return LuaLocation(
+                location.x,
+                location.y,
+                location.z,
+                location.world.uid.toString(),
+                location.yaw,
+                location.pitch
+            ).getLocationTable()
         }
+    }
+
+    fun getLocationTable(): LuaTable {
+        val table = LuaTable()
+
+        defineProperty(table, "x", { LuaValue.valueOf(location.x) }, { value -> location.x = value.todouble() })
+        defineProperty(table, "y", { LuaValue.valueOf(location.y) }, { value -> location.y = value.todouble() })
+        defineProperty(table, "z", { LuaValue.valueOf(location.z) }, { value -> location.z = value.todouble() })
+        defineProperty(table, "world", { LuaValue.valueOf(location.world.name) }, { value -> location.world = Bukkit.getWorld(UUID.fromString(value.tojstring())) })
+        defineProperty(table, "worldUUID", { LuaValue.valueOf(location.world.uid.toString()) }, { value -> location.world = Bukkit.getWorld(UUID.fromString(value.tojstring())) })
+        defineProperty(table, "yaw", { LuaValue.valueOf(location.yaw.toDouble()) }, { value -> location.yaw = value.tofloat() })
+        defineProperty(table, "pitch", { LuaValue.valueOf(location.pitch.toDouble()) }, { value -> location.pitch = value.tofloat() })
+
+        return table
+    }
+}
+
+fun LuaValue.toBukkitLocation(): Location {
+    if (this !is LuaTable) {
+        error("Expected a LuaTable, got ${this.typename()} (value: ${this.tojstring()})")
+    }
+
+    return try {
+        val x = this.get("x").todouble()
+        val y = this.get("y").todouble()
+        val z = this.get("z").todouble()
+        val worldUUIDStr = this.get("worldUUID").tojstring()
+        val worldUUID = try {
+            UUID.fromString(worldUUIDStr)
+        } catch (e: IllegalArgumentException) {
+            error("Invalid 'worldUUID': Not a valid UUID (value: $worldUUIDStr)")
+        }
+        val world = Bukkit.getWorld(worldUUID)
+        val yaw = this.get("yaw").tofloat()
+        val pitch = this.get("pitch").tofloat()
+        Location(world, x, y, z, yaw, pitch)
+    } catch (e: Exception) {
+        error("LuaTable does not represent a valid location: ${e.message}")
     }
 }
