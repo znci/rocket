@@ -15,6 +15,8 @@
  */
 package dev.znci.rocket.scripting.functions
 
+import dev.znci.rocket.i18n.LocaleManager
+import dev.znci.rocket.scripting.PermissionsManager
 import dev.znci.rocket.scripting.PlayerManager
 import dev.znci.rocket.scripting.ScriptManager
 import org.bukkit.Bukkit
@@ -98,6 +100,22 @@ class LuaCommands : LuaTable() {
                             commandReference.executor = CommandExecutor { sender, _, _, args ->
                                 val luaArgs = convertArgsToLua(args)
                                 val senderTable = PlayerManager.getPlayerTable(sender as Player)
+
+                                // If the player does not have permission, show the configured no permission message
+                                if (PermissionsManager.hasPermission(sender, commandReference.permission).not()) {
+                                    sender.sendMessage(LocaleManager.getMessageAsComponent("no_permission"))
+                                    return@CommandExecutor true
+                                }
+
+                                println("Command executed by ${sender.name}")
+
+                                // If no arguments are provided, show the usage
+                                if (args.isEmpty()) {
+                                    sender.sendMessage(commandReference.usage)
+                                    return@CommandExecutor true
+                                }
+
+                                println("Arguments: ${args.joinToString(", ")}")
 
                                 luaCallback.call(senderTable, luaArgs)
                                 return@CommandExecutor true

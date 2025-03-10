@@ -15,6 +15,9 @@ messages:
 
   invalid_action: "Invalid action."
   usage_template: "{error_color}Usage: "
+
+  no_permission: "{error_color}Insufficient permissions."
+
   rocket_command:
     usage: "{prefix_error} {usage_template}/rocket <reload|disable> <script_name|config>"
     scripts_folder_not_found: "{prefix} {error_color}Scripts folder not found."
