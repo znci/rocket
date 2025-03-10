@@ -97,6 +97,7 @@ object EventListener : Listener {
             set("__index", object : TwoArgFunction() {
                 override fun call(table: LuaValue, key: LuaValue): LuaValue {
                     // Player fields & checking
+                    println(key.tojstring())
                     return when (key.tojstring()) {
                         "player" -> {
                             var player: org.bukkit.entity.Player? = null
@@ -134,10 +135,14 @@ object EventListener : Listener {
                             }
                         }
                         "message" -> {
-                            var message: Component = Component.text("")
+                            println(event.javaClass.simpleName)
                             return when (event) {
                                 is org.bukkit.event.player.PlayerQuitEvent -> LuaValue.valueOf(event.quitMessage().toString())
                                 is org.bukkit.event.player.PlayerJoinEvent -> LuaValue.valueOf(event.joinMessage().toString())
+                                is org.bukkit.event.player.AsyncPlayerChatEvent -> LuaValue.valueOf(event.message).also {
+                                    println(true)
+                                    println(event.message)
+                                }
                                 is io.papermc.paper.event.player.AsyncChatEvent -> LuaValue.valueOf(event.message().toString())
                                 else -> LuaValue.NIL
                             }
