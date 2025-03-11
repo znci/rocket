@@ -139,7 +139,7 @@ object EventListener : Listener {
                     "player" -> {
                         val player: Player? = getValueFromEvent(event, "player", "getPlayer")
                         if (player != null) {
-                            return PlayerManager.getPlayerOverallTable(player)
+                            return PlayerManager.getPlayerTable(player)
                         }
                         return LuaValue.NIL.also {
                             error("No player in a '${event.eventName}' event!")
@@ -176,9 +176,6 @@ object EventListener : Listener {
                             error("No message in a '${event.eventName}' event!")
                         }
                     }
-
-                    // FIXME: I may have broken the next two since I'm not sure how they work
-                    //        I'm just trying to make it sort of fit the method this uses
 
                     "from" -> {
                         val location: Location? = getValueFromEvent(event, "from", "getFrom")
