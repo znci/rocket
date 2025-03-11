@@ -25,7 +25,6 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.defaults.BukkitCommand
 import org.bukkit.entity.Player
-import org.luaj.vm2.LuaFunction
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.OneArgFunction
@@ -40,10 +39,35 @@ class LuaCommands : LuaTable() {
                 val luaCallback = callback.checkfunction()
 
                 val returnedTable = luaCallback.call()
+
                 val customCommand = object : BukkitCommand(commandStr) {
                     override fun execute(sender: CommandSender, commandLabel: String, args: Array<out String>): Boolean {
                         val table = PlayerManager.getPlayerTable(sender as Player)
                         val luaArgs = convertArgsToLua(args)
+
+                        val referenceFunction = returnedTable.get("reference").checkfunction()
+                        val reference = referenceFunction.call()
+                        val permission = reference.get("permission").tojstring()
+                        val usage = reference.get("usage").tojstring()
+
+                        println("Permission: $permission")
+                        println("Usage: $usage")
+
+                        // If the player does not have permission, show the configured no permission message
+                        if (PermissionsManager.hasPermission(sender, permission).not()) {
+                            sender.sendMessage(LocaleManager.getMessageAsComponent("no_permission"))
+                            return true
+                        }
+
+                        println("Command executed by ${sender.name}")
+
+                        // If no arguments are provided, show the usage
+                        if (args.isEmpty()) {
+                            sender.sendMessage(usage)
+                            return true
+                        }
+
+                        println("Arguments: ${args.joinToString(", ")}")
 
                         returnedTable.get("executor_function").checkfunction().call(table, luaArgs)
                         return true
@@ -101,22 +125,6 @@ class LuaCommands : LuaTable() {
                                 val luaArgs = convertArgsToLua(args)
                                 val senderTable = PlayerManager.getPlayerTable(sender as Player)
 
-                                // If the player does not have permission, show the configured no permission message
-                                if (PermissionsManager.hasPermission(sender, commandReference.permission).not()) {
-                                    sender.sendMessage(LocaleManager.getMessageAsComponent("no_permission"))
-                                    return@CommandExecutor true
-                                }
-
-                                println("Command executed by ${sender.name}")
-
-                                // If no arguments are provided, show the usage
-                                if (args.isEmpty()) {
-                                    sender.sendMessage(commandReference.usage)
-                                    return@CommandExecutor true
-                                }
-
-                                println("Arguments: ${args.joinToString(", ")}")
-
                                 luaCallback.call(senderTable, luaArgs)
                                 return@CommandExecutor true
                             }
@@ -159,6 +167,25 @@ class LuaCommands : LuaTable() {
                         }
 
                         return table
+                    }
+                })
+
+                table.set("reference", object : ZeroArgFunction() {
+                    override fun call(): LuaValue {
+                        val commandTable = LuaTable()
+                        val luaAliases = LuaTable()
+                        val aliases = commandReference.aliases
+
+                        for (i in 1..aliases.size) {
+                            luaAliases.set(i, LuaValue.valueOf(aliases[i - 1]))
+                        }
+
+                        commandTable.set("aliases", luaAliases)
+                        commandTable.set("description", commandReference.description)
+                        commandTable.set("usage", commandReference.usage)
+                        commandTable.set("permission", commandReference.permission)
+
+                        return commandTable
                     }
                 })
 
