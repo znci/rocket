@@ -18,20 +18,22 @@ package dev.znci.rocket.scripting.events
 import com.google.common.reflect.ClassPath
 import dev.znci.rocket.scripting.PlayerManager
 import dev.znci.rocket.scripting.ScriptManager
+import dev.znci.rocket.scripting.functions.LuaLocation
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
+import org.bukkit.Location
+import org.bukkit.entity.Player
 import org.bukkit.event.Cancellable
 import org.bukkit.event.Event
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.plugin.Plugin
-import org.luaj.vm2.Lua
 import org.luaj.vm2.LuaBoolean
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.TwoArgFunction
 import org.luaj.vm2.lib.ZeroArgFunction
-import java.util.stream.Collectors
 
 
 object EventListener : Listener {
@@ -65,6 +67,7 @@ object EventListener : Listener {
         ScriptManager.usedEvents.forEach { (eventClass, callback) ->
             if (eventClass.isInstance(event)) {
                 val luaTable = convertEventToLua(event)
+                println(callback)
                 callback.call(luaTable)
             }
         }
@@ -92,111 +95,133 @@ object EventListener : Listener {
         return getSupportedEvents().find { it.simpleName.equals(name, true) }
     }
 
+    private inline fun <reified V> getValueFromField(event: Event, valuesToTry: Array<out String>): V? {
+        valuesToTry.forEach { value ->
+            val field = event.javaClass.declaredFields.find { it.name == value }
+            if (field != null) {
+                field.isAccessible = true
+                val valueFromField = field.get(event)
+                if (valueFromField is V) {
+                    return valueFromField
+                }
+            }
+        }
+        return null
+    }
+
+    private inline fun <reified V> getValueFromFunction(event: Event, valuesToTry: Array<out String>): V? {
+        valuesToTry.forEach { value ->
+            val valueProperty = event.javaClass.methods.find { it.name == value }
+            if (valueProperty != null) {
+                val valueFromProperty = valueProperty.invoke(event) as? V
+                return valueFromProperty
+            }
+        }
+        return null
+    }
+
+    private inline fun <reified V> getValueFromEvent(event: Event, vararg valuesToTry: String): V? {
+
+        var valueObj: V? = getValueFromField(event, valuesToTry)
+        if (valueObj == null) {
+            valueObj = getValueFromFunction<V>(event, valuesToTry)
+        }
+        return valueObj
+    }
+
     private fun convertEventToLua(event: Event): LuaTable {
-        val metaTable = LuaTable().apply {
-            set("__index", object : TwoArgFunction() {
-                override fun call(table: LuaValue, key: LuaValue): LuaValue {
-                    // Player fields & checking
-                    println(key.tojstring())
-                    return when (key.tojstring()) {
-                        "player" -> {
-                            var player: org.bukkit.entity.Player? = null
-
-                            // Check if there is a field for player
-                            val playerField = event.javaClass.declaredFields.find { it.name == "player" }
-                            if (playerField != null) {
-                                playerField.isAccessible = true
-                                val fieldPlayer = playerField.get(event)
-                                if (fieldPlayer is org.bukkit.entity.Player) {
-                                    player = fieldPlayer
-                                }
-                            }
-
-                            // If there is no field for player, check if there is a method for player
-                            if (player == null) {
-                                val playerProperty = event.javaClass.methods.find { it.name == "getPlayer" }
-                                if (playerProperty != null) {
-                                    val playerFromProperty = playerProperty.invoke(event) as? org.bukkit.entity.Player
-                                    player = playerFromProperty
-                                }
-                            }
-
-                            if (player != null) {
-                                return PlayerManager.getPlayerOverallTable(player)
-                            }
-
-                            return LuaValue.NIL
+        val table = LuaTable()
+        val meta = table.getmetatable() ?: LuaTable()
+        val indexFunction = meta.get("__index") as? TwoArgFunction
+        meta.set("__index", object : TwoArgFunction() {
+            override fun call(table: LuaValue, key: LuaValue): LuaValue {
+                return when (key.tojstring()) {
+                    "player" -> {
+                        val player: Player? = getValueFromEvent(event, "player", "getPlayer")
+                        if (player != null) {
+                            return PlayerManager.getPlayerOverallTable(player)
                         }
-                        "hand" -> {
-                            // Interaction event
-                            return when (event) {
-                                is org.bukkit.event.player.PlayerInteractEvent -> LuaValue.valueOf(event.hand.toString())
-                                else -> LuaValue.NIL
-                            }
+                        return LuaValue.NIL.also {
+                            error("No player in a '${event.eventName}' event!")
                         }
-                        "message" -> {
-                            println(event.javaClass.simpleName)
-                            return when (event) {
-                                is org.bukkit.event.player.PlayerQuitEvent -> LuaValue.valueOf(event.quitMessage().toString())
-                                is org.bukkit.event.player.PlayerJoinEvent -> LuaValue.valueOf(event.joinMessage().toString())
-                                is org.bukkit.event.player.AsyncPlayerChatEvent -> LuaValue.valueOf(event.message).also {
-                                    println(true)
-                                    println(event.message)
-                                }
-                                is io.papermc.paper.event.player.AsyncChatEvent -> LuaValue.valueOf(event.message().toString())
-                                else -> LuaValue.NIL
+                    }
+
+                    "hand" -> {
+                        val hand: EquipmentSlot? = getValueFromEvent(event, "hand")
+                        if (hand != null) {
+                            return LuaValue.valueOf(hand.toString())
+                        }
+                        return LuaValue.NIL.also {
+                            error("No hand in a '${event.eventName}' event!")
+                        }
+                    }
+
+                    "message" -> {
+                        val message: Any? = getValueFromEvent(
+                            event,
+                            "message",
+                            "getMessage",
+                            "getJoinMessage",
+                            "getDeathMessage",
+                            "getQuitMessage",
+                            "getKickMessage"
+                        )
+                        if (message != null) {
+                            if (message is String || message is Component) return LuaValue.valueOf(message.toString())
+                            return LuaValue.NIL.also {
+                                error("Non-string/component object found in place of a message. Found '$message'")
                             }
                         }
-                        "reason" -> {
-                            var reason: String? = null
-                            when (event) {
-                                is org.bukkit.event.player.PlayerQuitEvent -> LuaValue.valueOf(event.reason.toString())
-                                else -> LuaValue.NIL
-                            }
-
+                        return LuaValue.NIL.also {
+                            error("No message in a '${event.eventName}' event!")
                         }
+                    }
 
-                        // FIXME: I may have broken the next two since I'm not sure how they work
-                        //        I'm just trying to make it sort of fit the method this uses
+                    // FIXME: I may have broken the next two since I'm not sure how they work
+                    //        I'm just trying to make it sort of fit the method this uses
 
-                        "from" -> {
-                            val fromField = event.javaClass.getDeclaredField("from")
-                            fromField.isAccessible = true
-                            val from = fromField.get(event)
-                            if (from is org.bukkit.Location) {
-                                // TODO: Finish this when mibers creates PR which adds new location class
-                            }
-                            LuaValue.NIL
-                        }
-                        "to" -> {
-                            val toField = event.javaClass.getDeclaredField("to")
-                            toField.isAccessible = true
-                            val to = toField.get(event)
-                            if (to is org.bukkit.Location) {
-                                // TODO: Finish this when mibers creates PR which adds new location class
-                            }
-                            LuaValue.NIL
-                        }
-                        "cancel" -> {
-                            // Cancellable events
-                            when (event) {
-                                is Cancellable -> {
-                                    return object : ZeroArgFunction() {
-                                        override fun call(): LuaValue {
-                                            event.isCancelled = true
-                                            return LuaBoolean.valueOf(event.isCancelled)
-                                        }
+                    "from" -> {
+                        val location: Location? = getValueFromEvent(event, "from", "getFrom")
+                        return LuaLocation.fromBukkit(location?:return LuaValue.NIL.also {
+                            error("Value 'from' of a '${event.eventName}' event returned null")
+                        })
+                    }
+
+                    "to" -> {
+                        val location: Location? = getValueFromEvent(event, "to", "getTo")
+                        return LuaLocation.fromBukkit(location?:return LuaValue.NIL.also {
+                            error("Value 'to' of a '${event.eventName}' event returned null")
+                        })
+                    }
+
+                    "cancel" -> {
+                        when (event) {
+                            is Cancellable -> {
+                                return object : ZeroArgFunction() {
+                                    override fun call(): LuaValue {
+                                        event.isCancelled = true
+                                        return LuaBoolean.valueOf(event.isCancelled)
                                     }
                                 }
-
-                                else -> LuaValue.NIL
+                            }
+                            else -> LuaValue.NIL.also {
+                                error("Cannot access or modify 'cancel' field in an uncancellable '${event.eventName}' event")
                             }
                         }
-                        else -> NIL
+                    }
+
+                    else -> {
+                        indexFunction?.call(table, key) ?: LuaValue.NIL.also {
+                            error("No applicable index found: found '${key.tojstring()}'")
+                        }
                     }
                 }
-            })
-        }
-        return metaTable
+
+            }
+
+        })
+        table.setmetatable(meta)
+        return table
     }
+
 }
