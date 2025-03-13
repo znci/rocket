@@ -15,15 +15,18 @@
  */
 package dev.znci.rocket.scripting.functions
 
+import dev.znci.rocket.i18n.LocaleManager
+import dev.znci.rocket.scripting.PermissionsManager
 import dev.znci.rocket.scripting.PlayerManager
 import dev.znci.rocket.scripting.ScriptManager
+import dev.znci.rocket.util.MessageFormatter
+import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.defaults.BukkitCommand
 import org.bukkit.entity.Player
-import org.luaj.vm2.LuaFunction
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.OneArgFunction
@@ -38,10 +41,40 @@ class LuaCommands : LuaTable() {
                 val luaCallback = callback.checkfunction()
 
                 val returnedTable = luaCallback.call()
+
                 val customCommand = object : BukkitCommand(commandStr) {
                     override fun execute(sender: CommandSender, commandLabel: String, args: Array<out String>): Boolean {
                         val table = PlayerManager.getPlayerTable(sender as Player)
                         val luaArgs = convertArgsToLua(args)
+
+                        val referenceFunction = returnedTable.get("reference").checkfunction()
+                        val reference = referenceFunction.call()
+                        val permission = reference.get("permission").tojstring()
+                        val usage = reference.get("usage").tojstring()
+                        val permissionMessage = reference.get("permissionMessage").tojstring()
+
+                        // If the player does not have permission, show the configured no permission message
+                        // or the default no permission message
+                        if (PermissionsManager.hasPermission(sender, permission).not()) {
+                            var noPermissionMessage = LocaleManager.getMessageAsComponent("no_permission")
+                            if (permissionMessage.isNotEmpty()) {
+                                noPermissionMessage = Component.text(
+                                    MessageFormatter.formatMessage(permissionMessage)
+                                )
+                            }
+                            sender.sendMessage(noPermissionMessage)
+                            return true
+                        }
+
+                        // If no arguments are provided, show the usage
+                        if (args.isEmpty()) {
+                            sender.sendMessage(
+                                Component.text(
+                                    MessageFormatter.formatMessage(usage)
+                                )
+                            )
+                            return true
+                        }
 
                         returnedTable.get("executor_function").checkfunction().call(table, luaArgs)
                         return true
@@ -70,6 +103,7 @@ class LuaCommands : LuaTable() {
             override fun call(): LuaValue {
                 val table = LuaTable()
                 val commandReference = dev.znci.rocket.scripting.classes.Command(
+                    "",
                     "",
                     "",
                     "",
@@ -141,6 +175,37 @@ class LuaCommands : LuaTable() {
                         }
 
                         return table
+                    }
+                })
+
+                table.set("permissionMessage", object : OneArgFunction() {
+                    override fun call(arg: LuaValue?): LuaValue {
+                        if (arg != null) {
+                            val permissionMessage = arg.tojstring()
+                            commandReference.permissionMessage = permissionMessage
+                        }
+
+                        return table
+                    }
+                })
+
+                table.set("reference", object : ZeroArgFunction() {
+                    override fun call(): LuaValue {
+                        val commandTable = LuaTable()
+                        val luaAliases = LuaTable()
+                        val aliases = commandReference.aliases
+
+                        for (i in 1..aliases.size) {
+                            luaAliases.set(i, LuaValue.valueOf(aliases[i - 1]))
+                        }
+
+                        commandTable.set("aliases", luaAliases)
+                        commandTable.set("description", commandReference.description)
+                        commandTable.set("usage", commandReference.usage)
+                        commandTable.set("permission", commandReference.permission)
+                        commandTable.set("permissionMessage", commandReference.permissionMessage)
+
+                        return commandTable
                     }
                 })
 
