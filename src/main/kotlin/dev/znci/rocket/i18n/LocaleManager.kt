@@ -15,6 +15,7 @@
  */
 package dev.znci.rocket.i18n
 
+import dev.znci.rocket.util.MessageFormatter
 import net.kyori.adventure.text.Component
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
@@ -80,6 +81,8 @@ object LocaleManager {
             message
         }
 
-        return Component.text(formattedMessage.replace("&", "§"))
+        return Component.text(
+            MessageFormatter.formatMessage(formattedMessage)
+        )
     }
 }

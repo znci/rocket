@@ -19,6 +19,8 @@ import dev.znci.rocket.i18n.LocaleManager
 import dev.znci.rocket.scripting.PermissionsManager
 import dev.znci.rocket.scripting.PlayerManager
 import dev.znci.rocket.scripting.ScriptManager
+import dev.znci.rocket.util.MessageFormatter
+import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -49,25 +51,30 @@ class LuaCommands : LuaTable() {
                         val reference = referenceFunction.call()
                         val permission = reference.get("permission").tojstring()
                         val usage = reference.get("usage").tojstring()
-
-                        println("Permission: $permission")
-                        println("Usage: $usage")
+                        val permissionMessage = reference.get("permissionMessage").tojstring()
 
                         // If the player does not have permission, show the configured no permission message
+                        // or the default no permission message
                         if (PermissionsManager.hasPermission(sender, permission).not()) {
-                            sender.sendMessage(LocaleManager.getMessageAsComponent("no_permission"))
+                            var noPermissionMessage = LocaleManager.getMessageAsComponent("no_permission")
+                            if (permissionMessage.isNotEmpty()) {
+                                noPermissionMessage = Component.text(
+                                    MessageFormatter.formatMessage(permissionMessage)
+                                )
+                            }
+                            sender.sendMessage(noPermissionMessage)
                             return true
                         }
-
-                        println("Command executed by ${sender.name}")
 
                         // If no arguments are provided, show the usage
                         if (args.isEmpty()) {
-                            sender.sendMessage(usage)
+                            sender.sendMessage(
+                                Component.text(
+                                    MessageFormatter.formatMessage(usage)
+                                )
+                            )
                             return true
                         }
-
-                        println("Arguments: ${args.joinToString(", ")}")
 
                         returnedTable.get("executor_function").checkfunction().call(table, luaArgs)
                         return true
@@ -96,6 +103,7 @@ class LuaCommands : LuaTable() {
             override fun call(): LuaValue {
                 val table = LuaTable()
                 val commandReference = dev.znci.rocket.scripting.classes.Command(
+                    "",
                     "",
                     "",
                     "",
@@ -170,6 +178,17 @@ class LuaCommands : LuaTable() {
                     }
                 })
 
+                table.set("permissionMessage", object : OneArgFunction() {
+                    override fun call(arg: LuaValue?): LuaValue {
+                        if (arg != null) {
+                            val permissionMessage = arg.tojstring()
+                            commandReference.permissionMessage = permissionMessage
+                        }
+
+                        return table
+                    }
+                })
+
                 table.set("reference", object : ZeroArgFunction() {
                     override fun call(): LuaValue {
                         val commandTable = LuaTable()
@@ -184,6 +203,7 @@ class LuaCommands : LuaTable() {
                         commandTable.set("description", commandReference.description)
                         commandTable.set("usage", commandReference.usage)
                         commandTable.set("permission", commandReference.permission)
+                        commandTable.set("permissionMessage", commandReference.permissionMessage)
 
                         return commandTable
                     }

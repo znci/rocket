@@ -22,6 +22,7 @@ data class Command(
     var description: String,
     var usage: String,
     var permission: String,
+    var permissionMessage: String,
     var aliases: List<String>,
     var executor: CommandExecutor
 )
