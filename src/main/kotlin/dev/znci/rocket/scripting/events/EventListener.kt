@@ -35,37 +35,46 @@ import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.TwoArgFunction
 import org.luaj.vm2.lib.ZeroArgFunction
 import java.util.*
-
+import kotlin.collections.HashSet
 
 object EventListener : Listener {
     private val plugin: Plugin? = Bukkit.getPluginManager().getPlugin("rocket")
 
-    fun registerAllEvents() {
-        val eventClasses = getSupportedEvents()
+    // TODO: Add a cache of all currently loaded events, or modify the usedEvents to remove unused events
+    //          Expected way of use: Map<Event, List<Scripts (I don't know the type)>>
 
-        plugin?.logger?.info("Found ${eventClasses.size} events")
-        for (eventClass in eventClasses) {
-            try {
-                if (plugin != null) {
-                    plugin.logger.info("Registering event: ${eventClass.simpleName}")
-                    Bukkit.getPluginManager().registerEvent(
-                        eventClass,
-                        this,
-                        EventPriority.NORMAL,
-                        { _, event ->
-                            handleEvent(event)
-                        },
-                        plugin
-                    )
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+    lateinit var SUPPORTED_EVENTS: HashSet<Class<out Event>>
+        private set
+
+    fun registerEvent(eventClass: Class<out Event>) {
+        try {
+            if (plugin != null) {
+                plugin.logger.info("Registering event: ${eventClass.simpleName}")
+                Bukkit.getPluginManager().registerEvent(
+                    eventClass,
+                    this,
+                    EventPriority.NORMAL,
+                    { _, event ->
+                        handleEvent(event)
+                    },
+                    plugin
+                )
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
+    }
+
+    fun cacheEvents() {
+        SUPPORTED_EVENTS = getSupportedEvents()
     }
 
     private fun handleEvent(event: Event) {
         ScriptManager.usedEvents.forEach { (eventClass, callback) ->
+            // FIXME Remove debug
+            plugin!!.logger.info(ScriptManager.usedEvents.size.toString())
+            plugin.logger.info(event.eventName)
+            plugin.logger.info("${eventClass.simpleName} a")
             if (eventClass.isInstance(event)) {
                 val luaTable = convertEventToLua(event)
                 println(callback)
@@ -74,8 +83,15 @@ object EventListener : Listener {
         }
     }
 
-    private fun getSupportedEvents(): List<Class<out Event>> {
-        return getBukkitEventClasses()
+    private fun getSupportedEvents(): HashSet<Class<out Event>> {
+        val set = hashSetOf<Class<out Event>>()
+        for (eventClass in getBukkitEventClasses()) {
+            // TODO Add a debug setting to show these kinds of things
+            //          (Similar to Skript's)
+            println("Caching event ${eventClass.simpleName}")
+            set.add(eventClass)
+        }
+        return set
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -93,7 +109,7 @@ object EventListener : Listener {
     }
 
     fun getEventByName(name: String): Class<out Event>? {
-        return getSupportedEvents().find { it.simpleName.equals(name, true) }
+        return SUPPORTED_EVENTS.find { it.simpleName.equals(name, true) }
     }
 
     private inline fun <reified V> getValueFromField(event: Event, valuesToTry: Array<out String>): V? {
@@ -129,6 +145,10 @@ object EventListener : Listener {
         }
         return valueObj
     }
+
+    /**
+     * Todo: Create a registry for extras, default to casting
+     */
 
     private fun convertEventToLua(event: Event): LuaTable {
         val table = LuaTable()
