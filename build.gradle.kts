@@ -37,6 +37,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.luaj:luaj-jse:3.0.1")
     implementation("net.luckperms:api:5.4")
+    implementation("com.google.guava:guava:32.0.1-jre")
 }
 
 val targetJavaVersion = 21
