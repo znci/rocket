@@ -34,6 +34,7 @@ import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.TwoArgFunction
 import org.luaj.vm2.lib.ZeroArgFunction
+import java.util.*
 
 
 object EventListener : Listener {
@@ -208,8 +209,16 @@ object EventListener : Listener {
                     }
 
                     else -> {
+
+                        val value: Any? = getValueFromEvent(event, key.tojstring(),
+                            "get${
+                                key.tojstring()
+                                    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+                            }")
+                        if (value != null) return LuaValue.valueOf(value.toString())
+
                         indexFunction?.call(table, key) ?: LuaValue.NIL.also {
-                            error("No applicable index found: found '${key.tojstring()}'")
+                            error("A '${event.eventName}' event has no member '${key.tojstring()}'")
                         }
                     }
                 }
