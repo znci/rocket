@@ -89,14 +89,12 @@ class RocketCommand(private val plugin: JavaPlugin) : TabExecutor {
         return true
     }
 
-    @Suppress("SENSELESS_COMPARISON")
     override fun onTabComplete(
         sender: CommandSender,
         command: Command,
         label: String,
         args: Array<out String>
     ): MutableList<String>? {
-
         if (!sender.isOp) return null
         if (args.size == 1) {
             return mutableListOf("reload", "disable")

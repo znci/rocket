@@ -23,10 +23,10 @@ import java.io.File
 
 object LocaleManager {
     private val messages = mutableMapOf<String, Map<String, String>>()
-    private const val defaultLang: String = "en_GB"
+    private const val DEFAULT_LANG: String = "en_GB"
 
     private var plugin: JavaPlugin? = null
-    private var lang: String = defaultLang
+    private var lang: String = DEFAULT_LANG
 
     fun setPlugin(plugin: JavaPlugin) {
         this.plugin = plugin
