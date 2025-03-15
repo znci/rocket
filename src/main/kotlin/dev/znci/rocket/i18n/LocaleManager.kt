@@ -15,6 +15,7 @@
  */
 package dev.znci.rocket.i18n
 
+import dev.znci.rocket.util.MessageFormatter
 import net.kyori.adventure.text.Component
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
@@ -22,10 +23,10 @@ import java.io.File
 
 object LocaleManager {
     private val messages = mutableMapOf<String, Map<String, String>>()
-    private val defaultLang: String = "en_GB"
+    private const val DEFAULT_LANG: String = "en_GB"
 
     private var plugin: JavaPlugin? = null
-    private var lang: String = defaultLang
+    private var lang: String = DEFAULT_LANG
 
     fun setPlugin(plugin: JavaPlugin) {
         this.plugin = plugin
@@ -55,7 +56,7 @@ object LocaleManager {
         }
     }
 
-    fun getMessage(key: String): String {
+    private fun getMessage(key: String): String {
         val message = messages[lang]?.get(key)
 
         // regex check for {key} in message
@@ -80,6 +81,6 @@ object LocaleManager {
             message
         }
 
-        return Component.text(formattedMessage.replace("&", "§"))
+        return MessageFormatter.formatMessage(formattedMessage)
     }
 }

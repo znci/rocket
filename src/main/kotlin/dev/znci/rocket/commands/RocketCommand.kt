@@ -41,7 +41,7 @@ class RocketCommand(private val plugin: JavaPlugin) : TabExecutor {
 
         when (action) {
             "reload" -> {
-                if (scriptName.lowercase() == "config") {
+                if (scriptName.lowercase() == "config.lua") {
                     plugin.reloadConfig()
 
                     val defaultLocale = plugin.config.getString("locale", "en_GB").toString()
@@ -89,14 +89,12 @@ class RocketCommand(private val plugin: JavaPlugin) : TabExecutor {
         return true
     }
 
-    @Suppress("SENSELESS_COMPARISON")
     override fun onTabComplete(
         sender: CommandSender,
         command: Command,
         label: String,
         args: Array<out String>
     ): MutableList<String>? {
-
         if (!sender.isOp) return null
         if (args.size == 1) {
             return mutableListOf("reload", "disable")
