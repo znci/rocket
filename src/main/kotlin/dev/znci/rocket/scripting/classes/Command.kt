@@ -24,5 +24,6 @@ data class Command(
     var permission: String,
     var permissionMessage: String,
     var aliases: List<String>,
+    var argCount: Int,
     var executor: CommandExecutor
 )

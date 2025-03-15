@@ -1,3 +1,4 @@
+
 messages:
   bracket_color: "&7"
   bracket_opening_text: "["
@@ -13,9 +14,9 @@ messages:
 
   success_color: "&a"
 
-  invalid_action: "Invalid action."
+  invalid_action: "{error_color}Invalid action."
   usage_template: "{error_color}Usage: "
-
+  
   no_permission: "{error_color}Insufficient permissions."
 
   rocket_command:

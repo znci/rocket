@@ -52,10 +52,11 @@ class LuaCommands : LuaTable() {
                         val permission = reference.get("permission").tojstring()
                         val usage = reference.get("usage").tojstring()
                         val permissionMessage = reference.get("permissionMessage").tojstring()
+                        val argCount = reference.get("argCount").toint()
 
                         // If the player does not have permission, show the configured no permission message
                         // or the default no permission message
-                        if (PermissionsManager.hasPermission(sender, permission).not()) {
+                        if (permission != "" && PermissionsManager.hasPermission(sender, permission).not()) {
                             var noPermissionMessage = LocaleManager.getMessageAsComponent("no_permission")
                             if (permissionMessage.isNotEmpty()) {
                                 noPermissionMessage = Component.text(
@@ -67,12 +68,14 @@ class LuaCommands : LuaTable() {
                         }
 
                         // If no arguments are provided, show the usage
-                        if (args.isEmpty()) {
-                            sender.sendMessage(
-                                Component.text(
+                        if (args.isEmpty() && argCount > 0) {
+                            var usageMessage = LocaleManager.getMessageAsComponent("invalid_action")
+                            if (usage.isNotEmpty()) {
+                                usageMessage = Component.text(
                                     MessageFormatter.formatMessage(usage)
                                 )
-                            )
+                            }
+                            sender.sendMessage(usageMessage)
                             return true
                         }
 
@@ -103,12 +106,13 @@ class LuaCommands : LuaTable() {
             override fun call(): LuaValue {
                 val table = LuaTable()
                 val commandReference = dev.znci.rocket.scripting.classes.Command(
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    listOf(""),
+                    name = "",
+                    description = "",
+                    usage = "",
+                    permission = "",
+                    permissionMessage = "",
+                    aliases = listOf(""),
+                    argCount = 0
                 ) { _, _, _, _ -> true }
 
                 table.set("aliases", object : OneArgFunction() {
@@ -189,6 +193,17 @@ class LuaCommands : LuaTable() {
                     }
                 })
 
+                table.set("argCount", object : OneArgFunction() {
+                    override fun call(arg: LuaValue?): LuaValue {
+                        if (arg != null) {
+                            val argCount = arg.toint()
+                            commandReference.argCount = argCount
+                        }
+
+                        return table
+                    }
+                })
+
                 table.set("reference", object : ZeroArgFunction() {
                     override fun call(): LuaValue {
                         val commandTable = LuaTable()
@@ -204,6 +219,7 @@ class LuaCommands : LuaTable() {
                         commandTable.set("usage", commandReference.usage)
                         commandTable.set("permission", commandReference.permission)
                         commandTable.set("permissionMessage", commandReference.permissionMessage)
+                        commandTable.set("argCount", commandReference.argCount)
 
                         return commandTable
                     }
