@@ -21,7 +21,6 @@ import dev.znci.rocket.scripting.PlayerManager
 import dev.znci.rocket.scripting.ScriptManager
 import dev.znci.rocket.scripting.util.defineProperty
 import dev.znci.rocket.util.MessageFormatter
-import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor

@@ -22,6 +22,7 @@ object PermissionsManager {
         return player.hasPermission("group.$group")
     }
 
+    @Suppress("unused") // TODO: This will be used in the future. Remove this decorator when it's used.
     fun getPlayerGroups(player: Player): List<String> {
         return player.effectivePermissions
             .filter { it.permission.startsWith("group.") }
