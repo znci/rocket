@@ -23,7 +23,7 @@ import java.io.File
 
 object LocaleManager {
     private val messages = mutableMapOf<String, Map<String, String>>()
-    private val defaultLang: String = "en_GB"
+    private const val defaultLang: String = "en_GB"
 
     private var plugin: JavaPlugin? = null
     private var lang: String = defaultLang
@@ -56,7 +56,7 @@ object LocaleManager {
         }
     }
 
-    fun getMessage(key: String): String {
+    private fun getMessage(key: String): String {
         val message = messages[lang]?.get(key)
 
         // regex check for {key} in message
