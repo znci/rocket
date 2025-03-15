@@ -20,10 +20,8 @@ import dev.znci.rocket.scripting.ScriptManager
 import org.bukkit.Bukkit
 import org.bukkit.event.Cancellable
 import org.bukkit.event.Event
-import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
-import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.plugin.Plugin
 import org.luaj.vm2.LuaBoolean
 import org.luaj.vm2.LuaTable
@@ -133,6 +131,7 @@ object EventListener : Listener {
             val fromField = event.javaClass.getDeclaredField("from")
             fromField.isAccessible = true
             val from = fromField.get(event)
+            @Suppress("ControlFlowWithEmptyBody") // Remove this when implementing
             if (from is org.bukkit.Location) {
                 // TODO: Finish this when mibers creates PR which adds new location class
             }
@@ -142,6 +141,7 @@ object EventListener : Listener {
             val toField = event.javaClass.getDeclaredField("to")
             toField.isAccessible = true
             val to = toField.get(event)
+            @Suppress("ControlFlowWithEmptyBody") // Remove this when implementing
             if (to is org.bukkit.Location) {
                 // TODO: Finish this when mibers creates PR which adds new location class
             }
