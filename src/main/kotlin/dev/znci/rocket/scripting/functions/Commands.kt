@@ -19,6 +19,7 @@ import dev.znci.rocket.i18n.LocaleManager
 import dev.znci.rocket.scripting.PermissionsManager
 import dev.znci.rocket.scripting.PlayerManager
 import dev.znci.rocket.scripting.ScriptManager
+import dev.znci.rocket.scripting.util.defineProperty
 import dev.znci.rocket.util.MessageFormatter
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
@@ -59,9 +60,7 @@ class LuaCommands : LuaTable() {
                         if (permission != "" && PermissionsManager.hasPermission(sender, permission).not()) {
                             var noPermissionMessage = LocaleManager.getMessageAsComponent("no_permission")
                             if (permissionMessage.isNotEmpty()) {
-                                noPermissionMessage = Component.text(
-                                    MessageFormatter.formatMessage(permissionMessage)
-                                )
+                                noPermissionMessage = MessageFormatter.formatMessage(permissionMessage)
                             }
                             sender.sendMessage(noPermissionMessage)
                             return true
@@ -71,9 +70,7 @@ class LuaCommands : LuaTable() {
                         if (args.isEmpty() && argCount > 0) {
                             var usageMessage = LocaleManager.getMessageAsComponent("invalid_action")
                             if (usage.isNotEmpty()) {
-                                usageMessage = Component.text(
-                                    MessageFormatter.formatMessage(usage)
-                                )
+                                usageMessage = MessageFormatter.formatMessage(usage)
                             }
                             sender.sendMessage(usageMessage)
                             return true
@@ -214,12 +211,12 @@ class LuaCommands : LuaTable() {
                             luaAliases.set(i, LuaValue.valueOf(aliases[i - 1]))
                         }
 
-                        commandTable.set("aliases", luaAliases)
-                        commandTable.set("description", commandReference.description)
-                        commandTable.set("usage", commandReference.usage)
-                        commandTable.set("permission", commandReference.permission)
-                        commandTable.set("permissionMessage", commandReference.permissionMessage)
-                        commandTable.set("argCount", commandReference.argCount)
+                        defineProperty(commandTable, "aliases", { luaAliases })
+                        defineProperty(commandTable, "description", { LuaValue.valueOf(commandReference.description) })
+                        defineProperty(commandTable, "usage", { LuaValue.valueOf(commandReference.usage) })
+                        defineProperty(commandTable, "permission", { LuaValue.valueOf(commandReference.permission) })
+                        defineProperty(commandTable, "permissionMessage", { LuaValue.valueOf(commandReference.permissionMessage) })
+                        defineProperty(commandTable, "argCount", { LuaValue.valueOf(commandReference.argCount) })
 
                         return commandTable
                     }

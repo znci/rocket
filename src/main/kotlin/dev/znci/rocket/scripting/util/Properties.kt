@@ -17,10 +17,8 @@ package dev.znci.rocket.scripting.util
 
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
-import org.luaj.vm2.lib.OneArgFunction
 import org.luaj.vm2.lib.ThreeArgFunction
 import org.luaj.vm2.lib.TwoArgFunction
-import org.luaj.vm2.lib.ZeroArgFunction
 
 fun defineProperty(
     table: LuaTable,

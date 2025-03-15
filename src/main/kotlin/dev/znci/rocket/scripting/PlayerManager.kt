@@ -43,9 +43,7 @@ object PlayerManager {
         // methods should be defined before properties
         table.set("send", object : OneArgFunction() {
             override fun call(message: LuaValue): LuaValue {
-                val messageComponent = Component.text(
-                    MessageFormatter.formatMessage(message.tojstring())
-                )
+                val messageComponent = MessageFormatter.formatMessage(message.tojstring())
                 player.sendMessage(messageComponent)
                 return LuaValue.TRUE
             }

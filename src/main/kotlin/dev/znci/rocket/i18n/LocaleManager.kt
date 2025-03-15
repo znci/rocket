@@ -81,8 +81,6 @@ object LocaleManager {
             message
         }
 
-        return Component.text(
-            MessageFormatter.formatMessage(formattedMessage)
-        )
+        return MessageFormatter.formatMessage(formattedMessage)
     }
 }
