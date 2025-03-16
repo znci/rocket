@@ -17,6 +17,7 @@
 package dev.znci.rocket.data
 
 import com.dieselpoint.norm.Database
+import dev.znci.rocket.data.models.Variable
 import org.bukkit.plugin.java.JavaPlugin
 
 /**
@@ -32,14 +33,31 @@ object DataManager {
      * @param plugin The plugin to initialize the DataManager with
      */
     fun init(plugin: JavaPlugin) {
+        // Load the H2 driver
+        Class.forName("org.h2.Driver");
+
         DataManager.plugin = plugin
+
         val databasePath = plugin.config.getString("database_path")
+        val pluginPath = plugin.dataFolder.absolutePath
+
         if (databasePath.isNullOrEmpty()) {
             throw IllegalArgumentException("Database path not found in config")
         }
+
         DataManager.plugin!!.logger.info("Database path set to $databasePath")
+
         try {
-            db.setJdbcUrl("jdbc:h2:$databasePath")
+            val dbPath = "$pluginPath/$databasePath"
+            val shouldCreate = !java.io.File(dbPath).exists()
+
+            db.setJdbcUrl("jdbc:h2:$dbPath;database_to_upper=false")
+
+            if (shouldCreate) {
+                DataManager.plugin!!.logger.warning("Database file not found, initializing tables")
+                db.createTable(Variable::class.java)
+            }
+
             DataManager.plugin!!.logger.info("Database connection initialized")
         } catch (e: Exception) {
             throw IllegalStateException("Failed to initialize database connection", e)

@@ -9,4 +9,5 @@
 locale: en_GB
 
 # The path to the h2 database file to use. Will be created if it doesn't exist.
-database_path: "rocket.db"
+# Note: .mv.db is automatically appended to the end of this path.
+database_path: "rocket"
