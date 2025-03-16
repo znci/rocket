@@ -40,6 +40,7 @@ dependencies {
     implementation("net.luckperms:api:5.4")
     implementation("com.dieselpoint:norm:1.2")
     implementation("org.json:json:20250107")
+    implementation("com.h2database:h2")
 }
 
 val targetJavaVersion = 21
