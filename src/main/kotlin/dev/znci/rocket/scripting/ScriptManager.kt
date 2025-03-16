@@ -21,7 +21,7 @@ import org.bukkit.event.Event
 import java.io.File
 import org.luaj.vm2.Globals
 import org.luaj.vm2.LuaError
-import org.luaj.vm2.LuaValue
+import org.luaj.vm2.LuaFunction
 import org.luaj.vm2.lib.jse.JsePlatform
 import java.util.ArrayList
 
@@ -29,7 +29,10 @@ object ScriptManager {
     var scriptsFolder: File = File("")
     val globals: Globals = JsePlatform.standardGlobals()
 
-    val usedEvents = mutableMapOf<Class<out Event>, LuaValue>()
+    val usedEvents = mutableMapOf<Class<out Event>, MutableList<LuaFunction>>()
+    val eventScript = mutableMapOf<LuaFunction, Class<out Event>>()
+    val loadedScriptFiles = mutableMapOf<String, MutableList<LuaFunction>>()
+
     val enabledCommands = mutableMapOf<String, Command>()
 
     fun setFolder(folder: File) {
@@ -66,19 +69,38 @@ object ScriptManager {
     }
 
     fun loadScript(scriptFile: File): String? {
-        val content = scriptFile.readText()
-        val result = runScript(content)
+        println("Reloading from file: '${scriptFile.absolutePath}'")
+        if (loadedScriptFiles[scriptFile.absolutePath] != null) {
+            disableFile(scriptFile)
+        }
+        val result = runScript(scriptFile)
         return result
     }
 
-    fun runScript(text: String): String? {
+    fun disableFile(scriptFile: File): String {
+        println("Unloading functions from file: '${scriptFile.absolutePath}'")
+        val functions = loadedScriptFiles[scriptFile.absolutePath]!!
+        for (function in functions) {
+            val eventClass = eventScript[function]!!
+            for (eventCallback in usedEvents[eventClass]?:continue) {
+                if (eventCallback == function) usedEvents.remove(eventClass)
+            }
+            eventScript.remove(function)
+        }
+        return ""
+    }
+
+    fun runScript(scriptFile: File): String? {
+
+        val content = scriptFile.readText()
+
         try {
             globals.set("players", LuaPlayers())
             globals.set("events", LuaEvents())
             globals.set("commands", LuaCommands())
             globals.set("http", LuaHTTPClient())
             globals.set("location", LuaLocations())
-            val scriptResult = globals.load(text, "script", globals)
+            val scriptResult = globals.load(content, "::${scriptFile.absolutePath}::", globals)
 
             scriptResult.call()
         } catch (error: LuaError) {
