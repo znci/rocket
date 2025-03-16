@@ -26,19 +26,21 @@ import org.luaj.vm2.lib.jse.JsePlatform
 import java.util.ArrayList
 
 object ScriptManager {
-    var scriptsFolder: File = File("")
-    val globals: Globals = JsePlatform.standardGlobals()
+    private val globals: Globals = JsePlatform.standardGlobals()
 
+    val loadedScriptFiles = mutableMapOf<String, MutableList<LuaFunction>>()
+    
     val usedEvents = mutableMapOf<Class<out Event>, MutableList<LuaFunction>>()
     val eventScript = mutableMapOf<LuaFunction, Class<out Event>>()
-    val loadedScriptFiles = mutableMapOf<String, MutableList<LuaFunction>>()
-
+    
     val enabledCommands = mutableMapOf<String, Command>()
 
+    @Suppress("unused") // TODO: Will be used in the future when custom configuration folders are implemented
     fun setFolder(folder: File) {
         scriptsFolder = folder
     }
 
+    @Suppress("unused") // TODO: Is this still required?
     fun loadScripts() {
         scriptsFolder.walkTopDown().forEach { file ->
             if (file.isFile && !file.startsWith("-")) {

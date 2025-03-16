@@ -18,6 +18,7 @@ package dev.znci.rocket.scripting
 import dev.znci.rocket.scripting.functions.LuaLocation.Companion.fromBukkit
 import dev.znci.rocket.scripting.functions.toBukkitLocation
 import dev.znci.rocket.scripting.util.defineProperty
+import dev.znci.rocket.util.MessageFormatter
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
@@ -42,10 +43,7 @@ object PlayerManager {
         // methods should be defined before properties
         table.set("send", object : OneArgFunction() {
             override fun call(message: LuaValue): LuaValue {
-                val messageComponent = Component.text(
-                    message.tojstring()
-                        .replace("&", "§")
-                )
+                val messageComponent = MessageFormatter.formatMessage(message.tojstring())
                 player.sendMessage(messageComponent)
                 return LuaValue.TRUE
             }
