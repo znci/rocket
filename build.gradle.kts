@@ -38,6 +38,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.luaj:luaj-jse:3.0.1")
     implementation("net.luckperms:api:5.4")
+    implementation("com.dieselpoint:norm:1.2")
+    implementation("org.json:json:20250107")
 }
 
 val targetJavaVersion = 21
@@ -47,6 +49,7 @@ kotlin {
 
 tasks.withType(xyz.jpenilla.runtask.task.AbstractRun::class) {
     javaLauncher = javaToolchains.launcherFor {
+        @Suppress("UnstableApiUsage")
         vendor = JvmVendorSpec.JETBRAINS // use JetBrains JVM
         languageVersion = JavaLanguageVersion.of(21)
     }

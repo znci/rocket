@@ -15,11 +15,13 @@
  */
 package dev.znci.rocket.scripting.functions
 
+import dev.znci.rocket.interfaces.Storable
 import dev.znci.rocket.scripting.util.defineProperty
 import dev.znci.rocket.scripting.util.getWorldByNameOrUUID
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.World
+import org.json.JSONObject
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.Varargs
@@ -55,7 +57,7 @@ class LuaLocation(
     worldUUID: String,
     yaw: Float = 0f,
     pitch: Float = 0f
-) : LuaTable() {
+) : LuaTable(), Storable {
     private var world: World? = Bukkit.getWorld(UUID.fromString(worldUUID))
     private var location: Location = Location(world, x, y, z, yaw, pitch)
 
@@ -70,6 +72,30 @@ class LuaLocation(
                 location.pitch
             ).getLocationTable()
         }
+
+        @Suppress("unused") // Used by Storable
+        fun fromJson(json: String): LuaLocation {
+            val obj = JSONObject(json)
+            return LuaLocation(
+                obj.getDouble("x"),
+                obj.getDouble("y"),
+                obj.getDouble("z"),
+                obj.getString("worldUUID"),
+                obj.getDouble("yaw").toFloat(),
+                obj.getDouble("pitch").toFloat()
+            )
+        }
+    }
+
+    override fun toJson(): String {
+        val obj = JSONObject()
+        obj.put("x", location.x)
+        obj.put("y", location.y)
+        obj.put("z", location.z)
+        obj.put("worldUUID", location.world.uid.toString())
+        obj.put("yaw", location.yaw)
+        obj.put("pitch", location.pitch)
+        return obj.toString()
     }
 
     fun getLocationTable(): LuaTable {

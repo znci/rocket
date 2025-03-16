@@ -1,1 +1,12 @@
+#
+# This is the configuration file for Rocket.
+# If you don't know what you're doing, the default values are usually sane.
+# If you're unsure about something, ask in the Discord server: https://go.znci.dev/discord
+#
+
+
+# The locale to use for system messages.
 locale: en_GB
+
+# The path to the h2 database file to use. Will be created if it doesn't exist.
+database_path: "rocket.db"
