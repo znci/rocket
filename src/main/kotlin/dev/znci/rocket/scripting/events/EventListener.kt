@@ -144,6 +144,7 @@ object EventListener : Listener {
 
     /**
      * Todo: Create a registry for extras, default to casting
+     *          Maybe for a different PR, it depends on what znci is feeling
      */
 
     private fun convertEventToLua(event: Event): LuaTable {
