@@ -42,9 +42,6 @@ const val DEBUG = true
 object EventListener : Listener {
     private val plugin: Plugin? = Bukkit.getPluginManager().getPlugin("rocket")
 
-    // TODO: Add a cache of all currently loaded events, or modify the usedEvents to remove unused events
-    //          Expected way of use: Map<Event, List<Scripts (I don't know the type)>>
-
     lateinit var SUPPORTED_EVENTS: HashSet<Class<out Event>>
         private set
 
