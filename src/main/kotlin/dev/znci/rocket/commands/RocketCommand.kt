@@ -44,7 +44,6 @@ class RocketCommand(private val plugin: JavaPlugin) : TabExecutor {
         when (action) {
             "reload" -> {
                 if (rawScriptName.lowercase() == "config") {
-
                     plugin.reloadConfig()
 
                     val defaultLocale = plugin.config.getString("locale", "en_GB").toString()
