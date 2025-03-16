@@ -70,16 +70,11 @@ object EventListener : Listener {
     }
 
     private fun handleEvent(event: Event) {
-        ScriptManager.usedEvents.forEach { (eventClass, callback) ->
-            // FIXME Remove debug
-            plugin!!.logger.info(ScriptManager.usedEvents.size.toString())
-            plugin.logger.info(event.eventName)
-            plugin.logger.info("${eventClass.simpleName} a")
-            if (eventClass.isInstance(event)) {
-                val luaTable = convertEventToLua(event)
-                println(callback)
-                callback.call(luaTable)
-            }
+        val eventCallbacks = ScriptManager.usedEvents[getEventByName(event.eventName)] ?: return
+        eventCallbacks.forEach { callback ->
+            val luaTable = convertEventToLua(event)
+            callback.call(luaTable)
+            println(callback)
         }
     }
 
