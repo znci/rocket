@@ -17,6 +17,7 @@ package dev.znci.rocket.commands
 
 import dev.znci.rocket.i18n.LocaleManager
 import dev.znci.rocket.scripting.ScriptManager
+import dev.znci.rocket.scripting.ScriptManager.disableFile
 import dev.znci.rocket.scripting.ScriptManager.scriptsFolder
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -85,6 +86,11 @@ class RocketCommand(private val plugin: JavaPlugin) : TabExecutor {
                     sender.sendMessage(LocaleManager.getMessageAsComponent("rocket_command.script_not_found", scriptName))
                     return true
                 }
+
+                // TODO: Add disabling of file (with '-')
+                //          For another PR though
+
+                disableFile(scriptFile)
 
                 sender.sendMessage(LocaleManager.getMessageAsComponent("rocket_command.script_disabled", scriptName))
             }
