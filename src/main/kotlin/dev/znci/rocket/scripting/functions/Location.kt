@@ -47,6 +47,8 @@ class LuaLocations : LuaTable() {
                 return LuaLocation(x, y, z, worldUUID, yaw, pitch).getLocationTable()
             }
         })
+
+        set("_javaClass", LuaValue.valueOf(LuaLocations::class.java.name))
     }
 }
 
@@ -108,6 +110,7 @@ class LuaLocation(
         defineProperty(table, "worldUUID", { LuaValue.valueOf(location.world.uid.toString()) }, { value -> location.world = Bukkit.getWorld(UUID.fromString(value.tojstring())) })
         defineProperty(table, "yaw", { LuaValue.valueOf(location.yaw.toDouble()) }, { value -> location.yaw = value.tofloat() })
         defineProperty(table, "pitch", { LuaValue.valueOf(location.pitch.toDouble()) }, { value -> location.pitch = value.tofloat() })
+        defineProperty(table, "_javaClass", { LuaValue.valueOf(LuaLocation::class.java.name) })
 
         return table
     }

@@ -16,14 +16,19 @@
 
 package dev.znci.rocket.interfaces
 
+import kotlin.reflect.full.companionObject
+import kotlin.reflect.full.companionObjectInstance
+import kotlin.reflect.full.declaredFunctions
+
 interface Storable {
     fun toJson(): String
     companion object {
         fun fromJson(type: String, json: String): Storable {
             return try {
                 val clazz = Class.forName(type)
-                val method = clazz.getMethod("fromJson", String::class.java)
-                method.invoke(null, json) as Storable
+                val method = clazz.kotlin.companionObject?.declaredFunctions?.firstOrNull { it.name == "fromJson" }
+                    ?: throw IllegalArgumentException("No fromJson method found in companion object of $type")
+                method.call(clazz.kotlin.companionObjectInstance, json) as Storable
             } catch (e: Exception) {
                 throw IllegalArgumentException("Failed to deserialize $type: ${e.message}", e)
             }

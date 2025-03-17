@@ -66,6 +66,7 @@ object ScriptManager {
             globals.set("commands", LuaCommands())
             globals.set("http", LuaHTTPClient())
             globals.set("location", LuaLocations())
+            globals.set("variables", LuaVariables())
             val scriptResult = globals.load(text, "script", globals)
 
             scriptResult.call()

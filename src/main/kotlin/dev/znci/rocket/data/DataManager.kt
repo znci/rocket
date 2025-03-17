@@ -49,7 +49,7 @@ object DataManager {
 
         try {
             val dbPath = "$pluginPath/$databasePath"
-            val shouldCreate = !java.io.File(dbPath).exists()
+            val shouldCreate = !java.io.File("$dbPath.mv.db").exists()
 
             db.setJdbcUrl("jdbc:h2:$dbPath;database_to_upper=false")
 
@@ -77,9 +77,9 @@ object DataManager {
      * @return The active database
      */
     fun getDatabase(): Database {
-        if (db.connection == null) {
-            throw IllegalStateException("Database connection is not initialized")
-        }
+//        if (db.connection == null) {
+//            throw IllegalStateException("Database connection is not initialized")
+//        }
         return db
     }
 }

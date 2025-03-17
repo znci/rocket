@@ -41,6 +41,7 @@ dependencies {
     implementation("com.dieselpoint:norm:1.2")
     implementation("org.json:json:20250107")
     implementation("com.h2database:h2:2.3.232")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
 }
 
 val targetJavaVersion = 21

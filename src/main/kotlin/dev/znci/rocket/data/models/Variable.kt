@@ -17,16 +17,14 @@
 package dev.znci.rocket.data.models
 
 import dev.znci.rocket.interfaces.Storable
-import jakarta.persistence.Column
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 
-
 @Table(name = "variables")
 data class Variable( // h2 has like a million reserved keywords. that is why these are named funky.
-    @Id @Column(name = "variableKey") val variableKey: String,
-    @Column(name = "variableValue") val variableValue: String,
-    @Column(name = "variableType") val variableType: String,
+    @Id var variableKey: String = "",
+    var variableValue: String = "",
+    var variableType: String = "",
 ) {
     companion object {
         fun fromStorable(storable: Storable, variableKey: String): Variable {
