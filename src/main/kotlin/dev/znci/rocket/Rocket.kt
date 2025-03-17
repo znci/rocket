@@ -16,6 +16,7 @@
 package dev.znci.rocket
 
 import dev.znci.rocket.commands.RocketCommand
+import dev.znci.rocket.data.DataManager
 import dev.znci.rocket.i18n.LocaleManager
 import dev.znci.rocket.scripting.ScriptManager
 import dev.znci.rocket.scripting.events.EventListener
@@ -38,6 +39,9 @@ class Rocket : JavaPlugin() {
 
         LocaleManager.loadLanguages()
 
+        // Set up data manager
+        DataManager.init(this)
+
         // Create the scripts folder
         val pluginDataFolder = this.dataFolder
         val scriptsFolder = File(pluginDataFolder, "scripts")
@@ -57,6 +61,7 @@ class Rocket : JavaPlugin() {
     }
 
     override fun onDisable() {
+        DataManager.destroy()
         logger.info("Rocket plugin disabled")
     }
 }
