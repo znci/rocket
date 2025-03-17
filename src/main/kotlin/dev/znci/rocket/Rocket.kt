@@ -19,6 +19,7 @@ import dev.znci.rocket.commands.RocketCommand
 import dev.znci.rocket.i18n.LocaleManager
 import dev.znci.rocket.scripting.ScriptManager
 import dev.znci.rocket.scripting.events.EventListener
+import dev.znci.rocket.scripting.GlobalInitializer
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 
@@ -52,8 +53,12 @@ class Rocket : JavaPlugin() {
         this.getCommand("rocket")?.setExecutor(RocketCommand(this))
 
         // Register all events
-        logger.info("Rocket plugin enabled")
         EventListener.registerAllEvents()
+
+        // Register globals
+        GlobalInitializer.init()
+
+        logger.info("Rocket plugin enabled")
     }
 
     override fun onDisable() {

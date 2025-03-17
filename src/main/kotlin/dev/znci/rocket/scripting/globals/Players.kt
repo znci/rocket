@@ -13,25 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.znci.rocket.scripting.functions
+package dev.znci.rocket.scripting.globals
 
-import dev.znci.rocket.scripting.ScriptManager
-import dev.znci.rocket.scripting.events.EventListener
+import dev.znci.rocket.scripting.PlayerManager
+import org.bukkit.Bukkit
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
-import org.luaj.vm2.lib.TwoArgFunction
+import org.luaj.vm2.lib.OneArgFunction
 
-class LuaEvents : LuaTable() {
+class LuaPlayers : LuaTable() {
     init {
-        set("on", object : TwoArgFunction() {
-            override fun call(eventName: LuaValue, callback: LuaValue): LuaValue {
-                val eventClass = EventListener.getEventByName(eventName.tojstring())
+        set("get", object : OneArgFunction() {
+            override fun call(playerName: LuaValue): LuaValue {
+                val player = Bukkit.getPlayer(playerName.tojstring()) ?: return LuaValue.NIL
 
-                if (eventClass != null) {
-                    ScriptManager.usedEvents[eventClass] = callback.checkfunction()
-                }
-
-                return LuaValue.NIL
+                return PlayerManager.getPlayerTable(player)
             }
         })
     }

@@ -15,12 +15,16 @@
  */
 package dev.znci.rocket.scripting
 
+import dev.znci.rocket.scripting.api.RocketError
+import dev.znci.rocket.scripting.api.RocketGlobal
+import dev.znci.rocket.scripting.api.RocketGlobalValue
 import dev.znci.rocket.scripting.classes.Command
-import dev.znci.rocket.scripting.functions.*
+import dev.znci.rocket.scripting.globals.*
 import org.bukkit.event.Event
 import java.io.File
 import org.luaj.vm2.Globals
 import org.luaj.vm2.LuaError
+import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.jse.JsePlatform
 import java.util.ArrayList
@@ -31,6 +35,9 @@ object ScriptManager {
     var scriptsFolder: File = File("")
     val usedEvents = mutableMapOf<Class<out Event>, LuaValue>()
     val enabledCommands = mutableMapOf<String, Command>()
+
+    var enabledGlobals: MutableList<RocketGlobal> = mutableListOf()
+    var enabledGlobalValues: MutableList<RocketGlobalValue> = mutableListOf()
 
     @Suppress("unused") // TODO: Will be used in the future when custom configuration folders are implemented
     fun setFolder(folder: File) {
@@ -66,6 +73,8 @@ object ScriptManager {
             globals.set("commands", LuaCommands())
             globals.set("http", LuaHTTPClient())
             globals.set("location", LuaLocations())
+
+            applyGlobals(globals)
             val scriptResult = globals.load(text, "script", globals)
 
             scriptResult.call()
@@ -74,5 +83,50 @@ object ScriptManager {
         }
 
         return ""
+    }
+
+    fun getGlobalByTableName(tableName: String): RocketGlobal? {
+        return enabledGlobals.find { it -> it.tableName == tableName }
+    }
+
+    fun registerGlobal(global: RocketGlobal) {
+        if (getGlobalByTableName(global.tableName) != null) {
+            throw RocketError("A global of the same table name ('${global.tableName}') is already registered.")
+        }
+
+        enabledGlobals.add(global)
+    }
+
+    fun unregisterGlobal(global: RocketGlobal) {
+        if (getGlobalByTableName(global.tableName) == null) {
+            throw RocketError("A global with the table name ('${global.tableName}') is not registered and cannot be unregistered.")
+        }
+
+        enabledGlobals.remove(global)
+    }
+
+    fun registerGlobalValue(globalValue: RocketGlobalValue) {
+        if (getGlobalByTableName(globalValue.valueName) != null) {
+            throw RocketError("A global value of the same table name ('${globalValue.valueName}') is already registered.")
+        }
+
+        enabledGlobalValues.add(globalValue)
+    }
+
+    fun unregisterGlobalValue(globalValue: RocketGlobalValue) {
+        if (getGlobalByTableName(globalValue.valueName) != null) {
+            throw RocketError("A global with the table name ('${globalValue.valueName}') is not registered and cannot be unregistered.")
+        }
+
+        enabledGlobalValues.remove(globalValue)
+    }
+
+    fun applyGlobals(table: LuaTable) {
+        enabledGlobals.forEach { it ->
+            table.set(it.tableName, it.table)
+        }
+        enabledGlobalValues.forEach { it ->
+            table.set(it.valueName, it.table)
+        }
     }
 }

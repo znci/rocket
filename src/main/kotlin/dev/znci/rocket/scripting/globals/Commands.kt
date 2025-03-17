@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.znci.rocket.scripting.functions
+package dev.znci.rocket.scripting.globals
 
 import dev.znci.rocket.i18n.LocaleManager
 import dev.znci.rocket.scripting.PermissionsManager
