@@ -32,6 +32,10 @@ object ScriptManager {
     val usedEvents = mutableMapOf<Class<out Event>, LuaValue>()
     val enabledCommands = mutableMapOf<String, Command>()
 
+    val variables = LuaVariables()
+    val location = LuaLocations()
+    val http = LuaHTTPClient()
+
     @Suppress("unused") // TODO: Will be used in the future when custom configuration folders are implemented
     fun setFolder(folder: File) {
         scriptsFolder = folder
@@ -64,9 +68,9 @@ object ScriptManager {
             globals.set("players", LuaPlayers())
             globals.set("events", LuaEvents())
             globals.set("commands", LuaCommands())
-            globals.set("http", LuaHTTPClient())
-            globals.set("location", LuaLocations())
-            globals.set("variables", LuaVariables())
+            globals.set("http", LuaValue.userdataOf(http))
+            globals.set("location", LuaValue.userdataOf(location))
+            globals.set("variables", variables)
             val scriptResult = globals.load(text, "script", globals)
 
             scriptResult.call()
