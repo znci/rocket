@@ -17,6 +17,7 @@ package dev.znci.rocket.scripting
 
 import dev.znci.rocket.scripting.classes.Command
 import dev.znci.rocket.scripting.functions.*
+import dev.znci.rocket.util.RocketEnums
 import org.bukkit.event.Event
 import java.io.File
 import org.luaj.vm2.Globals
@@ -97,6 +98,10 @@ object ScriptManager {
             globals.set("commands", LuaCommands())
             globals.set("http", LuaHTTPClient())
             globals.set("location", LuaLocations())
+            globals.set("Material", RocketEnums.RocketMaterial.getLuaTable())
+            globals.set("WorldType", RocketEnums.RocketWorldType.getLuaTable())
+            globals.set("Environment", RocketEnums.RocketEnvironment.getLuaTable())
+
             val scriptResult = globals.load(content, "::${scriptFile.absolutePath}::", globals)
 
             scriptResult.call()
