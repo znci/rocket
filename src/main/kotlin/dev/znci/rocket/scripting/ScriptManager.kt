@@ -85,7 +85,7 @@ object ScriptManager {
         return ""
     }
 
-    fun getGlobalByTableName(tableName: String): RocketGlobal? {
+    private fun getGlobalByTableName(tableName: String): RocketGlobal? {
         return enabledGlobals.find { it -> it.tableName == tableName }
     }
 

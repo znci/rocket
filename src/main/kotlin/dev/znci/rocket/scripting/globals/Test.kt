@@ -20,27 +20,17 @@ import dev.znci.rocket.scripting.api.TableSetOptions
 import org.luaj.vm2.LuaValue
 
 class Test : RocketGlobal("testTable") {
+    private var testBoolean = true
     init {
-        print("INITIALIZED TEST TABLE")
-        print("INITIALIZED TEST TABLE")
-        print("INITIALIZED TEST TABLE")
-        print("INITIALIZED TEST TABLE")
-        print("INITIALIZED TEST TABLE")
-        print("INITIALIZED TEST TABLE")
-        print("INITIALIZED TEST TABLE")
-        print("INITIALIZED TEST TABLE")
-        print("INITIALIZED TEST TABLE")
-        print("INITIALIZED TEST TABLE")
-        print("INITIALIZED TEST TABLE")
-        print("INITIALIZED TEST TABLE")
-        print("INITIALIZED TEST TABLE")
-        print("INITIALIZED TEST TABLE")
-        print("INITIALIZED TEST TABLE")
-        print("INITIALIZED TEST TABLE")
-        print("INITIALIZED TEST TABLE")
         set("test", TableSetOptions(
             getter = {
-                LuaValue.TRUE
+                LuaValue.valueOf(testBoolean)
+            },
+            setter = { value ->
+                testBoolean = value.toboolean()
+            },
+            validator = { value ->
+                value.isboolean()
             }
         ))
     }
