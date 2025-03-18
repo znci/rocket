@@ -37,8 +37,6 @@ import org.luaj.vm2.lib.ZeroArgFunction
 import java.util.*
 import kotlin.collections.HashSet
 
-const val DEBUG = true
-
 object EventListener : Listener {
     private val plugin: Plugin? = Bukkit.getPluginManager().getPlugin("rocket")
 
@@ -48,9 +46,7 @@ object EventListener : Listener {
     fun registerEvent(eventClass: Class<out Event>) {
         try {
             if (plugin != null) {
-
-                if (DEBUG) plugin.logger.info("Registering event: ${eventClass.simpleName}")
-
+                plugin.logger.info("Registering event: ${eventClass.simpleName}")
                 Bukkit.getPluginManager().registerEvent(
                     eventClass,
                     this,
@@ -84,7 +80,7 @@ object EventListener : Listener {
         for (eventClass in getBukkitEventClasses()) {
             // TODO Add a debug setting to show these kinds of things
             //          (Similar to Skript's)
-            if (DEBUG) println("Caching event ${eventClass.simpleName}")
+            println("Caching event ${eventClass.simpleName}")
             set.add(eventClass)
         }
         return set
