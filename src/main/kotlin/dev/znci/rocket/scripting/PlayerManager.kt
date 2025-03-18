@@ -20,13 +20,17 @@ import dev.znci.rocket.scripting.functions.toBukkitLocation
 import dev.znci.rocket.scripting.util.defineProperty
 import dev.znci.rocket.util.MessageFormatter
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.title.Title
+import net.kyori.adventure.title.TitlePart
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.entity.Player
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.OneArgFunction
+import org.luaj.vm2.lib.TwoArgFunction
 import org.luaj.vm2.lib.ZeroArgFunction
+import java.time.Duration
 
 object PlayerManager {
 
@@ -45,6 +49,49 @@ object PlayerManager {
             override fun call(message: LuaValue): LuaValue {
                 val messageComponent = MessageFormatter.formatMessage(message.tojstring())
                 player.sendMessage(messageComponent)
+                return LuaValue.TRUE
+            }
+        })
+
+        table.set("sendActionBar", object : OneArgFunction() {
+            override fun call(message: LuaValue): LuaValue {
+                val messageComponent = MessageFormatter.formatMessage(message.tojstring())
+                player.sendActionBar(messageComponent)
+                return LuaValue.TRUE
+            }
+        })
+
+        table.set("sendTitle", object : TwoArgFunction() {
+            override fun call(message: LuaValue, timeTable: LuaValue): LuaValue {
+                val messageComponent = MessageFormatter.formatMessage(message.tojstring())
+                val times = Title.Times.times(
+                    Duration.ofMillis(timeTable.get("fadeIn").tolong() * 50),
+                    Duration.ofMillis(timeTable.get("stay").tolong() * 50),
+                    Duration.ofMillis(timeTable.get("fadeOut").tolong() * 50)
+                )
+                player.sendTitlePart(TitlePart.TITLE, messageComponent)
+                player.sendTitlePart(TitlePart.TIMES, times)
+                return LuaValue.TRUE
+            }
+        })
+
+        table.set("sendSubtitle", object : TwoArgFunction() {
+            override fun call(message: LuaValue, timeTable: LuaValue): LuaValue {
+                val messageComponent = MessageFormatter.formatMessage(message.tojstring())
+                val times = Title.Times.times(
+                    Duration.ofMillis(timeTable.get("fadeIn").tolong() * 50),
+                    Duration.ofMillis(timeTable.get("stay").tolong() * 50),
+                    Duration.ofMillis(timeTable.get("fadeOut").tolong() * 50)
+                )
+                player.sendTitlePart(TitlePart.SUBTITLE, messageComponent)
+                player.sendTitlePart(TitlePart.TIMES, times)
+                return LuaValue.TRUE
+            }
+        })
+
+        table.set("setPlayerTime", object : TwoArgFunction() {
+            override fun call(value: LuaValue, relative: LuaValue): LuaValue {
+                player.setPlayerTime(value.tolong(), relative.toboolean())
                 return LuaValue.TRUE
             }
         })
