@@ -44,8 +44,6 @@ object ScriptManager {
         scriptsFolder.walkTopDown().forEach { file ->
             if (file.isFile && !file.startsWith("-")) {
                 val content = file.readText()
-
-                println(content)
             }
         }
     }
@@ -70,7 +68,6 @@ object ScriptManager {
     }
 
     fun loadScript(scriptFile: File): String? {
-        println("Reloading from file: '${scriptFile.absolutePath}'")
         if (loadedScriptFiles[scriptFile.absolutePath] != null) {
             disableFile(scriptFile)
         }
@@ -79,7 +76,6 @@ object ScriptManager {
     }
 
     fun disableFile(scriptFile: File): String {
-        println("Unloading functions from file: '${scriptFile.absolutePath}'")
         val functions = loadedScriptFiles[scriptFile.absolutePath]!!
         for (function in functions) {
             val eventClass = eventScript[function]!!
