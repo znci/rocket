@@ -74,6 +74,10 @@ object ScriptManager {
             globals.set("http", LuaHTTPClient())
             globals.set("location", LuaLocations())
 
+            val testInstance = Test();
+            globals.set("testNext", testInstance.getTable())
+//            globals.load(testInstance).call()
+
             applyGlobals(globals)
             val scriptResult = globals.load(text, "script", globals)
 
