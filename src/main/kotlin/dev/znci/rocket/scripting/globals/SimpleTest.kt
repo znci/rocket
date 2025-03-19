@@ -21,7 +21,7 @@ import dev.znci.rocket.scripting.api.RocketSimpleGlobal
  */
 
 
-class SimpleTest : RocketSimpleGlobal() {
+class SimpleTest : RocketSimpleGlobal("testNext") {
 
     private var internalString = "Initial"
 
