@@ -16,6 +16,14 @@
  */
 package dev.znci.rocket.scripting.api.annotations
 
+/**
+ * Annotation to mark a function as a native function in the Rocket framework.
+ * This allows functions to be registered as callable from Lua.
+ *
+ * @param name The name of the function when it is added to a LuaTable.
+ *             If not specified, the default name is "INHERIT_FROM_DEFINITION",
+ *             which inherits the function name.
+ */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class RocketNativeFunction(val name: String = "INHERIT_FROM_DEFINITION")

@@ -16,6 +16,10 @@
  */
 package dev.znci.rocket.scripting.api.annotations
 
+/**
+ * Annotation to mark a property as a native property in the Rocket framework.
+ * This allows the property to be exposed to Lua, making it accessible for manipulation from Lua scripts.
+ */
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class RocketNativeProperty

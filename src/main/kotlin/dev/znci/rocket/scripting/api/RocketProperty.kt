@@ -15,8 +15,20 @@
  */
 package dev.znci.rocket.scripting.api
 
+/**
+ * Represents a property in the Rocket framework, extending the `RocketValueBase` class.
+ * This class provides a basic structure for holding a property with a `valueName` and a `value`.
+ * It is used to represent properties that can be accessed and modified (getters/setters).
+ *
+ * @param valueName The name of the property.
+ */
 open class RocketProperty(
     override var valueName: String,
 ) : RocketValueBase(valueName) {
+    /**
+     * The value of the property.
+     * This is a generic any field that can hold any type of data.
+     * It must be assigned before use.
+     */
     lateinit var value: Any
 }

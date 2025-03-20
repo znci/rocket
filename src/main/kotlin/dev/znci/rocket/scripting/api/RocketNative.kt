@@ -14,17 +14,33 @@ import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.functions
 import kotlin.reflect.full.memberProperties
-import kotlin.system.measureNanoTime
 
+/**
+ * Abstract class RocketNative serves as a bridge between Kotlin and Lua, allowing functions and properties
+ * to be dynamically registered in a Lua table.
+ *
+ * Code is written as Kotlin, and is converted to Lua if the appropriate function/property has the correct annotation.
+ *
+ * Functions with the {@code RocketNativeFunction} annotation will be registered, and properties with the {@code RocketNativeProperty} annotation.
+ */
 abstract class RocketNative(
+    /** The name of the Lua table/property for this object. */
     override var valueName: String
 ) : RocketTable(valueName) {
 
+    /**
+     * Initializes the RocketNative instance by registering its functions and properties.
+     */
     init {
         registerFunctions(this.table)
         registerProperties(this.table)
     }
 
+    /**
+     * Registers functions annotated with {@code RocketNativeFunction} into the Lua table.
+     *
+     * @param table The LuaTable instance to register functions to.
+     */
     private fun registerFunctions(table: LuaTable) {
         this::class.functions.forEach { function ->
             if (function.findAnnotation<RocketNativeFunction>() == null) {
@@ -52,6 +68,11 @@ abstract class RocketNative(
         }
     }
 
+    /**
+     * Registers properties annotated with {@code RocketNativeProperty} into the Lua table.
+     *
+     * @param table The LuaTable instance to register properties to.
+     */
     private fun registerProperties(table: LuaTable) {
         val properties = this::class.memberProperties
             .filter { it.findAnnotation<RocketNativeProperty>() != null }
@@ -86,6 +107,12 @@ abstract class RocketNative(
         })
     }
 
+    /**
+     * Converts Lua arguments to Kotlin arguments based on function parameter types.
+     *
+     * @param func The function whose parameters should be converted.
+     * @return An array of Kotlin compatible arguments.
+     */
     private fun Varargs.toKotlinArgs(func: KFunction<*>): Array<Any?> {
         val params = func.parameters.drop(1) // Skip `this`
         return params.mapIndexed { index, param ->
@@ -93,6 +120,12 @@ abstract class RocketNative(
         }.toTypedArray()
     }
 
+    /**
+     * Converts a LuaValue to a Kotlin compatible value based on its type.
+     *
+     * @param type The expected Kotlin type.
+     * @return The converted value in Kotlin.
+     */
     private fun LuaValue.toKotlinValue(type: KClassifier?): Any? {
         return when (type) {
             String::class -> if (isnil()) null else tojstring()
@@ -104,6 +137,11 @@ abstract class RocketNative(
         }
     }
 
+    /**
+     * Converts a Kotlin value to a LuaValue.
+     *
+     * @return The corresponding LuaValue.
+     */
     private fun Any?.toLuaValue(): LuaValue {
         return when (this) {
             is String -> LuaValue.valueOf(this)

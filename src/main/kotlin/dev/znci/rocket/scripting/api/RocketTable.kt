@@ -20,19 +20,41 @@ import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.ThreeArgFunction
 import org.luaj.vm2.lib.TwoArgFunction
 
-// TODO: Move this somewhere else
-
+/**
+ * Data class that provides the options for setting properties on a `LuaTable`.
+ * It provides functionality for defining a getter, setter, and validator for properties in a table.
+ *
+ * @param getter The getter function for retrieving the property's value. It returns a `LuaValue` and can be `null`.
+ * @param setter The setter function for setting the property's value. It takes a `LuaValue` and can be `null`.
+ * @param validator The validator function that checks the validity of the value before setting it. It returns a `Boolean` and can be `null`.
+ */
 data class TableSetOptions(
     val getter: (() -> LuaValue)?,
     val setter: ((LuaValue) -> Unit)? = null,
     val validator: ((LuaValue) -> Boolean)? = null
 )
 
+/**
+ * Represents a table, which is a wrapper around a `LuaTable`.
+ * This class provides functionality for managing Lua properties and exposing them with custom getter, setter, and validation logic.
+ * It allows you to set properties dynamically on the table, with custom logic for getting, setting, and validating property values.
+ *
+ * @param valueName The name of the table, used for specifying the name of the table if it becomes a global.
+ */
 open class RocketTable(
     override var valueName: String
 ): RocketValueBase(valueName) {
+    /**
+     * The internal `LuaTable` instance that holds the table's data.
+     */
     val table: LuaTable = LuaTable()
 
+    /**
+     * Sets a property on the table with custom getter, setter, and validator options.
+     *
+     * @param propertyName The name of the property to set on the table.
+     * @param options The options that define how the property should behave, including getter, setter, and validator.
+     */
     fun set(
         propertyName: String,
         options: TableSetOptions
@@ -41,6 +63,7 @@ open class RocketTable(
         val indexFunction = meta.get("__index") as? TwoArgFunction
         val newIndexFunction = meta.get("__newindex") as? ThreeArgFunction
 
+        // Define the getter
         if (options.getter != null) {
             meta.set("__index", object : TwoArgFunction() {
                 override fun call(table: LuaValue, key: LuaValue): LuaValue {
@@ -52,6 +75,7 @@ open class RocketTable(
             })
         }
 
+        // Define the setter
         meta.set("__newindex", object : ThreeArgFunction() {
             override fun call(table: LuaValue, key: LuaValue, value: LuaValue): LuaValue {
                 if (key.tojstring() == propertyName) {
