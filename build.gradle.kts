@@ -1,3 +1,5 @@
+import org.jetbrains.dokka.gradle.DokkaTask
+
 /**
  * Copyright 2025 znci
  *
@@ -16,6 +18,7 @@
 
 plugins {
     kotlin("jvm") version "2.1.20-RC"
+    id("org.jetbrains.dokka") version "2.0.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
@@ -55,5 +58,15 @@ tasks.processResources {
     filteringCharset = "UTF-8"
     filesMatching("plugin.yml") {
         expand(props)
+    }
+}
+
+tasks.withType<DokkaTask>().configureEach {
+    dokkaSourceSets {
+        named("main") {
+            moduleName.set("Rocket Java API")
+            includes.from("Rocket.md")
+
+        }
     }
 }
