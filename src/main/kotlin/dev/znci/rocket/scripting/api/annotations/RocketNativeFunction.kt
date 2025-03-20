@@ -1,3 +1,4 @@
+
 /**
  * Copyright 2025 znci
  *
@@ -13,8 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.znci.rocket.scripting.api
+package dev.znci.rocket.scripting.api.annotations
 
-open class RocketGlobalValue(
-    var valueName: String
-) : RocketGlobalBase(valueName)
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class RocketNativeFunction

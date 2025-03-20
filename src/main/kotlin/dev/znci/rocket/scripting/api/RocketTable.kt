@@ -29,8 +29,8 @@ data class TableSetOptions(
 )
 
 open class RocketTable(
-    open var tableName: String
-) {
+    override var valueName: String
+): RocketValueBase(valueName) {
     val table: LuaTable = LuaTable()
 
     fun set(

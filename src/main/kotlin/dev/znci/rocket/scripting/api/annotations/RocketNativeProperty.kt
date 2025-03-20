@@ -1,3 +1,4 @@
+
 /**
  * Copyright 2025 znci
  *
@@ -13,25 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.znci.rocket.scripting.globals
+package dev.znci.rocket.scripting.api.annotations
 
-import dev.znci.rocket.scripting.api.RocketGlobal
-import dev.znci.rocket.scripting.api.TableSetOptions
-import org.luaj.vm2.LuaValue
-
-class Test : RocketGlobal("testTable") {
-    private var testBoolean = true
-    init {
-        set("test", TableSetOptions(
-            getter = {
-                LuaValue.valueOf(testBoolean)
-            },
-            setter = { value ->
-                testBoolean = value.toboolean()
-            },
-            validator = { value ->
-                value.isboolean()
-            }
-        ))
-    }
-}
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class RocketNativeProperty

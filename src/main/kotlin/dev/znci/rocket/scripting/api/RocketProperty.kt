@@ -15,6 +15,8 @@
  */
 package dev.znci.rocket.scripting.api
 
-open class RocketGlobal(
-    override var tableName: String
-) : RocketGlobalBase(tableName)
+open class RocketProperty(
+    override var valueName: String,
+) : RocketValueBase(valueName) {
+    lateinit var value: Any
+}

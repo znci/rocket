@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.znci.rocket.scripting.globals
+package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.scripting.util.defineProperty
 import dev.znci.rocket.scripting.util.getWorldByNameOrUUID
@@ -30,7 +30,7 @@ class LuaLocations : LuaTable() {
     init {
         set("new", object : VarArgFunction() {
             override fun invoke(args: Varargs): LuaValue {
-                if (args.narg() < 3) return LuaValue.FALSE
+                if (args.narg() < 3) return FALSE
                 val x = args.arg(1).todouble()
                 val y = args.arg(2).todouble()
                 val z = args.arg(3).todouble()
@@ -75,13 +75,13 @@ class LuaLocation(
     fun getLocationTable(): LuaTable {
         val table = LuaTable()
 
-        defineProperty(table, "x", { LuaValue.valueOf(location.x) }, { value -> location.x = value.todouble() })
-        defineProperty(table, "y", { LuaValue.valueOf(location.y) }, { value -> location.y = value.todouble() })
-        defineProperty(table, "z", { LuaValue.valueOf(location.z) }, { value -> location.z = value.todouble() })
-        defineProperty(table, "world", { LuaValue.valueOf(location.world.name) }, { value -> location.world = Bukkit.getWorld(UUID.fromString(value.tojstring())) })
-        defineProperty(table, "worldUUID", { LuaValue.valueOf(location.world.uid.toString()) }, { value -> location.world = Bukkit.getWorld(UUID.fromString(value.tojstring())) })
-        defineProperty(table, "yaw", { LuaValue.valueOf(location.yaw.toDouble()) }, { value -> location.yaw = value.tofloat() })
-        defineProperty(table, "pitch", { LuaValue.valueOf(location.pitch.toDouble()) }, { value -> location.pitch = value.tofloat() })
+        defineProperty(table, "x", { valueOf(location.x) }, { value -> location.x = value.todouble() })
+        defineProperty(table, "y", { valueOf(location.y) }, { value -> location.y = value.todouble() })
+        defineProperty(table, "z", { valueOf(location.z) }, { value -> location.z = value.todouble() })
+        defineProperty(table, "world", { valueOf(location.world.name) }, { value -> location.world = Bukkit.getWorld(UUID.fromString(value.tojstring())) })
+        defineProperty(table, "worldUUID", { valueOf(location.world.uid.toString()) }, { value -> location.world = Bukkit.getWorld(UUID.fromString(value.tojstring())) })
+        defineProperty(table, "yaw", { valueOf(location.yaw.toDouble()) }, { value -> location.yaw = value.tofloat() })
+        defineProperty(table, "pitch", { valueOf(location.pitch.toDouble()) }, { value -> location.pitch = value.tofloat() })
 
         return table
     }

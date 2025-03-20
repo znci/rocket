@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.znci.rocket.scripting.globals
+package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.scripting.PlayerManager
 import org.bukkit.Bukkit
@@ -25,7 +25,7 @@ class LuaPlayers : LuaTable() {
     init {
         set("get", object : OneArgFunction() {
             override fun call(playerName: LuaValue): LuaValue {
-                val player = Bukkit.getPlayer(playerName.tojstring()) ?: return LuaValue.NIL
+                val player = Bukkit.getPlayer(playerName.tojstring()) ?: return NIL
 
                 return PlayerManager.getPlayerTable(player)
             }

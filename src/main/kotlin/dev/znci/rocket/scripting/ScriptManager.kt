@@ -16,10 +16,17 @@
 package dev.znci.rocket.scripting
 
 import dev.znci.rocket.scripting.api.RocketError
-import dev.znci.rocket.scripting.api.RocketGlobal
-import dev.znci.rocket.scripting.api.RocketGlobalValue
+import dev.znci.rocket.scripting.api.RocketLuaValue
+import dev.znci.rocket.scripting.api.RocketProperty
+import dev.znci.rocket.scripting.api.RocketTable
+import dev.znci.rocket.scripting.api.RocketValueBase
 import dev.znci.rocket.scripting.classes.Command
 import dev.znci.rocket.scripting.globals.*
+import dev.znci.rocket.scripting.globals.tables.LuaCommands
+import dev.znci.rocket.scripting.globals.tables.LuaEvents
+import dev.znci.rocket.scripting.globals.tables.LuaHTTPClient
+import dev.znci.rocket.scripting.globals.tables.LuaLocations
+import dev.znci.rocket.scripting.globals.tables.LuaPlayers
 import org.bukkit.event.Event
 import java.io.File
 import org.luaj.vm2.Globals
@@ -36,8 +43,8 @@ object ScriptManager {
     val usedEvents = mutableMapOf<Class<out Event>, LuaValue>()
     val enabledCommands = mutableMapOf<String, Command>()
 
-    var enabledGlobals: MutableList<RocketGlobal> = mutableListOf()
-    var enabledGlobalValues: MutableList<RocketGlobalValue> = mutableListOf()
+    var enabledGlobals: MutableList<RocketValueBase> = mutableListOf()
+    var enabledGlobalValues: MutableList<RocketProperty> = mutableListOf()
 
     @Suppress("unused") // TODO: Will be used in the future when custom configuration folders are implemented
     fun setFolder(folder: File) {
@@ -85,27 +92,27 @@ object ScriptManager {
         return ""
     }
 
-    private fun getGlobalByTableName(tableName: String): RocketGlobal? {
-        return enabledGlobals.find { it -> it.tableName == tableName }
+    private fun getGlobalByTableName(valueName: String): RocketValueBase? {
+        return enabledGlobals.find { it -> it.valueName == valueName }
     }
 
-    fun registerGlobal(global: RocketGlobal) {
-        if (getGlobalByTableName(global.tableName) != null) {
-            throw RocketError("A global of the same table name ('${global.tableName}') is already registered.")
+    fun registerGlobal(global: RocketValueBase) {
+        if (getGlobalByTableName(global.valueName) != null) {
+            throw RocketError("A global of the same table name ('${global.valueName}') is already registered.")
         }
 
         enabledGlobals.add(global)
     }
 
-    fun unregisterGlobal(global: RocketGlobal) {
-        if (getGlobalByTableName(global.tableName) == null) {
-            throw RocketError("A global with the table name ('${global.tableName}') is not registered and cannot be unregistered.")
+    fun unregisterGlobal(global: RocketValueBase) {
+        if (getGlobalByTableName(global.valueName) == null) {
+            throw RocketError("A global with the table name ('${global.valueName}') is not registered and cannot be unregistered.")
         }
 
         enabledGlobals.remove(global)
     }
 
-    fun registerGlobalValue(globalValue: RocketGlobalValue) {
+    fun registerGlobalValue(globalValue: RocketProperty) {
         if (getGlobalByTableName(globalValue.valueName) != null) {
             throw RocketError("A global value of the same table name ('${globalValue.valueName}') is already registered.")
         }
@@ -113,7 +120,7 @@ object ScriptManager {
         enabledGlobalValues.add(globalValue)
     }
 
-    fun unregisterGlobalValue(globalValue: RocketGlobalValue) {
+    fun unregisterGlobalValue(globalValue: RocketProperty) {
         if (getGlobalByTableName(globalValue.valueName) != null) {
             throw RocketError("A global with the table name ('${globalValue.valueName}') is not registered and cannot be unregistered.")
         }
@@ -123,10 +130,14 @@ object ScriptManager {
 
     fun applyGlobals(table: LuaTable) {
         enabledGlobals.forEach { it ->
-            table.set(it.tableName, it.table)
-        }
-        enabledGlobalValues.forEach { it ->
-            table.set(it.valueName, it.table)
+            when (it) {
+                is RocketTable -> {
+                    table.set(it.valueName, it.table)
+                }
+                is RocketProperty -> {
+                    table.set(it.valueName, RocketLuaValue.valueOf(it.value))
+                }
+            }
         }
     }
 }
