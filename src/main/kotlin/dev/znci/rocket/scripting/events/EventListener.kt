@@ -104,7 +104,7 @@ object EventListener : Listener {
         return SUPPORTED_EVENTS.find { it.simpleName.equals(name, true) }
     }
 
-    private inline fun <reified V> getValueFromField(event: Event, valuesToTry: Array<out String>): V? {
+    private inline fun <reified V> getValueFromField(event: Event, vararg valuesToTry: String): V? {
         valuesToTry.forEach { value ->
             val field = event.javaClass.declaredFields.find { it.name == value }
             if (field != null) {
@@ -118,7 +118,7 @@ object EventListener : Listener {
         return null
     }
 
-    private inline fun <reified V> getValueFromFunction(event: Event, valuesToTry: Array<out String>): V? {
+    private inline fun <reified V> getValueFromFunction(event: Event, vararg valuesToTry: String): V? {
         valuesToTry.forEach { value ->
             val valueProperty = event.javaClass.methods.find { it.name == value }
             if (valueProperty != null) {
@@ -131,9 +131,9 @@ object EventListener : Listener {
 
     private inline fun <reified V> getValueFromEvent(event: Event, vararg valuesToTry: String): V? {
 
-        var valueObj: V? = getValueFromField(event, valuesToTry)
+        var valueObj: V? = getValueFromField(event, *valuesToTry)
         if (valueObj == null) {
-            valueObj = getValueFromFunction<V>(event, valuesToTry)
+            valueObj = getValueFromFunction<V>(event, *valuesToTry)
         }
         return valueObj
     }
