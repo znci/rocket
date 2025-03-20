@@ -50,6 +50,13 @@ open class RocketTable(
     val table: LuaTable = LuaTable()
 
     /**
+     * Initializes the table with a `__javaClass` property that stores the name of the class for later reconstruction.
+     */
+    init {
+        table.set("__javaClass", LuaValue.valueOf(javaClass.simpleName))
+    }
+
+    /**
      * Sets a property on the table with custom getter, setter, and validator options.
      *
      * @param propertyName The name of the property to set on the table.

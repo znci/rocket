@@ -14,6 +14,7 @@ import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.functions
 import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.primaryConstructor
 
 /**
  * Abstract class RocketNative serves as a bridge between Kotlin and Lua, allowing functions and properties
@@ -53,7 +54,7 @@ abstract class RocketNative(
                 annotatedFunctionName = function.name
             }
 
-            println("registering function: ${annotatedFunctionName}")
+            println("registering function: $annotatedFunctionName")
             table.set(annotatedFunctionName, object : VarArgFunction() {
                 override fun invoke(args: Varargs): Varargs {
                     return try {
@@ -116,7 +117,9 @@ abstract class RocketNative(
     private fun Varargs.toKotlinArgs(func: KFunction<*>): Array<Any?> {
         val params = func.parameters.drop(1) // Skip `this`
         return params.mapIndexed { index, param ->
-            this.arg(index + 1).toKotlinValue(param.type.classifier)
+            this.arg(index + 1).let { arg ->
+                if (arg.istable()) arg.checktable().toClass() else arg.toKotlinValue(param.type.classifier)
+            }
         }.toTypedArray()
     }
 
@@ -148,8 +151,27 @@ abstract class RocketNative(
             is Boolean -> LuaValue.valueOf(this)
             is Int -> LuaValue.valueOf(this)
             is Double -> LuaValue.valueOf(this)
-            //is Float -> LuaValue.valueOf(this) // FIXME: why do floats break the compiler ???
+            is RocketTable -> this.table
             else -> LuaValue.NIL
+        }
+    }
+
+    /**
+     * Converts a LuaTable into a given class.
+     */
+    private fun LuaTable.toClass(): RocketTable {
+        try {
+            val className = get("__javaClass").tojstring()
+            val clazz = Class.forName(className).kotlin
+            val constructor =
+                clazz.primaryConstructor ?: throw IllegalArgumentException("No primary constructor found for $className")
+            val args = constructor.parameters.map { param ->
+                val value = get(param.name)
+                value.toKotlinValue(param.type.classifier)
+            }.toTypedArray()
+            return constructor.call(*args) as RocketTable
+        } catch (e: Exception) {
+            throw e
         }
     }
 }
