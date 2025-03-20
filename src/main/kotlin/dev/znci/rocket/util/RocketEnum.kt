@@ -6,10 +6,12 @@ import org.bukkit.WorldType
 import org.luaj.vm2.LuaTable
 
 class RocketEnum(private val values: List<String>) {
+    @Suppress("unused")
     fun getValues(): List<String> {
         return values
     }
 
+    @Suppress("unused")
     fun isValid(key: String): Boolean {
         return values.contains(key)
     }
