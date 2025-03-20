@@ -75,12 +75,6 @@ object ScriptManager {
 
     fun runScript(text: String): String? {
         try {
-            globals.set("players", LuaPlayers())
-            globals.set("events", LuaEvents())
-            globals.set("commands", LuaCommands())
-            globals.set("http", LuaHTTPClient())
-            globals.set("location", LuaLocations())
-
             applyGlobals(globals)
             val scriptResult = globals.load(text, "script", globals)
 
@@ -110,22 +104,6 @@ object ScriptManager {
         }
 
         enabledGlobals.remove(global)
-    }
-
-    fun registerGlobalValue(globalValue: RocketProperty) {
-        if (getGlobalByTableName(globalValue.valueName) != null) {
-            throw RocketError("A global value of the same table name ('${globalValue.valueName}') is already registered.")
-        }
-
-        enabledGlobalValues.add(globalValue)
-    }
-
-    fun unregisterGlobalValue(globalValue: RocketProperty) {
-        if (getGlobalByTableName(globalValue.valueName) != null) {
-            throw RocketError("A global with the table name ('${globalValue.valueName}') is not registered and cannot be unregistered.")
-        }
-
-        enabledGlobalValues.remove(globalValue)
     }
 
     fun applyGlobals(table: LuaTable) {

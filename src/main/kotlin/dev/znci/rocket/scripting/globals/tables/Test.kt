@@ -15,11 +15,11 @@
  */
 package dev.znci.rocket.scripting.globals.tables
 
-import dev.znci.rocket.scripting.api.RocketNativeGlobal
+import dev.znci.rocket.scripting.api.RocketNative
 import dev.znci.rocket.scripting.api.annotations.RocketNativeFunction
 import dev.znci.rocket.scripting.api.annotations.RocketNativeProperty
 
-class SimpleTest : RocketNativeGlobal("testNext") {
+class SimpleTest : RocketNative("testNext") {
 
     private var internalString = "Initial"
 

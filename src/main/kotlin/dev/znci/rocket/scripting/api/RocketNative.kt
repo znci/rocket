@@ -14,8 +14,9 @@ import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.functions
 import kotlin.reflect.full.memberProperties
+import kotlin.system.measureNanoTime
 
-abstract class RocketNativeGlobal(
+abstract class RocketNative(
     override var valueName: String
 ) : RocketTable(valueName) {
 
@@ -26,20 +27,28 @@ abstract class RocketNativeGlobal(
 
     private fun registerFunctions(table: LuaTable) {
         this::class.functions.forEach { function ->
-            if (function.findAnnotation<RocketNativeFunction>() != null) {
-                println("registering function: ${function.name}")
-                table.set(function.name, object : VarArgFunction() {
-                    override fun invoke(args: Varargs): Varargs {
-                        return try {
-                            val kotlinArgs = args.toKotlinArgs(function)
-                            val result = function.call(this@RocketNativeGlobal, *kotlinArgs)
-                            result.toLuaValue()
-                        } catch (e: Exception) {
-                            error("Error calling ${function.name}: ${e.message}")
-                        }
-                    }
-                })
+            if (function.findAnnotation<RocketNativeFunction>() == null) {
+                return@forEach
             }
+            val annotation = function.findAnnotation<RocketNativeFunction>()
+            var annotatedFunctionName = annotation?.name ?: function.name
+
+            if (annotatedFunctionName == "INHERIT_FROM_DEFINITION" ) {
+                annotatedFunctionName = function.name
+            }
+
+            println("registering function: ${annotatedFunctionName}")
+            table.set(annotatedFunctionName, object : VarArgFunction() {
+                override fun invoke(args: Varargs): Varargs {
+                    return try {
+                        val kotlinArgs = args.toKotlinArgs(function)
+                        val result = function.call(this@RocketNative, *kotlinArgs)
+                        result.toLuaValue()
+                    } catch (e: Exception) {
+                        error("Error calling ${function.name}: ${e.message}")
+                    }
+                }
+            })
         }
     }
 
@@ -51,8 +60,10 @@ abstract class RocketNativeGlobal(
         table.set("__index", object : TwoArgFunction() {
             override fun call(self: LuaValue, key: LuaValue): LuaValue {
                 val prop = properties.find { it.name == key.tojstring() } ?: return NIL
+
+                println("PROP: $prop")
                 return try {
-                    val value = prop.getter.call(this@RocketNativeGlobal)
+                    val value = prop.getter.call(this@RocketNative)
                     value.toLuaValue()
                 } catch (e: Exception) {
                     error("Error getting '${prop.name}': ${e.message}")
@@ -66,7 +77,7 @@ abstract class RocketNativeGlobal(
                 val prop = properties.find { it.name == key.tojstring() } as? KMutableProperty<*>
                     ?: return error("No writable property '${key.tojstring()}'")
                 return try {
-                    prop.setter.call(this@RocketNativeGlobal, value.toKotlinValue(prop.returnType.classifier))
+                    prop.setter.call(this@RocketNative, value.toKotlinValue(prop.returnType.classifier))
                     TRUE
                 } catch (e: Exception) {
                     error("Error setting '${prop.name}': ${e.message}")
@@ -82,7 +93,7 @@ abstract class RocketNativeGlobal(
         }.toTypedArray()
     }
 
-    fun LuaValue.toKotlinValue(type: KClassifier?): Any? {
+    private fun LuaValue.toKotlinValue(type: KClassifier?): Any? {
         return when (type) {
             String::class -> if (isnil()) null else tojstring()
             Boolean::class -> toboolean()
@@ -93,7 +104,7 @@ abstract class RocketNativeGlobal(
         }
     }
 
-    public fun Any?.toLuaValue(): LuaValue {
+    private fun Any?.toLuaValue(): LuaValue {
         return when (this) {
             is String -> LuaValue.valueOf(this)
             is Boolean -> LuaValue.valueOf(this)

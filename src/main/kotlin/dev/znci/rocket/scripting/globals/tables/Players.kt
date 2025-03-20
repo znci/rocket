@@ -15,20 +15,31 @@
  */
 package dev.znci.rocket.scripting.globals.tables
 
-import dev.znci.rocket.scripting.PlayerManager
+import dev.znci.rocket.scripting.api.RocketLuaValue
+import dev.znci.rocket.scripting.api.RocketNative
+import dev.znci.rocket.scripting.api.annotations.RocketNativeFunction
+import dev.znci.rocket.util.MessageFormatter
 import org.bukkit.Bukkit
-import org.luaj.vm2.LuaTable
-import org.luaj.vm2.LuaValue
-import org.luaj.vm2.lib.OneArgFunction
+import org.bukkit.entity.Player
 
-class LuaPlayers : LuaTable() {
-    init {
-        set("get", object : OneArgFunction() {
-            override fun call(playerName: LuaValue): LuaValue {
-                val player = Bukkit.getPlayer(playerName.tojstring()) ?: return NIL
+class LuaPlayers : RocketNative("players") {
+    @RocketNativeFunction("get")
+    fun getPlayerByName(playerName: String): RocketLuaValue {
+        val player = Bukkit.getPlayer(playerName) ?: return NIL
 
-                return PlayerManager.getPlayerTable(player)
-            }
-        })
+        println(player)
+        println(LuaPlayer(player).table)
+
+        return LuaPlayer(player)
+    }
+}
+
+class LuaPlayer(
+    val player: Player
+) : RocketNative("") {
+    fun send(message: String): RocketLuaValue {
+        val messageComponent = MessageFormatter.formatMessage(message)
+        player.sendMessage(messageComponent)
+        return TRUE
     }
 }

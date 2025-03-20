@@ -2,22 +2,31 @@ package dev.znci.rocket.scripting.api
 
 import org.luaj.vm2.LuaValue
 
-class RocketLuaValue() {
-    companion object {
-        val NIL = LuaValue.NIL
-        val TRUE = LuaValue.TRUE
-        val FALSE = LuaValue.FALSE
+open class RocketLuaValue(val luaValue: LuaValue = LuaValue.TRUE) : LuaValue() {
+    override fun type(): Int {
+        return luaValue.type()
+    }
 
-        fun valueOf(value: Any?): LuaValue {
+    override fun typename(): String? {
+        return luaValue.typename()
+    }
+
+    companion object {
+        val NIL = RocketLuaValue(LuaValue.NIL)
+        val TRUE = RocketLuaValue(LuaValue.TRUE)
+        val FALSE = RocketLuaValue(LuaValue.FALSE)
+
+        fun valueOf(value: Any?): RocketLuaValue {
             return when (value) {
-                is String -> LuaValue.valueOf(value)
-                is Boolean -> LuaValue.valueOf(value)
-                is Int -> LuaValue.valueOf(value)
-                is Double -> LuaValue.valueOf(value)
-                else -> {
-                    LuaValue.NIL
-                }
-            } as LuaValue
+                is String -> RocketLuaValue(LuaValue.valueOf(value))
+                is Boolean -> RocketLuaValue(LuaValue.valueOf(value))
+                is Int -> RocketLuaValue(LuaValue.valueOf(value))
+                is Double -> RocketLuaValue(LuaValue.valueOf(value))
+                is LuaValue -> RocketLuaValue(value)
+                else -> NIL
+            }
         }
     }
+
+    override fun toString(): String = luaValue.toString()
 }
