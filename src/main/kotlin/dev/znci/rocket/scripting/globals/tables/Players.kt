@@ -18,6 +18,7 @@ package dev.znci.rocket.scripting.globals.tables
 import dev.znci.rocket.scripting.PermissionsManager
 import dev.znci.rocket.scripting.api.RocketLuaValue
 import dev.znci.rocket.scripting.api.RocketNative
+import dev.znci.rocket.scripting.api.RocketTable
 import dev.znci.rocket.scripting.api.annotations.RocketNativeFunction
 import dev.znci.rocket.scripting.api.annotations.RocketNativeProperty
 import dev.znci.rocket.util.MessageFormatter
@@ -25,9 +26,7 @@ import net.kyori.adventure.title.Title
 import net.kyori.adventure.title.TitlePart
 import org.bukkit.Bukkit
 import org.bukkit.Location
-import org.bukkit.World
 import org.bukkit.entity.Player
-import org.luaj.vm2.LuaValue
 import java.time.Duration
 
 class LuaPlayers : RocketNative("players") {
@@ -43,7 +42,7 @@ data class TitleTimeTable(
     val fadeIn: Long,
     val stay: Long,
     val fadeOut: Long
-)
+) : RocketTable("")
 
 class LuaPlayer(
     val player: Player
@@ -65,10 +64,11 @@ class LuaPlayer(
     @RocketNativeFunction
     fun sendTitle(message: String, timeTable: TitleTimeTable): RocketLuaValue {
         val messageComponent = MessageFormatter.formatMessage(message)
+
         val times = Title.Times.times(
-            Duration.ofMillis(timeTable.fadeIn * 50),
-            Duration.ofMillis(timeTable.stay * 50),
-            Duration.ofMillis(timeTable.fadeOut * 50)
+            Duration.ofMillis(timeTable.get("fadeIn").tolong() * 50),
+            Duration.ofMillis(timeTable.get("stay").tolong() * 50),
+            Duration.ofMillis(timeTable.get("fadeOut").tolong() * 50)
         )
         player.sendTitlePart(TitlePart.TITLE, messageComponent)
         player.sendTitlePart(TitlePart.TIMES, times)

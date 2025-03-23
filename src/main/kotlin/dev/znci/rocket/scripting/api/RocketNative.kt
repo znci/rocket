@@ -8,6 +8,7 @@ import org.luaj.vm2.Varargs
 import org.luaj.vm2.lib.ThreeArgFunction
 import org.luaj.vm2.lib.TwoArgFunction
 import org.luaj.vm2.lib.VarArgFunction
+import kotlin.reflect.KClass
 import kotlin.reflect.KClassifier
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty
@@ -57,8 +58,10 @@ abstract class RocketNative(
             println("registering function: $annotatedFunctionName")
             table.set(annotatedFunctionName, object : VarArgFunction() {
                 override fun invoke(args: Varargs): Varargs {
+                    println("args passed to function: $args")
                     return try {
                         val kotlinArgs = args.toKotlinArgs(function)
+                        println("converted kotlin args: ${kotlinArgs.joinToString()}")
                         val result = function.call(this@RocketNative, *kotlinArgs)
                         result.toLuaValue()
                     } catch (e: Exception) {
@@ -117,9 +120,9 @@ abstract class RocketNative(
     private fun Varargs.toKotlinArgs(func: KFunction<*>): Array<Any?> {
         val params = func.parameters.drop(1) // Skip `this`
         return params.mapIndexed { index, param ->
-            this.arg(index + 1).let { arg ->
-                if (arg.istable()) arg.checktable().toClass() else arg.toKotlinValue(param.type.classifier)
-            }
+            val arg = this.arg(index + 1)
+
+            arg.toKotlinValue(param.type.classifier)
         }.toTypedArray()
     }
 
@@ -136,6 +139,7 @@ abstract class RocketNative(
             Int::class -> toint()
             Double::class -> todouble()
             Float::class -> tofloat()
+            RocketTable::class -> if (isnil()) null else checktable().toClass()
             else -> this
         }
     }
@@ -163,15 +167,34 @@ abstract class RocketNative(
         try {
             val className = get("__javaClass").tojstring()
             val clazz = Class.forName(className).kotlin
-            val constructor =
-                clazz.primaryConstructor ?: throw IllegalArgumentException("No primary constructor found for $className")
-            val args = constructor.parameters.map { param ->
-                val value = get(param.name)
-                value.toKotlinValue(param.type.classifier)
-            }.toTypedArray()
-            return constructor.call(*args) as RocketTable
+            return luaTableToDataClass(this, clazz) as RocketTable
         } catch (e: Exception) {
             throw e
         }
+    }
+
+    /**
+     * Converts a LuaTable into a given data class.
+     */
+    private fun <T : Any> luaTableToDataClass(table: LuaTable, clazz: KClass<T>): T {
+        val constructor = clazz.primaryConstructor
+            ?: throw IllegalArgumentException("Class ${clazz.simpleName} has no primary constructor")
+
+        val args = constructor.parameters.associateWith { param ->
+            val value = table.get(param.name)
+
+            println("parameter: ${param.name}, value: $value")
+            when (param.type.classifier) {
+                String::class -> value.optjstring(null)
+                Boolean::class -> value.toboolean()
+                Int::class -> value.optint(0)
+                Long::class -> value.optlong(0)
+                Double::class -> value.optdouble(0.0)
+                Float::class -> value.optdouble(0.0).toFloat()
+                else -> error("Unsupported type: ${param.type.classifier}")
+            }
+        }
+
+        return constructor.callBy(args)
     }
 }
