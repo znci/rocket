@@ -20,6 +20,7 @@ plugins {
     kotlin("jvm") version "2.1.20-RC"
     id("org.jetbrains.dokka") version "2.0.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("xyz.jpenilla.run-paper") version "2.3.1"
 }
 
 group = "dev.znci"
@@ -69,4 +70,19 @@ tasks.withType<DokkaTask>().configureEach {
 
         }
     }
+}
+
+
+tasks.withType(xyz.jpenilla.runtask.task.AbstractRun::class) {
+    javaLauncher = javaToolchains.launcherFor {
+        @Suppress("UnstableApiUsage")
+        vendor = JvmVendorSpec.JETBRAINS // use JetBrains JVM
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+    jvmArgs("-XX:+AllowEnhancedClassRedefinition")
+}
+
+tasks.runServer {
+    minecraftVersion("1.21.4")
+    jvmArgs("-Dcom.mojang.eula.agree=true")
 }
