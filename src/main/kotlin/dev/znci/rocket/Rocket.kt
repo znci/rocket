@@ -26,6 +26,8 @@ class Rocket : JavaPlugin() {
     private var defaultLocale: String = "en_GB"
 
     override fun onEnable() {
+        INSTANCE = this
+
         // Create the plugin data folder
         saveDefaultConfig()
 
@@ -53,10 +55,16 @@ class Rocket : JavaPlugin() {
 
         // Register all events
         logger.info("Rocket plugin enabled")
-        EventListener.registerAllEvents()
+        EventListener.cacheEvents()
     }
 
     override fun onDisable() {
         logger.info("Rocket plugin disabled")
     }
+
+    companion object {
+        lateinit var INSTANCE: JavaPlugin
+            private set
+    }
+
 }
