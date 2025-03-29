@@ -53,7 +53,9 @@ open class RocketTable(
      * Initializes the table with a `__javaClass` property that stores the name of the class for later reconstruction.
      */
     init {
-        table.getmetatable().set("__javaClass", LuaValue.valueOf(javaClass.simpleName))
+        val meta = table.getmetatable() ?: LuaTable()
+        meta.set("__javaClass", javaClass.name)
+        table.setmetatable(meta)
     }
 
     /**
@@ -66,6 +68,7 @@ open class RocketTable(
         propertyName: String,
         options: TableSetOptions
     ) {
+        // FIXME: this null chuck is redundant
         val meta = table.getmetatable() ?: LuaTable()
         val indexFunction = meta.get("__index") as? TwoArgFunction
         val newIndexFunction = meta.get("__newindex") as? ThreeArgFunction
