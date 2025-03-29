@@ -16,7 +16,7 @@
 package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.scripting.PermissionsManager
-import dev.znci.rocket.scripting.api.RocketLuaValue
+import dev.znci.rocket.scripting.api.RocketError
 import dev.znci.rocket.scripting.api.RocketNative
 import dev.znci.rocket.scripting.api.RocketTable
 import dev.znci.rocket.scripting.api.annotations.RocketNativeFunction
@@ -32,9 +32,29 @@ import java.time.Duration
 class LuaPlayers : RocketNative("players") {
     @RocketNativeFunction("get")
     fun getPlayerByName(playerName: String): LuaPlayer? {
-        val player = Bukkit.getPlayer(playerName) ?: return null
+        val player = Bukkit.getPlayer(playerName)
+
+        if (player == null) {
+            throw RocketError("Player not found")
+        }
 
         return LuaPlayer(player)
+    }
+
+    @RocketNativeFunction("getByUUID")
+    fun getPlayerByUUID(playerUUID: String): LuaPlayer? {
+        val player = Bukkit.getPlayer(playerUUID)
+
+        if (player == null) {
+            throw RocketError("Player not found")
+        }
+
+        return LuaPlayer(player)
+    }
+
+    @RocketNativeFunction("getAll")
+    fun getAllPlayers(): List<LuaPlayer> {
+        return Bukkit.getOnlinePlayers().map { LuaPlayer(it) }
     }
 }
 
@@ -48,21 +68,21 @@ class LuaPlayer(
     val player: Player
 ) : RocketNative("") {
     @RocketNativeFunction
-    fun send(message: String): RocketLuaValue {
+    fun send(message: String): Boolean {
         val messageComponent = MessageFormatter.formatMessage(message)
         player.sendMessage(messageComponent)
-        return TRUE
+        return true
     }
 
     @RocketNativeFunction
-    fun sendActionBar(message: String): RocketLuaValue {
+    fun sendActionbar(message: String): Boolean {
         val messageComponent = MessageFormatter.formatMessage(message)
         player.sendActionBar(messageComponent)
-        return TRUE
+        return true
     }
 
     @RocketNativeFunction
-    fun sendTitle(message: String, timeTable: TitleTimeTable): RocketLuaValue {
+    fun sendTitle(message: String, timeTable: TitleTimeTable): Boolean {
         val messageComponent = MessageFormatter.formatMessage(message)
 
         val times = Title.Times.times(
@@ -72,11 +92,11 @@ class LuaPlayer(
         )
         player.sendTitlePart(TitlePart.TITLE, messageComponent)
         player.sendTitlePart(TitlePart.TIMES, times)
-        return TRUE
+        return true
     }
 
     @RocketNativeFunction
-    fun sendSubtitle(message: String, timeTable: TitleTimeTable): RocketLuaValue {
+    fun sendSubtitle(message: String, timeTable: TitleTimeTable): Boolean {
         val messageComponent = MessageFormatter.formatMessage(message)
         val times = Title.Times.times(
             Duration.ofMillis(timeTable.fadeIn * 50),
@@ -85,88 +105,151 @@ class LuaPlayer(
         )
         player.sendTitlePart(TitlePart.SUBTITLE, messageComponent)
         player.sendTitlePart(TitlePart.TIMES, times)
-        return TRUE
+        return true
     }
 
     @RocketNativeFunction
-    fun setPlayerTime(value: Long, relative: Boolean): RocketLuaValue {
+    fun setPlayerTime(value: Long, relative: Boolean): Boolean {
         player.setPlayerTime(value, relative)
-        return TRUE
+        return true
     }
 
     @RocketNativeFunction
-    fun addPermission(value: String): RocketLuaValue {
+    fun addPermission(value: String): Boolean {
         player.addAttachment(
             Bukkit.getPluginManager().getPlugin("Rocket")!!
         ).setPermission(value, true)
-        return TRUE
+        return true
     }
 
     @RocketNativeFunction
-    fun op(): RocketLuaValue {
+    fun op(): Boolean {
         player.isOp = true
-        return TRUE
+        return true
     }
 
     @RocketNativeFunction
-    fun deop(): RocketLuaValue {
+    fun deop(): Boolean {
         player.isOp = false
-        return TRUE
+        return true
     }
 
     @RocketNativeFunction
-    fun teleport(location: LuaLocation): RocketLuaValue {
+    fun teleport(location: LuaLocation): Boolean {
         player.teleport(location.toBukkitLocation())
-        return TRUE
+        return true
     }
 
     @RocketNativeFunction
-    fun hasPermission(value: String): RocketLuaValue {
-        return valueOf(
-            PermissionsManager.hasPermission(player, value)
-        )
+    fun hasPermission(value: String): Boolean {
+        println(PermissionsManager.hasPermission(player, value))
+        return PermissionsManager.hasPermission(player, value)
     }
 
     @RocketNativeFunction
-    fun isInGroup(value: String): RocketLuaValue {
-        return valueOf(
-            PermissionsManager.isPlayerInGroup(player, value)
-        )
+    fun isInGroup(value: String): Boolean {
+        return PermissionsManager.isPlayerInGroup(player, value)
     }
 
     @RocketNativeProperty
-    val name = player.name
+    var name: String
+        get() {
+            return player.name
+        }
+        set(value) { return }
 
     @RocketNativeProperty
-    val uuid = player.uniqueId.toString()
+    var uuid: String
+        get() {
+            return player.uniqueId.toString()
+        }
+        set(value) { return }
 
     @RocketNativeProperty
-    val world = player.world.name
+    var world: String
+        get() {
+            return player.world.name
+        }
+        set(value) { return }
 
     @RocketNativeProperty
-    val ip = player.address?.hostString
+    var ip: String?
+        get() {
+            return player.address?.hostString
+        }
+        set(value) { return }
 
     @RocketNativeProperty
-    val isFlying = player.isFlying
+    var isFlying: Boolean
+        get() {
+            return player.isFlying
+        }
+        set(value) { return }
 
     @RocketNativeProperty
-    val isSneaking = player.isSneaking
+    var isSneaking: Boolean
+        get() {
+            return player.isSneaking
+        }
+        set(value) { return }
 
     @RocketNativeProperty
-    val isSprinting = player.isSprinting
+    var isSprinting: Boolean
+        get() {
+            return player.isSprinting
+        }
+        set(value) { return }
 
     @RocketNativeProperty
-    val isBlocking = player.isBlocking
+    var isBlocking: Boolean
+        get() {
+            return player.isBlocking
+        }
+        set(value) { return }
 
     @RocketNativeProperty
-    val isSleeping = player.isSleeping
+    var isSleeping: Boolean
+        get() {
+            return player.isSleeping
+        }
+        set(value) { return }
 
     val block = player.getTargetBlockExact(100)
-    var targetBlockType = ""
-    var targetBlockLocation = Location(Bukkit.getWorld(""), 0.0, 0.0, 0.0)
-    var targetBlockLightLevel = 0.0
-    var targetBlockTemperature = 0.0
-    var targetBlockHumidity = 0.0
+
+    @RocketNativeProperty
+    var targetBlockType: String = ""
+        get() {
+            return field
+        }
+        set(value) { return }
+
+    @RocketNativeProperty
+    var targetBlockLocation: Location = Location(Bukkit.getWorld("world"), 0.0, 0.0, 0.0)
+        get() {
+            return field
+        }
+        set(value) { return }
+
+    @RocketNativeProperty
+    var targetBlockLightLevel: Double = 0.0
+        get() {
+            return field
+        }
+        set(value) { return }
+
+    @RocketNativeProperty
+    var targetBlockTemperature: Double = 0.0
+        get() {
+            return field
+        }
+        set(value) { return }
+
+    @RocketNativeProperty
+    var targetBlockHumidity: Double = 0.0
+        get() {
+            return field
+        }
+        set(value) { return }
 
     init {
         block?.let {

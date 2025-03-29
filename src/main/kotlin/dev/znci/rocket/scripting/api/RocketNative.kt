@@ -8,10 +8,10 @@ import org.luaj.vm2.Varargs
 import org.luaj.vm2.lib.ThreeArgFunction
 import org.luaj.vm2.lib.TwoArgFunction
 import org.luaj.vm2.lib.VarArgFunction
-import kotlin.reflect.KClass
 import kotlin.reflect.KClassifier
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty
+import kotlin.reflect.KProperty
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.functions
 import kotlin.reflect.full.memberProperties
@@ -55,13 +55,10 @@ abstract class RocketNative(
                 annotatedFunctionName = function.name
             }
 
-            println("registering function: $annotatedFunctionName")
             table.set(annotatedFunctionName, object : VarArgFunction() {
                 override fun invoke(args: Varargs): Varargs {
-                    println("args passed to function: $args")
                     return try {
                         val kotlinArgs = args.toKotlinArgs(function)
-                        println("converted kotlin args: ${kotlinArgs.joinToString()}")
                         val result = function.call(this@RocketNative, *kotlinArgs)
                         result.toLuaValue()
                     } catch (e: Exception) {
@@ -79,14 +76,21 @@ abstract class RocketNative(
      */
     private fun registerProperties(table: LuaTable) {
         val properties = this::class.memberProperties
-            .filter { it.findAnnotation<RocketNativeProperty>() != null }
+            .mapNotNull { prop ->
+                prop.findAnnotation<RocketNativeProperty>()?.let { annotation ->
+                    val customName = annotation.name.takeIf { it != "INHERIT_FROM_DEFINITION" } ?: prop.name
+                    customName to prop
+                }
+            }.toMap()
+
+        val metatable = LuaTable()
 
         // Handle property getting
-        table.set("__index", object : TwoArgFunction() {
+        metatable.set("__index", object : TwoArgFunction() {
             override fun call(self: LuaValue, key: LuaValue): LuaValue {
-                val prop = properties.find { it.name == key.tojstring() } ?: return NIL
+                val prop = properties[key.tojstring()] as? KProperty<*>
+                    ?: return error("No property '${key.tojstring()}'")
 
-                println("PROP: $prop")
                 return try {
                     val value = prop.getter.call(this@RocketNative)
                     value.toLuaValue()
@@ -97,10 +101,11 @@ abstract class RocketNative(
         })
 
         // Handle property setting
-        table.set("__newindex", object : ThreeArgFunction() {
+        metatable.set("__newindex", object : ThreeArgFunction() {
             override fun call(self: LuaValue, key: LuaValue, value: LuaValue): LuaValue {
-                val prop = properties.find { it.name == key.tojstring() } as? KMutableProperty<*>
-                    ?: return error("No writable property '${key.tojstring()}'")
+                val prop = properties[key.tojstring()] as? KMutableProperty<*>
+                    ?: return error("No property '${key.tojstring()}'")
+
                 return try {
                     prop.setter.call(this@RocketNative, value.toKotlinValue(prop.returnType.classifier))
                     TRUE
@@ -109,6 +114,8 @@ abstract class RocketNative(
                 }
             }
         })
+
+        table.setmetatable(metatable)
     }
 
     /**
@@ -120,9 +127,9 @@ abstract class RocketNative(
     private fun Varargs.toKotlinArgs(func: KFunction<*>): Array<Any?> {
         val params = func.parameters.drop(1) // Skip `this`
         return params.mapIndexed { index, param ->
-            val arg = this.arg(index + 1)
-
-            arg.toKotlinValue(param.type.classifier)
+            this.arg(index + 1).let { arg ->
+                if (arg.istable()) arg.checktable().toClass() else arg.toKotlinValue(param.type.classifier)
+            }
         }.toTypedArray()
     }
 
@@ -139,7 +146,7 @@ abstract class RocketNative(
             Int::class -> toint()
             Double::class -> todouble()
             Float::class -> tofloat()
-            RocketTable::class -> if (isnil()) null else checktable().toClass()
+            Long::class -> tolong()
             else -> this
         }
     }
@@ -155,8 +162,17 @@ abstract class RocketNative(
             is Boolean -> LuaValue.valueOf(this)
             is Int -> LuaValue.valueOf(this)
             is Double -> LuaValue.valueOf(this)
+            is Float -> LuaValue.valueOf(this.toDouble())
+            is Long -> LuaValue.valueOf(this.toDouble())
             is RocketTable -> this.table
-            else -> LuaValue.NIL
+            is RocketLuaValue -> {
+                throw RocketError("RocketLuaValue should not be used as a return type.")
+                this.luaValue
+            }
+            else -> {
+                throw RocketError("Unsupported type: ${this?.javaClass?.simpleName ?: "null"}")
+                LuaValue.NIL
+            }
         }
     }
 
@@ -167,34 +183,15 @@ abstract class RocketNative(
         try {
             val className = get("__javaClass").tojstring()
             val clazz = Class.forName(className).kotlin
-            return luaTableToDataClass(this, clazz) as RocketTable
+            val constructor =
+                clazz.primaryConstructor ?: throw IllegalArgumentException("No primary constructor found for $className")
+            val args = constructor.parameters.map { param ->
+                val value = get(param.name)
+                value.toKotlinValue(param.type.classifier)
+            }.toTypedArray()
+            return constructor.call(*args) as RocketTable
         } catch (e: Exception) {
             throw e
         }
-    }
-
-    /**
-     * Converts a LuaTable into a given data class.
-     */
-    private fun <T : Any> luaTableToDataClass(table: LuaTable, clazz: KClass<T>): T {
-        val constructor = clazz.primaryConstructor
-            ?: throw IllegalArgumentException("Class ${clazz.simpleName} has no primary constructor")
-
-        val args = constructor.parameters.associateWith { param ->
-            val value = table.get(param.name)
-
-            println("parameter: ${param.name}, value: $value")
-            when (param.type.classifier) {
-                String::class -> value.optjstring(null)
-                Boolean::class -> value.toboolean()
-                Int::class -> value.optint(0)
-                Long::class -> value.optlong(0)
-                Double::class -> value.optdouble(0.0)
-                Float::class -> value.optdouble(0.0).toFloat()
-                else -> error("Unsupported type: ${param.type.classifier}")
-            }
-        }
-
-        return constructor.callBy(args)
     }
 }
