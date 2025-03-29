@@ -8,6 +8,7 @@ import org.luaj.vm2.Varargs
 import org.luaj.vm2.lib.ThreeArgFunction
 import org.luaj.vm2.lib.TwoArgFunction
 import org.luaj.vm2.lib.VarArgFunction
+import java.util.ArrayList
 import kotlin.reflect.KClassifier
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty
@@ -168,6 +169,13 @@ abstract class RocketNative(
             is RocketLuaValue -> {
                 throw RocketError("RocketLuaValue should not be used as a return type.")
                 this.luaValue
+            }
+            is ArrayList<*> -> {
+                val table = LuaTable()
+                this.forEachIndexed { index, value ->
+                    table.set(index + 1, value.toLuaValue())
+                }
+                table
             }
             else -> {
                 throw RocketError("Unsupported type: ${this?.javaClass?.simpleName ?: "null"}")
