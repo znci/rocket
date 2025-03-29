@@ -53,7 +53,7 @@ open class RocketTable(
      * Initializes the table with a `__javaClass` property that stores the name of the class for later reconstruction.
      */
     init {
-        table.set("__javaClass", LuaValue.valueOf(javaClass.simpleName))
+        table.getmetatable().set("__javaClass", LuaValue.valueOf(javaClass.simpleName))
     }
 
     /**

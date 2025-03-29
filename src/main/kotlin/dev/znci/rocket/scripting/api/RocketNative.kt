@@ -189,7 +189,7 @@ abstract class RocketNative(
      */
     private fun LuaTable.toClass(): RocketTable {
         try {
-            val className = get("__javaClass").tojstring()
+            val className = getmetatable().get("__javaClass").tojstring()
             val clazz = Class.forName(className).kotlin
             val constructor =
                 clazz.primaryConstructor ?: throw IllegalArgumentException("No primary constructor found for $className")
