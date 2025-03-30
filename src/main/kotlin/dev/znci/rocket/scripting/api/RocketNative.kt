@@ -9,10 +9,7 @@ import org.luaj.vm2.lib.ThreeArgFunction
 import org.luaj.vm2.lib.TwoArgFunction
 import org.luaj.vm2.lib.VarArgFunction
 import java.util.ArrayList
-import kotlin.reflect.KClassifier
-import kotlin.reflect.KFunction
-import kotlin.reflect.KMutableProperty
-import kotlin.reflect.KProperty
+import kotlin.reflect.*
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.functions
 import kotlin.reflect.full.memberProperties
@@ -26,6 +23,7 @@ import kotlin.reflect.full.primaryConstructor
  *
  * Functions with the {@code RocketNativeFunction} annotation will be registered, and properties with the {@code RocketNativeProperty} annotation.
  */
+@Suppress("unused")
 abstract class RocketNative(
     /** The name of the Lua table/property for this object. */
     override var valueName: String
@@ -129,7 +127,7 @@ abstract class RocketNative(
         val params = func.parameters.drop(1) // Skip `this`
         return params.mapIndexed { index, param ->
             this.arg(index + 1).let { arg ->
-                if (arg.istable()) arg.checktable().toClass() else arg.toKotlinValue(param.type.classifier)
+                if (arg.istable()) arg.checktable().toClass(func) else arg.toKotlinValue(param.type.classifier)
             }
         }.toTypedArray()
     }
@@ -165,10 +163,13 @@ abstract class RocketNative(
             is Double -> LuaValue.valueOf(this)
             is Float -> LuaValue.valueOf(this.toDouble())
             is Long -> LuaValue.valueOf(this.toDouble())
-            is RocketTable -> this.table
+            is RocketTable -> {
+                val table = this.table
+                set("__javaClass", TableSetOptions(getter = { LuaValue.valueOf(javaClass.name) }))
+                table
+            }
             is RocketLuaValue -> {
                 throw RocketError("RocketLuaValue should not be used as a return type.")
-                this.luaValue
             }
             is ArrayList<*> -> {
                 val table = LuaTable()
@@ -179,7 +180,6 @@ abstract class RocketNative(
             }
             else -> {
                 throw RocketError("Unsupported type: ${this?.javaClass?.simpleName ?: "null"}")
-                LuaValue.NIL
             }
         }
     }
@@ -187,9 +187,25 @@ abstract class RocketNative(
     /**
      * Converts a LuaTable into a given class.
      */
-    private fun LuaTable.toClass(): RocketTable {
+    private fun LuaTable.toClass(func: KFunction<*>): RocketTable {
         try {
-            val className = getmetatable().get("__javaClass").tojstring()
+            var className = get("__javaClass").tojstring()
+            if (className == "nil") {
+                var classes = func.parameters.map { it.type.classifier }
+                classes = classes.drop(1)
+                val tableProps = keys().asSequence().map { it.tojstring() }.toList()
+                for (clazz in classes) {
+                    val constructor = (clazz as KClass<*>).primaryConstructor
+                    if (constructor != null) {
+                        val constructorProps = constructor.parameters.map { it.name }
+                        if (constructorProps.containsAll(tableProps)) {
+                            className = clazz.qualifiedName!!
+                            break
+                        }
+                    }
+                }
+
+            }
             val clazz = Class.forName(className).kotlin
             val constructor =
                 clazz.primaryConstructor ?: throw IllegalArgumentException("No primary constructor found for $className")

@@ -29,9 +29,10 @@ import org.bukkit.Location
 import org.bukkit.entity.Player
 import java.time.Duration
 
+@Suppress("unused")
 class LuaPlayers : RocketNative("players") {
     @RocketNativeFunction("get")
-    fun getPlayerByName(playerName: String): LuaPlayer? {
+    fun getPlayerByName(playerName: String): LuaPlayer {
         val player = Bukkit.getPlayer(playerName)
 
         if (player == null) {
@@ -42,7 +43,7 @@ class LuaPlayers : RocketNative("players") {
     }
 
     @RocketNativeFunction("getByUUID")
-    fun getPlayerByUUID(playerUUID: String): LuaPlayer? {
+    fun getPlayerByUUID(playerUUID: String): LuaPlayer {
         val player = Bukkit.getPlayer(playerUUID)
 
         if (player == null) {
@@ -64,6 +65,7 @@ data class TitleTimeTable(
     val fadeOut: Long
 ) : RocketTable("")
 
+@Suppress("unused")
 class LuaPlayer(
     val player: Player
 ) : RocketNative("") {
@@ -86,9 +88,9 @@ class LuaPlayer(
         val messageComponent = MessageFormatter.formatMessage(message)
 
         val times = Title.Times.times(
-            Duration.ofMillis(timeTable.get("fadeIn").tolong() * 50),
-            Duration.ofMillis(timeTable.get("stay").tolong() * 50),
-            Duration.ofMillis(timeTable.get("fadeOut").tolong() * 50)
+            Duration.ofMillis(timeTable.fadeIn * 50),
+            Duration.ofMillis(timeTable.stay * 50),
+            Duration.ofMillis(timeTable.fadeOut * 50)
         )
         player.sendTitlePart(TitlePart.TITLE, messageComponent)
         player.sendTitlePart(TitlePart.TIMES, times)
@@ -214,42 +216,22 @@ class LuaPlayer(
         }
         set(value) { return }
 
-    val block = player.getTargetBlockExact(100)
+    private val block = player.getTargetBlockExact(100)
 
     @RocketNativeProperty
     var targetBlockType: String = ""
-        get() {
-            return field
-        }
-        set(value) { return }
 
     @RocketNativeProperty
     var targetBlockLocation: Location = Location(Bukkit.getWorld("world"), 0.0, 0.0, 0.0)
-        get() {
-            return field
-        }
-        set(value) { return }
 
     @RocketNativeProperty
     var targetBlockLightLevel: Double = 0.0
-        get() {
-            return field
-        }
-        set(value) { return }
 
     @RocketNativeProperty
     var targetBlockTemperature: Double = 0.0
-        get() {
-            return field
-        }
-        set(value) { return }
 
     @RocketNativeProperty
     var targetBlockHumidity: Double = 0.0
-        get() {
-            return field
-        }
-        set(value) { return }
 
     init {
         block?.let {
