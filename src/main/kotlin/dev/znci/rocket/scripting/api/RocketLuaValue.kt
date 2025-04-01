@@ -54,8 +54,12 @@ open class RocketLuaValue(val luaValue: LuaValue = LuaValue.TRUE) : LuaValue() {
                 is Boolean -> RocketLuaValue(LuaValue.valueOf(value))
                 is Int -> RocketLuaValue(LuaValue.valueOf(value))
                 is Double -> RocketLuaValue(LuaValue.valueOf(value))
+                is RocketTable -> RocketLuaValue(value.table)
                 is LuaValue -> RocketLuaValue(value)
-                else -> NIL
+                else -> {
+                    throw RocketError("Unsupported type: ${value?.javaClass?.simpleName ?: "null"}")
+                    NIL
+                }
             }
         }
     }

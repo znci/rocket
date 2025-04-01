@@ -21,10 +21,13 @@ import dev.znci.rocket.scripting.api.RocketNative
 import dev.znci.rocket.scripting.api.RocketTable
 import dev.znci.rocket.scripting.api.annotations.RocketNativeFunction
 import dev.znci.rocket.scripting.api.annotations.RocketNativeProperty
+import dev.znci.rocket.scripting.globals.enums.GamemodeEnum
+import dev.znci.rocket.scripting.globals.enums.toBukkitGamemode
 import dev.znci.rocket.util.MessageFormatter
 import net.kyori.adventure.title.Title
 import net.kyori.adventure.title.TitlePart
 import org.bukkit.Bukkit
+import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.entity.Player
 import java.time.Duration
@@ -70,8 +73,8 @@ class LuaPlayer(
     val player: Player
 ) : RocketNative("") {
     @RocketNativeFunction
-    fun send(message: String): Boolean {
-        val messageComponent = MessageFormatter.formatMessage(message)
+    fun send(message: Any): Boolean {
+        val messageComponent = MessageFormatter.formatMessage(message.toString())
         player.sendMessage(messageComponent)
         return true
     }
@@ -151,6 +154,17 @@ class LuaPlayer(
     @RocketNativeFunction
     fun isInGroup(value: String): Boolean {
         return PermissionsManager.isPlayerInGroup(player, value)
+    }
+
+    @RocketNativeFunction
+    fun setGamemode(value: GamemodeEnum): Boolean {
+        if (GamemodeEnum().isValidKey(value) == false) {
+            throw RocketError("Invalid gamemode")
+            return false
+        }
+
+        player.gameMode = value.toBukkitGamemode()
+        return true
     }
 
     @RocketNativeProperty

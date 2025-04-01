@@ -8,6 +8,8 @@ import org.luaj.vm2.Varargs
 import org.luaj.vm2.lib.ThreeArgFunction
 import org.luaj.vm2.lib.TwoArgFunction
 import org.luaj.vm2.lib.VarArgFunction
+import java.awt.dnd.InvalidDnDOperationException
+import java.io.InvalidClassException
 import java.util.ArrayList
 import kotlin.reflect.*
 import kotlin.reflect.full.findAnnotation
@@ -127,7 +129,11 @@ abstract class RocketNative(
         val params = func.parameters.drop(1) // Skip `this`
         return params.mapIndexed { index, param ->
             this.arg(index + 1).let { arg ->
-                if (arg.istable()) arg.checktable().toClass(func) else arg.toKotlinValue(param.type.classifier)
+                if (arg.istable()) {
+                    arg.checktable().toClass(func)
+                } else {
+                    arg.toKotlinValue(param.type.classifier)
+                }
             }
         }.toTypedArray()
     }
@@ -157,6 +163,10 @@ abstract class RocketNative(
      */
     private fun Any?.toLuaValue(): LuaValue {
         return when (this) {
+            is RocketEnum -> {
+                println("ROCKET ENUM DETECTED")
+                this.convertToLuaTable().table
+            }
             is String -> LuaValue.valueOf(this)
             is Boolean -> LuaValue.valueOf(this)
             is Int -> LuaValue.valueOf(this)
