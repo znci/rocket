@@ -21,8 +21,6 @@ import dev.znci.rocket.scripting.api.RocketNative
 import dev.znci.rocket.scripting.api.RocketTable
 import dev.znci.rocket.scripting.api.annotations.RocketNativeFunction
 import dev.znci.rocket.scripting.api.annotations.RocketNativeProperty
-import dev.znci.rocket.scripting.globals.enums.GamemodeEnum
-import dev.znci.rocket.scripting.globals.enums.toBukkitGamemode
 import dev.znci.rocket.util.MessageFormatter
 import net.kyori.adventure.title.Title
 import net.kyori.adventure.title.TitlePart
@@ -157,13 +155,12 @@ class LuaPlayer(
     }
 
     @RocketNativeFunction
-    fun setGamemode(value: GamemodeEnum): Boolean {
-        if (GamemodeEnum().isValidKey(value) == false) {
+    fun setGamemode(value: String): Boolean {
+        if (false) { // TODO: enum
             throw RocketError("Invalid gamemode")
-            return false
         }
 
-        player.gameMode = value.toBukkitGamemode()
+        player.gameMode = GameMode.valueOf(value)
         return true
     }
 
