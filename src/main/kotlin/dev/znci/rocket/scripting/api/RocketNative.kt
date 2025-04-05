@@ -8,8 +8,6 @@ import org.luaj.vm2.Varargs
 import org.luaj.vm2.lib.ThreeArgFunction
 import org.luaj.vm2.lib.TwoArgFunction
 import org.luaj.vm2.lib.VarArgFunction
-import java.awt.dnd.InvalidDnDOperationException
-import java.io.InvalidClassException
 import java.util.ArrayList
 import kotlin.reflect.*
 import kotlin.reflect.full.findAnnotation
@@ -184,6 +182,11 @@ abstract class RocketNative(
                 }
                 table
             }
+            is Enum<*> -> {
+                val enumClass = this::class
+                val enumTable = RocketEnum(enumClass.simpleName!!)
+                enumTable.toLuaTable(this)
+            }
             else -> {
                 throw RocketError("Unsupported type: ${this?.javaClass?.simpleName ?: "null"}")
             }
@@ -193,7 +196,7 @@ abstract class RocketNative(
     /**
      * Converts a LuaTable into a given class.
      */
-    private fun LuaTable.toClass(func: KFunction<*>): RocketTable {
+    private fun LuaTable.toClass(func: KFunction<*>): Any { // XXX: stupid trick to also return enums.
         try {
             var className = get("__javaClass").tojstring()
             if (className == "nil") {
@@ -213,13 +216,21 @@ abstract class RocketNative(
 
             }
             val clazz = Class.forName(className).kotlin
-            val constructor =
-                clazz.primaryConstructor ?: throw IllegalArgumentException("No primary constructor found for $className")
-            val args = constructor.parameters.map { param ->
-                val value = get(param.name)
-                value.toKotlinValue(param.type.classifier)
-            }.toTypedArray()
-            return constructor.call(*args) as RocketTable
+
+            // if enum class
+            if (clazz.java.isEnum) {
+                val renum = RocketEnum(clazz.simpleName!!)
+                return renum.fromLuaTable(this, clazz)
+            } else {
+                val constructor =
+                    clazz.primaryConstructor
+                        ?: throw IllegalArgumentException("No primary constructor found for $className")
+                val args = constructor.parameters.map { param ->
+                    val value = get(param.name)
+                    value.toKotlinValue(param.type.classifier)
+                }.toTypedArray()
+                return constructor.call(*args) as RocketTable
+            }
         } catch (e: Exception) {
             throw e
         }

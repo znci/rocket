@@ -2,6 +2,7 @@ package dev.znci.rocket.scripting.api
 
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
+import kotlin.reflect.KClass
 
 /**
  * Copyright 2025 znci
@@ -19,10 +20,8 @@ import org.luaj.vm2.LuaValue
  * limitations under the License.
  */
 
-class RocketEnum(name: String, enum: Enum<*>) : RocketTable(name) {
-    val enum: Enum<*> = enum
-
-    fun toLuaTable(): LuaTable {
+class RocketEnum(name: String) : RocketTable(name) {
+    fun toLuaTable(enum: Enum<*>): LuaTable {
         val table = this.table
         for (enumConstant in enum.javaClass.enumConstants) {
             table.set(enumConstant.name, RocketLuaValue(LuaValue.valueOf(enumConstant.ordinal)))
@@ -30,11 +29,11 @@ class RocketEnum(name: String, enum: Enum<*>) : RocketTable(name) {
         return table
     }
 
-    fun fromLuaTable(luaTable: LuaTable): Enum<*> {
-        val enumConstants = enum.javaClass.enumConstants
+    fun fromLuaTable(luaTable: LuaTable, enum: KClass<out Any>): Enum<*> {
+        val enumConstants = enum.java.enumConstants
         for (i in 0 until luaTable.length()) {
             val name = luaTable[i + 1].toString()
-            for (enumConstant in enumConstants) {
+            for (enumConstant in enumConstants as Array<Enum<*>>) {
                 if (enumConstant.name == name) {
                     return enumConstant
                 }
