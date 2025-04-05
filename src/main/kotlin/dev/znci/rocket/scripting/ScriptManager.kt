@@ -15,7 +15,6 @@
  */
 package dev.znci.rocket.scripting
 
-import dev.znci.rocket.scripting.api.RocketEnum
 import dev.znci.rocket.scripting.api.RocketError
 import dev.znci.rocket.scripting.api.RocketLuaValue
 import dev.znci.rocket.scripting.api.RocketProperty
@@ -177,15 +176,15 @@ object ScriptManager {
         enabledGlobals.forEach { it ->
             println("Processing: ${it::class.qualifiedName}")
             when (it) {
-                is RocketEnum -> {
-                    try {
-                        val luaTable = it.convertToLuaTable()
-                        table.set(it.valueName, luaTable.table)
-                    } catch (e: Exception) {
-                        println("Error in RocketEnum case: ${e.message}")
-                        e.printStackTrace()
-                    }
-                }
+//                is RocketEnum -> {
+//                    try {
+//                        val luaTable = it.convertToLuaTable()
+//                        table.set(it.valueName, luaTable.table)
+//                    } catch (e: Exception) {
+//                        println("Error in RocketEnum case: ${e.message}")
+//                        e.printStackTrace()
+//                    }
+//                }
                 is RocketTable -> {
                     table.set(it.valueName, it.table)
                 }

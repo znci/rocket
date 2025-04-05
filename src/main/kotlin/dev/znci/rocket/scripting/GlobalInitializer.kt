@@ -1,6 +1,5 @@
 package dev.znci.rocket.scripting
 
-import dev.znci.rocket.scripting.globals.enums.GamemodeEnum
 import dev.znci.rocket.scripting.globals.tables.LuaLocations
 import dev.znci.rocket.scripting.globals.tables.LuaPlayers
 import dev.znci.rocket.scripting.globals.tables.SimpleTest
@@ -24,7 +23,7 @@ object GlobalInitializer {
         ScriptManager.registerGlobal(TestValue())
         ScriptManager.registerGlobal(LuaPlayers())
         ScriptManager.registerGlobal(LuaLocations())
-        ScriptManager.registerGlobal(GamemodeEnum())
+        //ScriptManager.registerGlobal(GamemodeEnum())
 
         return true
     }

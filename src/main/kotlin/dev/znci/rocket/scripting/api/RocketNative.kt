@@ -163,10 +163,6 @@ abstract class RocketNative(
      */
     private fun Any?.toLuaValue(): LuaValue {
         return when (this) {
-            is RocketEnum -> {
-                println("ROCKET ENUM DETECTED")
-                this.convertToLuaTable().table
-            }
             is String -> LuaValue.valueOf(this)
             is Boolean -> LuaValue.valueOf(this)
             is Int -> LuaValue.valueOf(this)
