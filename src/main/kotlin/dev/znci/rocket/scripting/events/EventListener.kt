@@ -18,6 +18,7 @@ package dev.znci.rocket.scripting.events
 import com.google.common.reflect.ClassPath
 import dev.znci.rocket.scripting.PlayerManager
 import dev.znci.rocket.scripting.ScriptManager
+import dev.znci.rocket.scripting.api.RocketTable
 import dev.znci.rocket.scripting.globals.tables.LuaLocation
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
@@ -143,8 +144,8 @@ object EventListener : Listener {
      *          Maybe for a different PR, it depends on what znci is feeling
      */
 
-    private fun convertEventToLua(event: Event): LuaTable {
-        val table = LuaTable()
+    private fun convertEventToLua(event: Event): RocketTable {
+        val table = RocketTable("luaEvent")
         val meta = table.getmetatable() ?: LuaTable()
         val indexFunction = meta.get("__index") as? TwoArgFunction
         meta.set("__index", object : TwoArgFunction() {

@@ -47,13 +47,9 @@ class LuaEvents : LuaTable() {
 
                     val fileName = getFileNameFromLuaFunction(function)
 
-                    println(fileName)
-
                     if (ScriptManager.loadedScriptFiles[fileName] == null) {
-                        println("not set yet")
                         ScriptManager.loadedScriptFiles[fileName] = mutableListOf()
                     }
-                    println("adding")
                     ScriptManager.loadedScriptFiles[fileName]!!.add(function)
                 }
 
