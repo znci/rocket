@@ -22,11 +22,8 @@ import dev.znci.rocket.scripting.api.RocketTable
 import dev.znci.rocket.scripting.api.RocketValueBase
 import dev.znci.rocket.scripting.classes.Command
 import org.bukkit.event.Event
+import org.luaj.vm2.*
 import java.io.File
-import org.luaj.vm2.Globals
-import org.luaj.vm2.LuaError
-import org.luaj.vm2.LuaTable
-import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.jse.JsePlatform
 import java.util.ArrayList
 
@@ -54,10 +51,21 @@ object ScriptManager {
     var scriptsFolder: File = File("")
 
     /**
+     * A map of loaded scripts associated by file path
+     */
+    val loadedScriptFiles = mutableMapOf<String, MutableList<LuaFunction>>()
+
+    /**
+     * A map associating Lua event sections with a class.
+     * This mainly helps with disabling scripts
+     */
+    val eventScript = mutableMapOf<LuaFunction, Class<out Event>>()
+
+    /**
      * A map of events and their associated Lua handlers.
      * It stores the events triggered in the system and the corresponding Lua functions that handle them.
      */
-    val usedEvents = mutableMapOf<Class<out Event>, LuaValue>()
+    val usedEvents = mutableMapOf<Class<out Event>, MutableList<LuaFunction>>()
 
     /**
      * A map of enabled commands by their names.
@@ -108,11 +116,14 @@ object ScriptManager {
 
     /**
      * Recursively loads all scripts located in the scripts folder
+     * @return A list of error messages where execution failed. The list will be empty if there were no errors
      */
     fun loadAll(): List<String?> {
         val results = mutableListOf<String?>()
         getAllScripts(false).forEach { script ->
-            results.add(loadScript(File("plugins/rocket/scripts/", script)))
+            val result = loadScript(File("plugins/rocket/scripts/", script))
+            if (result != "")
+                results.add(result)
         }
         return results
     }
@@ -121,8 +132,7 @@ object ScriptManager {
      * Loads a script based off of a [File] object
      *
      * @param scriptFile The script to load
-     * @return a string if there's been an error
-     * @return null if this method succeeds
+     * @return An error message if execution fails, or an empty string if the script ran successfully.
      */
     fun loadScript(scriptFile: File): String? {
         if (loadedScriptFiles[scriptFile.absolutePath] != null) {
@@ -154,13 +164,13 @@ object ScriptManager {
      * @param scriptFile The Lua script content to execute.
      * @return An error message if execution fails, or an empty string if the script ran successfully.
      */
-    fun runScript(scriptFile: String): String? {
+    fun runScript(scriptFile: File): String? {
 
         val content = scriptFile.readText()
 
         try {
             applyGlobals(globals)
-            val scriptResult = globals.load(scriptFile, "::${scriptFile.absolutePath}::", globals)
+            val scriptResult = globals.load(content, "::${scriptFile.absolutePath}::", globals)
 
             scriptResult.call()
         } catch (error: LuaError) {

@@ -18,7 +18,7 @@ package dev.znci.rocket.scripting.events
 import com.google.common.reflect.ClassPath
 import dev.znci.rocket.scripting.PlayerManager
 import dev.znci.rocket.scripting.ScriptManager
-import dev.znci.rocket.scripting.functions.LuaLocation
+import dev.znci.rocket.scripting.globals.tables.LuaLocation
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Location
