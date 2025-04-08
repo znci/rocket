@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.znci.rocket.scripting.functions
+package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.scripting.ScriptManager
 import dev.znci.rocket.scripting.events.EventListener
@@ -31,7 +31,7 @@ class LuaEvents : LuaTable() {
                     ScriptManager.usedEvents[eventClass] = callback.checkfunction()
                 }
 
-                return LuaValue.NIL
+                return NIL
             }
         })
     }

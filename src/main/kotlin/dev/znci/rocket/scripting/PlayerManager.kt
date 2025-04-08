@@ -15,8 +15,8 @@
  */
 package dev.znci.rocket.scripting
 
-import dev.znci.rocket.scripting.functions.LuaLocation.Companion.fromBukkit
-import dev.znci.rocket.scripting.functions.toBukkitLocation
+import dev.znci.rocket.scripting.globals.tables.LuaLocation.Companion.fromBukkit
+import dev.znci.rocket.scripting.globals.tables.toBukkitLocation
 import dev.znci.rocket.scripting.util.defineProperty
 import dev.znci.rocket.util.MessageFormatter
 import net.kyori.adventure.text.Component

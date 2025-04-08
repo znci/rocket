@@ -1,3 +1,5 @@
+import org.jetbrains.dokka.gradle.DokkaTask
+
 /**
  * Copyright 2025 znci
  *
@@ -16,7 +18,9 @@
 
 plugins {
     kotlin("jvm") version "2.1.20-RC"
+    id("org.jetbrains.dokka") version "2.0.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("xyz.jpenilla.run-paper") version "2.3.1"
 }
 
 group = "dev.znci"
@@ -37,6 +41,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.luaj:luaj-jse:3.0.1")
     implementation("net.luckperms:api:5.4")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
 }
 
 val targetJavaVersion = 21
@@ -55,4 +60,29 @@ tasks.processResources {
     filesMatching("plugin.yml") {
         expand(props)
     }
+}
+
+tasks.withType<DokkaTask>().configureEach {
+    dokkaSourceSets {
+        named("main") {
+            moduleName.set("Rocket Java API")
+            includes.from("Rocket.md")
+
+        }
+    }
+}
+
+
+tasks.withType(xyz.jpenilla.runtask.task.AbstractRun::class) {
+    javaLauncher = javaToolchains.launcherFor {
+        @Suppress("UnstableApiUsage")
+        vendor = JvmVendorSpec.JETBRAINS // use JetBrains JVM
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+    jvmArgs("-XX:+AllowEnhancedClassRedefinition")
+}
+
+tasks.runServer {
+    minecraftVersion("1.21.4")
+    jvmArgs("-Dcom.mojang.eula.agree=true")
 }
