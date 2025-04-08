@@ -34,22 +34,14 @@ import java.time.Duration
 class LuaPlayers : RocketNative("players") {
     @RocketNativeFunction("get")
     fun getPlayerByName(playerName: String): LuaPlayer {
-        val player = Bukkit.getPlayer(playerName)
-
-        if (player == null) {
-            throw RocketError("Player not found")
-        }
+        val player = Bukkit.getPlayer(playerName) ?: throw RocketError("Player not found")
 
         return LuaPlayer(player)
     }
 
     @RocketNativeFunction("getByUUID")
     fun getPlayerByUUID(playerUUID: String): LuaPlayer {
-        val player = Bukkit.getPlayer(playerUUID)
-
-        if (player == null) {
-            throw RocketError("Player not found")
-        }
+        val player = Bukkit.getPlayer(playerUUID) ?: throw RocketError("Player not found")
 
         return LuaPlayer(player)
     }
@@ -165,67 +157,59 @@ class LuaPlayer(
     }
 
     @RocketNativeProperty
-    var name: String
+    val name: String
         get() {
             return player.name
         }
-        set(value) { return }
+
 
     @RocketNativeProperty
-    var uuid: String
+    val uuid: String
         get() {
             return player.uniqueId.toString()
         }
-        set(value) { return }
 
     @RocketNativeProperty
-    var world: String
+    val world: String
         get() {
             return player.world.name
         }
-        set(value) { return }
 
     @RocketNativeProperty
-    var ip: String?
+    val ip: String?
         get() {
             return player.address?.hostString
         }
-        set(value) { return }
 
     @RocketNativeProperty
-    var isFlying: Boolean
+    val isFlying: Boolean
         get() {
             return player.isFlying
         }
-        set(value) { return }
 
     @RocketNativeProperty
-    var isSneaking: Boolean
+    val isSneaking: Boolean
         get() {
             return player.isSneaking
         }
-        set(value) { return }
 
     @RocketNativeProperty
-    var isSprinting: Boolean
+    val isSprinting: Boolean
         get() {
             return player.isSprinting
         }
-        set(value) { return }
 
     @RocketNativeProperty
-    var isBlocking: Boolean
+    val isBlocking: Boolean
         get() {
             return player.isBlocking
         }
-        set(value) { return }
 
     @RocketNativeProperty
-    var isSleeping: Boolean
+    val isSleeping: Boolean
         get() {
             return player.isSleeping
         }
-        set(value) { return }
 
     private val block = player.getTargetBlockExact(100)
 

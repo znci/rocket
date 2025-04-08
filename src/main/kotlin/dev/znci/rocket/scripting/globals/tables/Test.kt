@@ -19,6 +19,7 @@ import dev.znci.rocket.scripting.api.RocketNative
 import dev.znci.rocket.scripting.api.annotations.RocketNativeFunction
 import dev.znci.rocket.scripting.api.annotations.RocketNativeProperty
 
+@Suppress("unused") // FIXME: Remove this class after new api migration
 class SimpleTest : RocketNative("testNext") {
 
     private var internalString = "Initial"

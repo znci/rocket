@@ -26,4 +26,5 @@ package dev.znci.rocket.scripting.api.annotations
  */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
+@Suppress("unused")
 annotation class RocketNativeFunction(val name: String = "INHERIT_FROM_DEFINITION")

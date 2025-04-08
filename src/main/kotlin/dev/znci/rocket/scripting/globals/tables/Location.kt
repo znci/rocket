@@ -19,24 +19,22 @@ import dev.znci.rocket.scripting.api.RocketNative
 import dev.znci.rocket.scripting.api.RocketTable
 import dev.znci.rocket.scripting.api.annotations.RocketNativeFunction
 import dev.znci.rocket.scripting.api.annotations.RocketNativeProperty
-import dev.znci.rocket.scripting.util.defineProperty
 import dev.znci.rocket.scripting.util.getWorldByNameOrUUID
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.World
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
-import org.luaj.vm2.Varargs
-import org.luaj.vm2.lib.VarArgFunction
 import java.util.*
 
 class LuaLocations : RocketNative("location") {
     @RocketNativeFunction
-    fun new(x: Double, y: Double, z: Double, worldUUID: String, yaw: Float = 0f, pitch: Float = 0f): LuaLocation? {
+    fun new(x: Double, y: Double, z: Double, worldUUID: String, yaw: Float = 0f, pitch: Float = 0f): LuaLocation {
         return LuaLocation(x, y, z, worldUUID, yaw, pitch)
     }
 }
 
+@Suppress("unused")
 class LuaLocation(
     x: Double,
     y: Double,

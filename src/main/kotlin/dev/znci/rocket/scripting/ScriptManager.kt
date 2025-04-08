@@ -42,6 +42,12 @@ object ScriptManager {
     private val globals: Globals = JsePlatform.standardGlobals()
 
     /**
+     * A list of global values (properties and tables) that have been registered for Lua scripting.
+     * These globals are made available to Lua scripts during their execution.
+     */
+    private var enabledGlobals: MutableList<RocketValueBase> = mutableListOf()
+
+    /**
      * The folder where scripts are located.
      * This can be set to a custom folder to load Lua scripts from a specific directory.
      */
@@ -58,12 +64,6 @@ object ScriptManager {
      * It associates command names with their respective command executors.
      */
     val enabledCommands = mutableMapOf<String, Command>()
-
-    /**
-     * A list of global values (properties and tables) that have been registered for Lua scripting.
-     * These globals are made available to Lua scripts during their execution.
-     */
-    var enabledGlobals: MutableList<RocketValueBase> = mutableListOf()
 
     /**
      * Sets the folder where scripts are located.
@@ -135,7 +135,7 @@ object ScriptManager {
      * @return The global value if found, or `null` if it is not registered.
      */
     private fun getGlobalByTableName(valueName: String): RocketValueBase? {
-        return enabledGlobals.find { it -> it.valueName == valueName }
+        return enabledGlobals.find { it.valueName == valueName }
     }
 
     /**
@@ -158,7 +158,8 @@ object ScriptManager {
      * @param global The global value to unregister.
      * @throws RocketError If no global with the given table name is registered.
      */
-    fun unregisterGlobal(global: RocketValueBase) {
+    @Suppress("unused") // TODO: more management of globals by the end-user
+    private fun unregisterGlobal(global: RocketValueBase) {
         if (getGlobalByTableName(global.valueName) == null) {
             throw RocketError("A global with the table name ('${global.valueName}') is not registered and cannot be unregistered.")
         }
@@ -172,19 +173,10 @@ object ScriptManager {
      *
      * @param table The Lua table to which the globals will be applied.
      */
-    fun applyGlobals(table: LuaTable) {
-        enabledGlobals.forEach { it ->
+    private fun applyGlobals(table: LuaTable) {
+        enabledGlobals.forEach {
             println("Processing: ${it::class.qualifiedName}")
             when (it) {
-//                is RocketEnum -> {
-//                    try {
-//                        val luaTable = it.convertToLuaTable()
-//                        table.set(it.valueName, luaTable.table)
-//                    } catch (e: Exception) {
-//                        println("Error in RocketEnum case: ${e.message}")
-//                        e.printStackTrace()
-//                    }
-//                }
                 is RocketTable -> {
                     table.set(it.valueName, it.table)
                 }
