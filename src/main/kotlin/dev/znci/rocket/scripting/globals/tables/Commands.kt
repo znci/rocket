@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.znci.rocket.scripting.functions
+package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.i18n.LocaleManager
 import dev.znci.rocket.scripting.PermissionsManager
@@ -24,6 +24,7 @@ import dev.znci.rocket.util.MessageFormatter
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
+import org.bukkit.command.CommandMap
 import org.bukkit.command.CommandSender
 import org.bukkit.command.defaults.BukkitCommand
 import org.bukkit.entity.Player
@@ -82,7 +83,7 @@ class LuaCommands : LuaTable() {
 
                 registerCommand(customCommand)
 
-                return LuaValue.NIL
+                return NIL
             }
         })
 
@@ -94,7 +95,7 @@ class LuaCommands : LuaTable() {
 
                 ScriptManager.enabledCommands.remove(commandStr)
 
-                return LuaValue.NIL
+                return NIL
             }
         })
 
@@ -207,15 +208,15 @@ class LuaCommands : LuaTable() {
                         val aliases = commandReference.aliases
 
                         for (i in 1..aliases.size) {
-                            luaAliases.set(i, LuaValue.valueOf(aliases[i - 1]))
+                            luaAliases.set(i, valueOf(aliases[i - 1]))
                         }
 
                         defineProperty(commandTable, "aliases", { luaAliases })
-                        defineProperty(commandTable, "description", { LuaValue.valueOf(commandReference.description) })
-                        defineProperty(commandTable, "usage", { LuaValue.valueOf(commandReference.usage) })
-                        defineProperty(commandTable, "permission", { LuaValue.valueOf(commandReference.permission) })
-                        defineProperty(commandTable, "permissionMessage", { LuaValue.valueOf(commandReference.permissionMessage) })
-                        defineProperty(commandTable, "argCount", { LuaValue.valueOf(commandReference.argCount) })
+                        defineProperty(commandTable, "description", { valueOf(commandReference.description) })
+                        defineProperty(commandTable, "usage", { valueOf(commandReference.usage) })
+                        defineProperty(commandTable, "permission", { valueOf(commandReference.permission) })
+                        defineProperty(commandTable, "permissionMessage", { valueOf(commandReference.permissionMessage) })
+                        defineProperty(commandTable, "argCount", { valueOf(commandReference.argCount) })
 
                         return commandTable
                     }
@@ -229,7 +230,7 @@ class LuaCommands : LuaTable() {
     private fun registerCommand(command: Command) {
         val commandMap = Bukkit.getServer().javaClass.getDeclaredField("commandMap").apply {
             isAccessible = true
-        }.get(Bukkit.getServer()) as org.bukkit.command.CommandMap
+        }.get(Bukkit.getServer()) as CommandMap
 
         commandMap.register(command.name, command)
     }
@@ -237,7 +238,7 @@ class LuaCommands : LuaTable() {
     private fun unregisterCommand(commandName: String) {
         val commandMap = Bukkit.getServer().javaClass.getDeclaredField("commandMap").apply {
             isAccessible = true
-        }.get(Bukkit.getServer()) as org.bukkit.command.CommandMap
+        }.get(Bukkit.getServer()) as CommandMap
 
         val existingCommand = commandMap.getCommand(commandName)
         if (existingCommand != null) {
@@ -249,7 +250,7 @@ class LuaCommands : LuaTable() {
     private fun convertArgsToLua(args: Array<out String>): LuaTable {
         val luaArgs = LuaTable()
         for ((index, arg) in args.withIndex()) {
-            luaArgs.set(index + 1, LuaValue.valueOf(arg))
+            luaArgs.set(index + 1, valueOf(arg))
         }
         return luaArgs
     }

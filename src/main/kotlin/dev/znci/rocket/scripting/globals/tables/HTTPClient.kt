@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.znci.rocket.scripting.functions
+package dev.znci.rocket.scripting.globals.tables
 
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
@@ -30,9 +30,9 @@ class LuaHTTPClient : LuaTable() {
                 return try {
                     val response = httpGet(url.tojstring())
 
-                    LuaValue.valueOf(response)
+                    valueOf(response)
                 } catch (e: Exception) {
-                    LuaValue.NIL
+                    NIL
                 }
             }
         })

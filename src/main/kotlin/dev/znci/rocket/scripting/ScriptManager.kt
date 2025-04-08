@@ -15,40 +15,86 @@
  */
 package dev.znci.rocket.scripting
 
+import dev.znci.rocket.scripting.api.RocketError
+import dev.znci.rocket.scripting.api.RocketLuaValue
+import dev.znci.rocket.scripting.api.RocketProperty
+import dev.znci.rocket.scripting.api.RocketTable
+import dev.znci.rocket.scripting.api.RocketValueBase
 import dev.znci.rocket.scripting.classes.Command
-import dev.znci.rocket.scripting.functions.*
-import dev.znci.rocket.util.RocketEnums
 import org.bukkit.event.Event
 import java.io.File
 import org.luaj.vm2.Globals
 import org.luaj.vm2.LuaError
-import org.luaj.vm2.LuaFunction
+import org.luaj.vm2.LuaTable
+import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.jse.JsePlatform
 import java.util.ArrayList
 
+/**
+ * The `ScriptManager` object is responsible for managing Lua scripts, global values, and event handling in the plugin.
+ * It allows for the loading and running of scripts, registering and unregistering global values.
+ */
 object ScriptManager {
+    /**
+     * The global environment for Lua scripts.
+     * This is used to load and execute Lua code with a standard Lua environment.
+     */
+    private val globals: Globals = JsePlatform.standardGlobals()
+
+    /**
+     * A list of global values (properties and tables) that have been registered for Lua scripting.
+     * These globals are made available to Lua scripts during their execution.
+     */
+    private var enabledGlobals: MutableList<RocketValueBase> = mutableListOf()
+
+    /**
+     * The folder where scripts are located.
+     * This can be set to a custom folder to load Lua scripts from a specific directory.
+     */
     var scriptsFolder: File = File("")
-    val globals: Globals = JsePlatform.standardGlobals()
 
-    val loadedScriptFiles = mutableMapOf<String, MutableList<LuaFunction>>()
+    /**
+     * A map of events and their associated Lua handlers.
+     * It stores the events triggered in the system and the corresponding Lua functions that handle them.
+     */
+    val usedEvents = mutableMapOf<Class<out Event>, LuaValue>()
 
-    val usedEvents = mutableMapOf<Class<out Event>, MutableList<LuaFunction>>()
-    val eventScript = mutableMapOf<LuaFunction, Class<out Event>>()
-
+    /**
+     * A map of enabled commands by their names.
+     * It associates command names with their respective command executors.
+     */
     val enabledCommands = mutableMapOf<String, Command>()
 
+    /**
+     * Sets the folder where scripts are located.
+     *
+     * @param folder The folder containing the Lua scripts.
+     */
     fun setFolder(folder: File) {
         scriptsFolder = folder
     }
 
+    /**
+     * Loads all scripts from the `scriptsFolder` directory.
+     * This method currently prints the content of the scripts, but is planned for future use when custom folder configurations are implemented.
+     */
     fun loadScripts() {
         scriptsFolder.walkTopDown().forEach { file ->
             if (file.isFile && !file.startsWith("-")) {
                 val content = file.readText()
+
+                println(content)
             }
         }
     }
 
+    /**
+     * Retrieves a list of all scripts available in the `scriptsFolder` directory.
+     * Optionally, can include or exclude disabled scripts based on their file name (files starting with "-").
+     *
+     * @param includeDisabled If `true`, disabled scripts (starting with '-') are included.
+     * @return A list of script file paths relative to the plugin directory.
+     */
     fun getAllScripts(includeDisabled: Boolean = true): List<String> {
         val list = ArrayList<String>()
         scriptsFolder.walkTopDown().forEach { file ->
@@ -60,6 +106,9 @@ object ScriptManager {
         return list
     }
 
+    /**
+     * Recursively loads all scripts located in the scripts folder
+     */
     fun loadAll(): List<String?> {
         val results = mutableListOf<String?>()
         getAllScripts(false).forEach { script ->
@@ -68,6 +117,13 @@ object ScriptManager {
         return results
     }
 
+    /**
+     * Loads a script based off of a [File] object
+     *
+     * @param scriptFile The script to load
+     * @return a string if there's been an error
+     * @return null if this method succeeds
+     */
     fun loadScript(scriptFile: File): String? {
         if (loadedScriptFiles[scriptFile.absolutePath] != null) {
             disableFile(scriptFile)
@@ -76,7 +132,11 @@ object ScriptManager {
         return result
     }
 
-    fun disableFile(scriptFile: File): String {
+    /**
+     * Disables a script based off of a [File] object
+     * @param scriptFile The script to disable
+     */
+    fun disableFile(scriptFile: File) {
         val functions = loadedScriptFiles[scriptFile.absolutePath]!!
         for (function in functions) {
             val eventClass = eventScript[function]!!
@@ -85,24 +145,22 @@ object ScriptManager {
             }
             eventScript.remove(function)
         }
-        return ""
     }
 
-    fun runScript(scriptFile: File): String? {
+    /**
+     * Runs a Lua script provided as a string.
+     * The script is executed within the global Lua environment, and any errors are caught and returned as a string message.
+     *
+     * @param scriptFile The Lua script content to execute.
+     * @return An error message if execution fails, or an empty string if the script ran successfully.
+     */
+    fun runScript(scriptFile: String): String? {
 
         val content = scriptFile.readText()
 
         try {
-            globals.set("players", LuaPlayers())
-            globals.set("events", LuaEvents())
-            globals.set("commands", LuaCommands())
-            globals.set("http", LuaHTTPClient())
-            globals.set("location", LuaLocations())
-            globals.set("Material", RocketEnums.RocketMaterial.getLuaTable())
-            globals.set("WorldType", RocketEnums.RocketWorldType.getLuaTable())
-            globals.set("Environment", RocketEnums.RocketEnvironment.getLuaTable())
-
-            val scriptResult = globals.load(content, "::${scriptFile.absolutePath}::", globals)
+            applyGlobals(globals)
+            val scriptResult = globals.load(scriptFile, "::${scriptFile.absolutePath}::", globals)
 
             scriptResult.call()
         } catch (error: LuaError) {
@@ -110,5 +168,64 @@ object ScriptManager {
         }
 
         return ""
+    }
+
+    /**
+     * Retrieves a global value by its table name.
+     *
+     * @param valueName The name of the global value to retrieve.
+     * @return The global value if found, or `null` if it is not registered.
+     */
+    private fun getGlobalByTableName(valueName: String): RocketValueBase? {
+        return enabledGlobals.find { it.valueName == valueName }
+    }
+
+    /**
+     * Registers a global value, making it available for use in Lua.
+     *
+     * @param global The global value to register.
+     * @throws RocketError If a global with the same table name is already registered.
+     */
+    fun registerGlobal(global: RocketValueBase) {
+        if (getGlobalByTableName(global.valueName) != null) {
+            throw RocketError("A global of the same table name ('${global.valueName}') is already registered.")
+        }
+
+        enabledGlobals.add(global)
+    }
+
+    /**
+     * Unregisters a global value, making it unavailable for use in Lua.
+     *
+     * @param global The global value to unregister.
+     * @throws RocketError If no global with the given table name is registered.
+     */
+    @Suppress("unused") // TODO: more management of globals by the end-user
+    private fun unregisterGlobal(global: RocketValueBase) {
+        if (getGlobalByTableName(global.valueName) == null) {
+            throw RocketError("A global with the table name ('${global.valueName}') is not registered and cannot be unregistered.")
+        }
+
+        enabledGlobals.remove(global)
+    }
+
+    /**
+     * Applies the registered global values to a Lua table.
+     * This makes all registered globals available to Lua scripts via the provided Lua table.
+     *
+     * @param table The Lua table to which the globals will be applied.
+     */
+    private fun applyGlobals(table: LuaTable) {
+        enabledGlobals.forEach {
+            println("Processing: ${it::class.qualifiedName}")
+            when (it) {
+                is RocketTable -> {
+                    table.set(it.valueName, it.table)
+                }
+                is RocketProperty -> {
+                    table.set(it.valueName, RocketLuaValue.valueOf(it.value))
+                }
+            }
+        }
     }
 }

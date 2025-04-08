@@ -17,11 +17,33 @@ package dev.znci.rocket.scripting
 
 import org.bukkit.entity.Player
 
+/**
+ * The `PermissionsManager` object is responsible for managing player permissions and group memberships.
+ * It provides utility functions to check if a player belongs to a specific group and if they have specific permissions.
+ */
 object PermissionsManager {
+    /**
+     * Checks if a player belongs to a specific group.
+     *
+     * This method checks whether the player has the permission for the specified group in the format `group.<groupName>`.
+     *
+     * @param player The player whose group is being checked.
+     * @param group The name of the group to check.
+     * @return `true` if the player belongs to the specified group, `false` otherwise.
+     */
     fun isPlayerInGroup(player: Player, group: String): Boolean {
         return player.hasPermission("group.$group")
     }
 
+    /**
+     * Retrieves all the groups the player belongs to.
+     *
+     * This method checks all the player's effective permissions, filtering out those that are related to groups
+     * (permissions starting with `group.`), and returns a list of group names.
+     *
+     * @param player The player whose groups are being retrieved.
+     * @return A list of group names that the player is part of.
+     */
     @Suppress("unused") // TODO: This will be used in the future. Remove this decorator when it's used.
     fun getPlayerGroups(player: Player): List<String> {
         return player.effectivePermissions
@@ -29,6 +51,15 @@ object PermissionsManager {
             .map { it.permission.substring(6) }
     }
 
+    /**
+     * Checks if a player has a specific permission.
+     *
+     * This method checks whether the player has the specified permission.
+     *
+     * @param player The player whose permissions are being checked.
+     * @param permission The permission to check.
+     * @return `true` if the player has the specified permission, `false` otherwise.
+     */
     fun hasPermission(player: Player, permission: String): Boolean {
         return player.hasPermission(permission)
     }

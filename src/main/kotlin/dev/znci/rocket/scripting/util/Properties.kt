@@ -20,6 +20,21 @@ import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.ThreeArgFunction
 import org.luaj.vm2.lib.TwoArgFunction
 
+/**
+ * Defines a property on a Lua table with a getter, setter, and optional validator.
+ * This function allows you to define custom properties that can be accessed and mutated using Lua table indexing.
+ * If a setter is provided, it ensures that the setter validates the value using the optional validator before setting it.
+ * If the property is read-only, an error is thrown if an attempt is made to set it.
+ *
+ * @param table The Lua table on which the property will be defined.
+ * @param propertyName The name of the property to define.
+ * @param getter The function to retrieve the value of the property.
+ * @param setter An optional function to set the value of the property. If null, the property is read-only.
+ * @param validator An optional function to validate the value before setting it. Returns `true` if valid, `false` if invalid.
+ * @throws org.luaj.vm2.LuaError If the value provided to the setter is invalid according to the validator.
+ */
+
+@Deprecated("RocketNative Kotlin should be used instead.", ReplaceWith("RocketNative"), DeprecationLevel.WARNING)
 fun defineProperty(
     table: LuaTable,
     propertyName: String,
@@ -35,7 +50,7 @@ fun defineProperty(
             if (key.tojstring() == propertyName) {
                 return getter()
             }
-            return indexFunction?.call(table, key) ?: LuaValue.NIL
+            return indexFunction?.call(table, key) ?: NIL
         }
     })
 
@@ -54,7 +69,7 @@ fun defineProperty(
             } else {
                 newIndexFunction?.call(table, key, value)
             }
-            return LuaValue.NONE
+            return NONE
         }
     })
 

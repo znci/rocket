@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.znci.rocket.scripting.functions
+package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.Rocket.Companion.INSTANCE
 import dev.znci.rocket.scripting.ScriptManager
@@ -57,7 +57,7 @@ class LuaEvents : LuaTable() {
                     ScriptManager.loadedScriptFiles[fileName]!!.add(function)
                 }
 
-                return LuaValue.NIL
+                return NIL
             }
         })
     }

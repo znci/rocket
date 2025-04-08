@@ -1,24 +1,20 @@
-
 messages:
-  bracket_color: "&7"
+  bracket_color: "<gray>"
   bracket_opening_text: "["
   bracket_closing_text: "]"
-  main_color: "&a"
+  main_color: "<green>"
   main_text: "Rocket"
   prefix: "{bracket_color}{bracket_opening_text}{main_color}{main_text}{bracket_color}{bracket_closing_text}"
   prefix_error: "{bracket_color}{bracket_opening_text}{error_color}{main_text}{bracket_color}{bracket_closing_text}"
 
-  error_color: "&c"
-  alt_error_color: "&e"
+  error_color: "<red>"
+  alt_error_color: "<yellow>"
   generic_error: "Error: %s"
 
-  success_color: "&a"
+  success_color: "<green>"
 
-  invalid_action: "{error_color}Invalid action."
+  invalid_action: "Invalid action."
   usage_template: "{error_color}Usage: "
-
-  no_permission: "{error_color}Insufficient permissions."
-
   rocket_command:
     usage: "{prefix_error} {usage_template}/rocket <reload|disable> <script_name|config>"
     scripts_folder_not_found: "{prefix} {error_color}Scripts folder not found."

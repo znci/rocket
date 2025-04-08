@@ -19,6 +19,7 @@ import dev.znci.rocket.commands.RocketCommand
 import dev.znci.rocket.i18n.LocaleManager
 import dev.znci.rocket.scripting.ScriptManager
 import dev.znci.rocket.scripting.events.EventListener
+import dev.znci.rocket.scripting.GlobalInitializer
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 
@@ -56,6 +57,16 @@ class Rocket : JavaPlugin() {
         // Register all events
         logger.info("Rocket plugin enabled")
         EventListener.cacheEvents()
+
+        // Register globals
+        val globalInitialized = GlobalInitializer.init()
+        if (globalInitialized) {
+            logger.info("Globals successfully initialized")
+        } else {
+            logger.severe("Globals failed to initialize")
+        }
+
+        logger.info("Rocket plugin enabled")
     }
 
     override fun onDisable() {
