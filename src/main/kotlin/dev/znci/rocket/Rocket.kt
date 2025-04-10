@@ -53,7 +53,8 @@ class Rocket : JavaPlugin() {
         this.getCommand("rocket")?.setExecutor(RocketCommand(this))
 
         // Register all events
-        EventListener.registerAllEvents()
+        logger.info("Rocket plugin enabled")
+        EventListener.cacheEvents()
 
         // Register globals
         val globalInitialized = GlobalInitializer.init()
@@ -69,4 +70,5 @@ class Rocket : JavaPlugin() {
     override fun onDisable() {
         logger.info("Rocket plugin disabled")
     }
+
 }

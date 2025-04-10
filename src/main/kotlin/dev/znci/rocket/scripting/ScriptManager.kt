@@ -22,11 +22,8 @@ import dev.znci.rocket.scripting.api.RocketTable
 import dev.znci.rocket.scripting.api.RocketValueBase
 import dev.znci.rocket.scripting.classes.Command
 import org.bukkit.event.Event
+import org.luaj.vm2.*
 import java.io.File
-import org.luaj.vm2.Globals
-import org.luaj.vm2.LuaError
-import org.luaj.vm2.LuaTable
-import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.jse.JsePlatform
 import java.util.ArrayList
 
@@ -54,10 +51,21 @@ object ScriptManager {
     var scriptsFolder: File = File("")
 
     /**
+     * A map of loaded scripts associated by file path
+     */
+    val loadedScriptFiles = mutableMapOf<String, MutableList<LuaFunction>>()
+
+    /**
+     * A map associating Lua event sections with a class.
+     * This mainly helps with disabling scripts
+     */
+    val eventScript = mutableMapOf<LuaFunction, Class<out Event>>()
+
+    /**
      * A map of events and their associated Lua handlers.
      * It stores the events triggered in the system and the corresponding Lua functions that handle them.
      */
-    val usedEvents = mutableMapOf<Class<out Event>, LuaValue>()
+    val usedEvents = mutableMapOf<Class<out Event>, MutableList<LuaFunction>>()
 
     /**
      * A map of enabled commands by their names.
@@ -70,7 +78,6 @@ object ScriptManager {
      *
      * @param folder The folder containing the Lua scripts.
      */
-    @Suppress("unused") // TODO: Will be used in the future when custom configuration folders are implemented
     fun setFolder(folder: File) {
         scriptsFolder = folder
     }
@@ -79,7 +86,6 @@ object ScriptManager {
      * Loads all scripts from the `scriptsFolder` directory.
      * This method currently prints the content of the scripts, but is planned for future use when custom folder configurations are implemented.
      */
-    @Suppress("unused") // TODO: Is this still required?
     fun loadScripts() {
         scriptsFolder.walkTopDown().forEach { file ->
             if (file.isFile && !file.startsWith("-")) {
@@ -102,23 +108,69 @@ object ScriptManager {
         scriptsFolder.walkTopDown().forEach { file ->
             if (file.isFile) {
                 if (includeDisabled && file.startsWith("-")) return@forEach
-                list.add(file.path.removePrefix("plugins/rocket/scripts/"))
+                list.add(file.path.removePrefix(if (file.path.startsWith("plugins/rocket/scripts/")) "plugins/rocket/scripts/" else "plugins\\rocket\\scripts\\"))
             }
         }
         return list
     }
 
     /**
+     * Recursively loads all scripts located in the scripts folder
+     * @return A list of error messages where execution failed. The list will be empty if there were no errors
+     */
+    fun loadAll(): List<String?> {
+        val results = mutableListOf<String?>()
+        getAllScripts(false).forEach { script ->
+            val result = loadScript(File("plugins/rocket/scripts/", script))
+            if (result != "")
+                results.add(result)
+        }
+        return results
+    }
+
+    /**
+     * Loads a script based off of a [File] object
+     *
+     * @param scriptFile The script to load
+     * @return An error message if execution fails, or an empty string if the script ran successfully.
+     */
+    fun loadScript(scriptFile: File): String? {
+        if (loadedScriptFiles[scriptFile.absolutePath] != null) {
+            disableFile(scriptFile)
+        }
+        val result = runScript(scriptFile)
+        return result
+    }
+
+    /**
+     * Disables a script based off of a [File] object
+     * @param scriptFile The script to disable
+     */
+    fun disableFile(scriptFile: File) {
+        val functions = loadedScriptFiles[scriptFile.absolutePath]!!
+        for (function in functions) {
+            val eventClass = eventScript[function]!!
+            for (eventCallback in usedEvents[eventClass]?:continue) {
+                if (eventCallback == function) usedEvents.remove(eventClass)
+            }
+            eventScript.remove(function)
+        }
+    }
+
+    /**
      * Runs a Lua script provided as a string.
      * The script is executed within the global Lua environment, and any errors are caught and returned as a string message.
      *
-     * @param text The Lua script content to execute.
+     * @param scriptFile The Lua script content to execute.
      * @return An error message if execution fails, or an empty string if the script ran successfully.
      */
-    fun runScript(text: String): String? {
+    fun runScript(scriptFile: File): String? {
+
+        val content = scriptFile.readText()
+
         try {
             applyGlobals(globals)
-            val scriptResult = globals.load(text, "script", globals)
+            val scriptResult = globals.load(content, "::${scriptFile.absolutePath}::", globals)
 
             scriptResult.call()
         } catch (error: LuaError) {
