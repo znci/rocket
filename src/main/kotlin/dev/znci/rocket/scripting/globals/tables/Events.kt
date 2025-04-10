@@ -15,7 +15,6 @@
  */
 package dev.znci.rocket.scripting.globals.tables
 
-import dev.znci.rocket.Rocket.Companion.INSTANCE
 import dev.znci.rocket.scripting.ScriptManager
 import dev.znci.rocket.scripting.events.EventListener
 import org.luaj.vm2.LuaFunction
