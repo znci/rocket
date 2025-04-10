@@ -68,7 +68,7 @@ class LuaEvents : LuaTable() {
         var previousChar: Char? = null
         var record = false
         for (char in function.toString()) {
-            if ((previousChar ?: ' ') == ':' && char == ':') if (record == false)  record = true else break
+            if ((previousChar ?: ' ') == ':' && char == ':') if (!record) record = true else break
             if (record) fileName = "$fileName$char"
             previousChar = char
         }
