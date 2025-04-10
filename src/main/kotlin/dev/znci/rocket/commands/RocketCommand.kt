@@ -33,8 +33,8 @@ class RocketCommand(private val plugin: JavaPlugin) : TabExecutor {
         }
 
         val action = args[0].lowercase()
-        val rawScriptName = args[1]
-        val scriptName = if (!rawScriptName.endsWith(".lua")) "${rawScriptName}.lua" else rawScriptName
+        val scriptName = args[1]
+        val rawScriptName = if (!scriptName.endsWith(".lua")) "${scriptName}.lua" else scriptName
 
         if (!scriptsFolder.exists() || !scriptsFolder.isDirectory) {
             sender.sendMessage(LocaleManager.getMessageAsComponent("rocket_command.scripts_folder_not_found"))
@@ -43,7 +43,7 @@ class RocketCommand(private val plugin: JavaPlugin) : TabExecutor {
 
         when (action) {
             "reload" -> {
-                if (rawScriptName.lowercase() == "config") {
+                if (scriptName.lowercase() == "config") {
                     plugin.reloadConfig()
 
                     val defaultLocale = plugin.config.getString("locale", "en_GB").toString()
@@ -53,7 +53,7 @@ class RocketCommand(private val plugin: JavaPlugin) : TabExecutor {
 
                     sender.sendMessage(LocaleManager.getMessageAsComponent("rocket_command.config_reloaded"))
                     return true
-                } else if (rawScriptName.lowercase() == "all") {
+                } else if (scriptName.lowercase() == "all") {
                     val results = ScriptManager.loadAll()
                     if (results.isNotEmpty()) {
                         results.forEach { error ->
@@ -63,10 +63,10 @@ class RocketCommand(private val plugin: JavaPlugin) : TabExecutor {
                     return true
                 }
 
-                val scriptFile = File(scriptsFolder, scriptName)
+                val scriptFile = File(scriptsFolder, rawScriptName)
 
                 if (!scriptFile.exists()) {
-                    sender.sendMessage(LocaleManager.getMessageAsComponent("rocket_command.script_not_found", scriptName))
+                    sender.sendMessage(LocaleManager.getMessageAsComponent("rocket_command.script_not_found", rawScriptName))
                     return true
                 }
 
@@ -78,15 +78,15 @@ class RocketCommand(private val plugin: JavaPlugin) : TabExecutor {
                     sender.sendMessage(
                         LocaleManager.getMessageAsComponent(
                             "rocket_command.script_reloaded",
-                            scriptName
+                            rawScriptName
                         )
                     )
                 }
             }
             "disable" -> {
-                val scriptFile = File(scriptsFolder, scriptName)
+                val scriptFile = File(scriptsFolder, rawScriptName)
                 if (!scriptFile.exists()) {
-                    sender.sendMessage(LocaleManager.getMessageAsComponent("rocket_command.script_not_found", scriptName))
+                    sender.sendMessage(LocaleManager.getMessageAsComponent("rocket_command.script_not_found", rawScriptName))
                     return true
                 }
 
@@ -95,7 +95,7 @@ class RocketCommand(private val plugin: JavaPlugin) : TabExecutor {
 
                 disableFile(scriptFile)
 
-                sender.sendMessage(LocaleManager.getMessageAsComponent("rocket_command.script_disabled", scriptName))
+                sender.sendMessage(LocaleManager.getMessageAsComponent("rocket_command.script_disabled", rawScriptName))
             }
             else -> {
                 sender.sendMessage(LocaleManager.getMessageAsComponent("rocket_command.usage"))
