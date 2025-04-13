@@ -121,8 +121,8 @@ object ScriptManager {
             val scriptResult = globals.load(text, "script", globals)
 
             scriptResult.call()
-        } catch (error: LuaError) {
-            return error.message
+        } catch (e: LuaError) {
+            return e.message
         }
 
         return ""
@@ -174,7 +174,6 @@ object ScriptManager {
      */
     fun applyGlobals(table: LuaTable) {
         enabledGlobals.forEach { it ->
-            println("Processing: ${it::class.qualifiedName}")
             when (it) {
 //                is RocketEnum -> {
 //                    try {

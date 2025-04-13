@@ -145,7 +145,6 @@ class LuaPlayer(
 
     @RocketNativeFunction
     fun hasPermission(value: String): Boolean {
-        println(PermissionsManager.hasPermission(player, value))
         return PermissionsManager.hasPermission(player, value)
     }
 

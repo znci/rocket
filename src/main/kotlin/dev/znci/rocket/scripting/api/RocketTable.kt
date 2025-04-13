@@ -15,6 +15,8 @@
  */
 package dev.znci.rocket.scripting.api
 
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.ThreeArgFunction
@@ -99,7 +101,15 @@ open class RocketTable(
         table.setmetatable(meta)
     }
 
-    fun setSimple(propertyName: String, value: Any) {
-        table.set(propertyName, valueOf(value).luaValue)
+    fun setSimple(propertyName: Any, value: Any) {
+        val key = when (propertyName) {
+            is Int -> LuaValue.valueOf(propertyName)
+            is String -> LuaValue.valueOf(propertyName)
+            is LuaValue -> propertyName
+            else -> throw RocketError("Unsupported key type: ${propertyName::class.simpleName}")
+        }
+
+        val luaValue = valueOf(value).luaValue
+        table.set(key, luaValue)
     }
 }

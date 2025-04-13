@@ -8,6 +8,7 @@ import org.luaj.vm2.Varargs
 import org.luaj.vm2.lib.ThreeArgFunction
 import org.luaj.vm2.lib.TwoArgFunction
 import org.luaj.vm2.lib.VarArgFunction
+import java.lang.reflect.InvocationTargetException
 import java.util.ArrayList
 import kotlin.reflect.*
 import kotlin.reflect.full.findAnnotation
@@ -60,8 +61,22 @@ abstract class RocketNative(
                         val kotlinArgs = args.toKotlinArgs(function)
                         val result = function.call(this@RocketNative, *kotlinArgs)
                         result.toLuaValue()
-                    } catch (e: Exception) {
-                        error("Error calling ${function.name}: ${e.message}")
+                    } catch (e: InvocationTargetException) {
+                        val cause = e.cause
+                        val errorPrefix = "Error calling ${function.name}:"
+                        if (cause is RocketError) {
+                            cause.printStackTrace()
+                            error("$errorPrefix ${cause.message}")
+                        } else {
+                            var errorMessage = e.message
+
+                            if (errorMessage == null) {
+                                errorMessage = "Unexpected error"
+                            }
+
+                            e.printStackTrace()
+                            error("$errorPrefix $errorMessage")
+                        }
                     }
                 }
             })
@@ -186,6 +201,9 @@ abstract class RocketNative(
                 val enumClass = this::class
                 val enumTable = RocketEnum(enumClass.simpleName!!)
                 enumTable.toLuaTable(this)
+            }
+            is Unit -> {
+                throw RocketError("Unit return type is not allowed. At least return a Boolean.")
             }
             else -> {
                 throw RocketError("Unsupported type: ${this?.javaClass?.simpleName ?: "null"}")
