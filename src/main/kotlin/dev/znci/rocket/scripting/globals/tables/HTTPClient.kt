@@ -17,11 +17,11 @@ package dev.znci.rocket.scripting.globals.tables
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
-import dev.znci.rocket.scripting.api.RocketError
-import dev.znci.rocket.scripting.api.RocketNative
-import dev.znci.rocket.scripting.api.RocketTable
-import dev.znci.rocket.scripting.api.annotations.RocketNativeFunction
-import dev.znci.rocket.scripting.api.annotations.RocketNativeProperty
+import dev.znci.twine.TwineError
+import dev.znci.twine.TwineNative
+import dev.znci.twine.TwineTable
+import dev.znci.twine.annotations.TwineNativeFunction
+import dev.znci.twine.annotations.TwineNativeProperty
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpConnectTimeoutException
@@ -34,10 +34,10 @@ data class HTTPOptions(
     val followRedirects: Boolean? = true,
 //    val headers: Map<String, String>?,
 //    val body: Map<String, String>?
-) : RocketTable("")
+) : TwineTable("")
 
-class LuaHTTPClient : RocketNative("http") {
-    @RocketNativeFunction("get")
+class LuaHTTPClient : TwineNative("http") {
+    @TwineNativeFunction("get")
     fun sendGet(url: String, options: HTTPOptions): HTTPResponse {
         return try {
             val client = getClient(options)
@@ -59,11 +59,11 @@ class LuaHTTPClient : RocketNative("http") {
                 jsonContent = jsonElement
             )
         } catch (e: HttpConnectTimeoutException) {
-            throw RocketError(getTimeoutMessage(options.timeout))
+            throw TwineError(getTimeoutMessage(options.timeout))
         }
     }
 
-    @RocketNativeFunction("post")
+    @TwineNativeFunction("post")
     fun sendPost(url: String, options: HTTPOptions): HTTPResponse {
         return try {
             val client = getClient(options)
@@ -88,7 +88,7 @@ class LuaHTTPClient : RocketNative("http") {
                 jsonContent = jsonElement
             )
         } catch (e: HttpConnectTimeoutException) {
-            throw RocketError(getTimeoutMessage(options.timeout))
+            throw TwineError(getTimeoutMessage(options.timeout))
         }
     }
 
@@ -120,21 +120,21 @@ class LuaHTTPClient : RocketNative("http") {
 class HTTPResponse(
     val textContent: String,
     val jsonContent: JsonElement?
-) : RocketNative("") {
-    @RocketNativeProperty
+) : TwineNative("") {
+    @TwineNativeProperty
     var text: String
         get() {
             return textContent
         }
         set(value) { return }
 
-    @RocketNativeProperty
-    var json: RocketTable?
+    @TwineNativeProperty
+    var json: TwineTable?
         get() {
             if (jsonContent == null) {
                 return null
             }
-            return fromJSON(jsonContent) as RocketTable?
+            return fromJSON(jsonContent) as TwineTable?
         }
         set(value) { return }
 }

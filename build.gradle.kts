@@ -1,5 +1,3 @@
-import org.jetbrains.dokka.gradle.DokkaTask
-
 /**
  * Copyright 2025 znci
  *
@@ -15,6 +13,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import org.jetbrains.dokka.gradle.DokkaTask
 
 plugins {
     kotlin("jvm") version "2.1.20-RC"
@@ -27,6 +26,7 @@ group = "dev.znci"
 version = "1.0-SNAPSHOT"
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/") {
         name = "papermc-repo"
@@ -34,6 +34,7 @@ repositories {
     maven("https://oss.sonatype.org/content/groups/public/") {
         name = "sonatype"
     }
+    maven("https://jitpack.io")
 }
 
 dependencies {
@@ -42,6 +43,8 @@ dependencies {
     implementation("org.luaj:luaj-jse:3.0.1")
     implementation("net.luckperms:api:5.4")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+//    implementation("com.github.znci:twine:3a5f69f7b1")
+    implementation("dev.znci:twine:1.0.0")
 }
 
 val targetJavaVersion = 21

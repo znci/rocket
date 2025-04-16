@@ -15,15 +15,15 @@
  */
 package dev.znci.rocket.scripting.globals.tables
 
-import dev.znci.rocket.scripting.api.RocketNative
-import dev.znci.rocket.scripting.api.annotations.RocketNativeFunction
-import dev.znci.rocket.scripting.api.annotations.RocketNativeProperty
+import dev.znci.twine.TwineNative
+import dev.znci.twine.annotations.TwineNativeFunction
+import dev.znci.twine.annotations.TwineNativeProperty
 
-class SimpleTest : RocketNative("testNext") {
+class SimpleTest : TwineNative("testNext") {
 
     private var internalString = "Initial"
 
-    @RocketNativeProperty
+    @TwineNativeProperty
     var stringRepresentation: String
         get() {
             println("Getter")
@@ -34,7 +34,7 @@ class SimpleTest : RocketNative("testNext") {
             internalString = value.uppercase()  // just an example to showcase custom setter.
         }
 
-    @RocketNativeFunction
+    @TwineNativeFunction
     fun testFunction(arg1: String): String {
         return "Hello, $arg1!"
     }
