@@ -71,7 +71,6 @@ object LocaleManager {
      */
     fun loadLanguages() {
         val langFolder = File(plugin?.dataFolder, "locales")
-        if (!langFolder.exists()) langFolder.mkdirs()
 
         langFolder.listFiles()?.filter { it.extension == "yml" }?.forEach { file ->
             val langCode = file.nameWithoutExtension
