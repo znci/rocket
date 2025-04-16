@@ -35,11 +35,13 @@ open class RocketLuaValue(val luaValue: LuaValue = LuaValue.TRUE) : LuaValue() {
         /**
          * Represents a `true` Lua value.
          */
+        @Suppress("unused")
         val TRUE = RocketLuaValue(LuaValue.TRUE)
 
         /**
          * Represents a `false` Lua value.
          */
+        @Suppress("unused")
         val FALSE = RocketLuaValue(LuaValue.FALSE)
 
         /**

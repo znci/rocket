@@ -99,6 +99,7 @@ open class RocketTable(
         table.setmetatable(meta)
     }
 
+    @Suppress("unused")
     fun setSimple(propertyName: String, value: Any) {
         table.set(propertyName, valueOf(value).luaValue)
     }

@@ -34,6 +34,7 @@ import org.luaj.vm2.lib.OneArgFunction
 import org.luaj.vm2.lib.TwoArgFunction
 import org.luaj.vm2.lib.ZeroArgFunction
 
+@Suppress("unused")
 class LuaCommands : LuaTable() {
     init {
         set("register", object : TwoArgFunction() {

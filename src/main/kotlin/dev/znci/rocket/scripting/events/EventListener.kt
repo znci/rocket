@@ -23,7 +23,6 @@ import org.bukkit.event.Event
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.plugin.Plugin
-import org.luaj.vm2.LuaBoolean
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.ZeroArgFunction
@@ -152,7 +151,7 @@ object EventListener : Listener {
             luaTable.set("cancel", object : ZeroArgFunction() {
                 override fun call(): LuaValue {
                     event.isCancelled = true
-                    return LuaBoolean.valueOf(event.isCancelled)
+                    return valueOf(event.isCancelled)
                 }
             })
         }

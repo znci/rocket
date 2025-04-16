@@ -21,6 +21,7 @@ import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.TwoArgFunction
 
+@Suppress("unused")
 class LuaEvents : LuaTable() {
     init {
         set("on", object : TwoArgFunction() {

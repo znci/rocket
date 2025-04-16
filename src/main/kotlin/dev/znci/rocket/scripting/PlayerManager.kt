@@ -49,7 +49,7 @@ object PlayerManager {
             override fun call(message: LuaValue): LuaValue {
                 val messageComponent = MessageFormatter.formatMessage(message.tojstring())
                 player.sendMessage(messageComponent)
-                return LuaValue.TRUE
+                return TRUE
             }
         })
 
@@ -57,7 +57,7 @@ object PlayerManager {
             override fun call(message: LuaValue): LuaValue {
                 val messageComponent = MessageFormatter.formatMessage(message.tojstring())
                 player.sendActionBar(messageComponent)
-                return LuaValue.TRUE
+                return TRUE
             }
         })
 
@@ -71,7 +71,7 @@ object PlayerManager {
                 )
                 player.sendTitlePart(TitlePart.TITLE, messageComponent)
                 player.sendTitlePart(TitlePart.TIMES, times)
-                return LuaValue.TRUE
+                return TRUE
             }
         })
 
@@ -85,14 +85,14 @@ object PlayerManager {
                 )
                 player.sendTitlePart(TitlePart.SUBTITLE, messageComponent)
                 player.sendTitlePart(TitlePart.TIMES, times)
-                return LuaValue.TRUE
+                return TRUE
             }
         })
 
         table.set("setPlayerTime", object : TwoArgFunction() {
             override fun call(value: LuaValue, relative: LuaValue): LuaValue {
                 player.setPlayerTime(value.tolong(), relative.toboolean())
-                return LuaValue.TRUE
+                return TRUE
             }
         })
 
@@ -100,21 +100,21 @@ object PlayerManager {
             override fun call(value: LuaValue): LuaValue {
                 player.addAttachment(Bukkit.getPluginManager().getPlugin("Rocket")!!)
                     .setPermission(value.tojstring(), true)
-                return LuaValue.TRUE
+                return TRUE
             }
         })
 
         table.set("op", object : ZeroArgFunction() {
             override fun call(): LuaValue {
                 player.isOp = true
-                return LuaValue.TRUE
+                return TRUE
             }
         })
 
         table.set("deop", object : ZeroArgFunction() {
             override fun call(): LuaValue {
                 player.isOp = false
-                return LuaValue.TRUE
+                return TRUE
             }
         })
 
@@ -124,18 +124,18 @@ object PlayerManager {
                     try {
                         val bukkitLocation = value.toBukkitLocation()
                         player.teleport(bukkitLocation)
-                        return LuaValue.TRUE
-                    } catch (e: Exception) {
-                        return LuaValue.FALSE
+                        return TRUE
+                    } catch (_: Exception) {
+                        return FALSE
                     }
                 }
-                return LuaValue.FALSE
+                return FALSE
             }
         })
 
         table.set("hasPermission", object : OneArgFunction() {
             override fun call(value: LuaValue): LuaValue {
-                return LuaValue.valueOf(
+                return valueOf(
                     PermissionsManager.hasPermission(player, value.tojstring())
                 )
             }
@@ -143,7 +143,7 @@ object PlayerManager {
 
         table.set("isInGroup", object : OneArgFunction() {
             override fun call(value: LuaValue): LuaValue {
-                return LuaValue.valueOf(
+                return valueOf(
                     PermissionsManager.isPlayerInGroup(player, value.tojstring())
                 )
             }
