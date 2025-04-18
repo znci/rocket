@@ -63,6 +63,13 @@ class LuaHTTPClient : TwineNative("http") {
         }
     }
 
+    @TwineNativeFunction("test")
+    fun test(callback: (string: String) -> Void): Boolean {
+        println("CALLING FUNCTION")
+        println(callback("hello"))
+        return true
+    }
+
     @TwineNativeFunction("post")
     fun sendPost(url: String, options: HTTPOptions): HTTPResponse {
         return try {

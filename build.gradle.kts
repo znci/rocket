@@ -44,7 +44,7 @@ dependencies {
     implementation("net.luckperms:api:5.4")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 //    implementation("com.github.znci:twine:3a5f69f7b1")
-    implementation("dev.znci:twine:1.0.0")
+    implementation(files("../twine4/twine/build/libs/twine-1.0.1.jar"))
 }
 
 val targetJavaVersion = 21

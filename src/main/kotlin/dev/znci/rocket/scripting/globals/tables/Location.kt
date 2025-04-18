@@ -108,7 +108,7 @@ class LuaLocation(
     }
 
     companion object {
-        fun fromBukkit(location: Location): TwineTable {
+        fun fromBukkit(location: Location): LuaLocation {
             return LuaLocation(
                 location.x,
                 location.y,
@@ -119,69 +119,28 @@ class LuaLocation(
             )
         }
     }
-}
 
+    fun toBukkitLocation(): Location {
+        return try {
+            val x = this.xProperty
+            val y = this.yProperty
+            val z = this.zProperty
+            val worldUUIDStr = this.worldUUIDProperty
 
-//
-//class LuaLocation(
-//    x: Double,
-//    y: Double,
-//    z: Double,
-//    worldUUID: String,
-//    yaw: Float = 0f,
-//    pitch: Float = 0f
-//) : LuaTable() {
-//    private var world: World? = Bukkit.getWorld(UUID.fromString(worldUUID))
-//    private var location: Location = Location(world, x, y, z, yaw, pitch)
-//
-//    companion object {
-//        fun fromBukkit(location: Location): LuaTable {
-//            return LuaLocation(
-//                location.x,
-//                location.y,
-//                location.z,
-//                location.world.uid.toString(),
-//                location.yaw,
-//                location.pitch
-//            ).getLocationTable()
-//        }
-//    }
-//
-//    fun getLocationTable(): LuaTable {
-//        val table = LuaTable()
-//
-//        defineProperty(table, "x", { valueOf(location.x) }, { value -> location.x = value.todouble() })
-//        defineProperty(table, "y", { valueOf(location.y) }, { value -> location.y = value.todouble() })
-//        defineProperty(table, "z", { valueOf(location.z) }, { value -> location.z = value.todouble() })
-//        defineProperty(table, "world", { valueOf(location.world.name) }, { value -> location.world = Bukkit.getWorld(UUID.fromString(value.tojstring())) })
-//        defineProperty(table, "worldUUID", { valueOf(location.world.uid.toString()) }, { value -> location.world = Bukkit.getWorld(UUID.fromString(value.tojstring())) })
-//        defineProperty(table, "yaw", { valueOf(location.yaw.toDouble()) }, { value -> location.yaw = value.tofloat() })
-//        defineProperty(table, "pitch", { valueOf(location.pitch.toDouble()) }, { value -> location.pitch = value.tofloat() })
-//
-//        return table
-//    }
-//}
+            val worldUUID = try {
+                UUID.fromString(worldUUIDStr)
+            } catch (e: IllegalArgumentException) {
+                kotlin.error("Invalid 'worldUUID': Not a valid UUID (value: $worldUUIDStr)")
+            }
 
-fun LuaValue.toBukkitLocation(): Location {
-    if (this !is LuaTable) {
-        error("Expected a LuaTable, got ${this.typename()} (value: ${this.tojstring()})")
-    }
+            val world = Bukkit.getWorld(worldUUID)
 
-    return try {
-        val x = this.get("x").todouble()
-        val y = this.get("y").todouble()
-        val z = this.get("z").todouble()
-        val worldUUIDStr = this.get("worldUUID").tojstring()
-        val worldUUID = try {
-            UUID.fromString(worldUUIDStr)
-        } catch (e: IllegalArgumentException) {
-            error("Invalid 'worldUUID': Not a valid UUID (value: $worldUUIDStr)")
+            val yaw = this.yawProperty
+            val pitch = this.pitchProperty
+
+            Location(world, x, y, z, yaw, pitch)
+        } catch (e: Exception) {
+            kotlin.error("LuaTable does not represent a valid location: ${e.message}")
         }
-        val world = Bukkit.getWorld(worldUUID)
-        val yaw = this.get("yaw").tofloat()
-        val pitch = this.get("pitch").tofloat()
-        Location(world, x, y, z, yaw, pitch)
-    } catch (e: Exception) {
-        error("LuaTable does not represent a valid location: ${e.message}")
     }
 }

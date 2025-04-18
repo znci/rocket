@@ -56,7 +56,7 @@ class Rocket : JavaPlugin() {
         EventListener.registerAllEvents()
 
         // Register globals
-        val globalInitialized = GlobalInitializer.init()
+        val globalInitialized = GlobalInitializer.init(this)
         if (globalInitialized) {
             logger.info("Globals successfully initialized")
         } else {

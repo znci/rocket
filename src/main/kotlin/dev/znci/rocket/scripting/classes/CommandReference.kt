@@ -15,7 +15,9 @@
  */
 package dev.znci.rocket.scripting.classes
 
+import dev.znci.twine.TwineTable
 import org.bukkit.command.CommandExecutor
+import org.bukkit.command.TabCompleter
 
 /**
  * Represents a command in the Rocket API, containing information about the command's name,
@@ -32,14 +34,16 @@ import org.bukkit.command.CommandExecutor
  * @param aliases A list of alternative names for the command.
  * @param argCount The number of arguments that the command expects.
  * @param executor The `CommandExecutor` responsible for executing the command logic.
+ * @param tabCompleter The `TabCompleter` responsible for tab completions.
  */
-data class Command(
-    val name: String,
-    var description: String,
-    var usage: String,
-    var permission: String,
-    var permissionMessage: String,
-    var aliases: List<String>,
-    var argCount: Int,
-    var executor: CommandExecutor
-)
+data class CommandReference(
+    var name: String = "",
+    var description: String = "",
+    var usage: String = "",
+    var permission: String = "",
+    var permissionMessage: String = "",
+    var aliases: List<String> = listOf(),
+    var argCount: Int = 0,
+    var executor: CommandExecutor = CommandExecutor { _, _, _, _ -> true },
+    var tabCompleter: TabCompleter = TabCompleter { _, _, _, _ -> listOf() }
+) : TwineTable("")

@@ -15,7 +15,7 @@
  */
 package dev.znci.rocket.scripting
 
-import dev.znci.rocket.scripting.classes.Command
+import dev.znci.rocket.scripting.classes.CommandReference
 import dev.znci.twine.TwineError
 import dev.znci.twine.TwineLuaValue
 import dev.znci.twine.TwineProperty
@@ -57,7 +57,7 @@ object ScriptManager {
      * A map of enabled commands by their names.
      * It associates command names with their respective command executors.
      */
-    val enabledCommands = mutableMapOf<String, Command>()
+    val enabledCommands = mutableMapOf<String, CommandReference>()
 
     /**
      * A list of global values (properties and tables) that have been registered for Lua scripting.

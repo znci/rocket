@@ -22,6 +22,7 @@ import dev.znci.twine.TwineNative
 import dev.znci.twine.TwineTable
 import dev.znci.twine.annotations.TwineNativeFunction
 import dev.znci.twine.annotations.TwineNativeProperty
+import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.title.Title
 import net.kyori.adventure.title.TitlePart
 import org.bukkit.Bukkit
@@ -33,11 +34,11 @@ import java.time.Duration
 @Suppress("unused")
 class LuaPlayers : TwineNative("players") {
     @TwineNativeFunction("get")
-    fun getPlayerByName(playerName: String): LuaPlayer {
+    fun getPlayerByName(playerName: String): LuaPlayer? {
         val player = Bukkit.getPlayer(playerName)
 
         if (player == null) {
-            throw TwineError("Player not found")
+            return null
         }
 
         return LuaPlayer(player)
@@ -162,6 +163,13 @@ class LuaPlayer(
         player.gameMode = GameMode.valueOf(value)
         return true
     }
+
+    @TwineNativeProperty
+    var location: LuaLocation
+        get() {
+            return LuaLocation.fromBukkit(player.location)
+        }
+        set(value) { return }
 
     @TwineNativeProperty
     var name: String
