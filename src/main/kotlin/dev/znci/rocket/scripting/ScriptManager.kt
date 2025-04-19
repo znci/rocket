@@ -40,7 +40,6 @@ object ScriptManager {
      * This is used to load and execute Lua code with a standard Lua environment.
      */
     private val globals: Globals = JsePlatform.standardGlobals()
-
     /**
      * The folder where scripts are located.
      * This can be set to a custom folder to load Lua scripts from a specific directory.

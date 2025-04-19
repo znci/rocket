@@ -17,13 +17,11 @@ package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.scripting.util.getWorldByNameOrUUID
 import dev.znci.twine.TwineNative
-import dev.znci.twine.TwineTable
 import dev.znci.twine.annotations.TwineNativeFunction
 import dev.znci.twine.annotations.TwineNativeProperty
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.World
-import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import java.util.*
 
@@ -34,6 +32,7 @@ class LuaLocations : TwineNative("location") {
     }
 }
 
+@Suppress("unused")
 class LuaLocation(
     x: Double,
     y: Double,
