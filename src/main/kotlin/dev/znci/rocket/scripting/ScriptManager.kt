@@ -83,8 +83,7 @@ object ScriptManager {
         scriptsFolder.walkTopDown().forEach { file ->
             if (file.isFile && !file.startsWith("-")) {
                 val content = file.readText()
-
-                println(content)
+                runScript(content)
             }
         }
     }

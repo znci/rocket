@@ -69,6 +69,9 @@ class Rocket : JavaPlugin() {
             logger.severe("Globals failed to initialize")
         }
 
+        // Automatically load all scripts in the scripts folder
+        ScriptManager.loadScripts()
+
         logger.info("Rocket plugin enabled")
     }
 
