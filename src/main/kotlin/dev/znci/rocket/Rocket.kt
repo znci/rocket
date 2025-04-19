@@ -37,6 +37,12 @@ class Rocket : JavaPlugin() {
         LocaleManager.setPlugin(this)
         LocaleManager.setLocale(defaultLocale)
 
+        // Copy locale files from resources to the locales plugin data folder
+        val defaultLocales = arrayOf("en_GB")
+        defaultLocales.forEach {
+            saveResource("locales/$it.yml", false)
+        }
+
         LocaleManager.loadLanguages()
 
         // Create the scripts folder

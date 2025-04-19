@@ -4,7 +4,6 @@ import dev.znci.rocket.scripting.globals.tables.LuaCommands
 import dev.znci.rocket.scripting.globals.tables.LuaHTTPClient
 import dev.znci.rocket.scripting.globals.tables.LuaLocations
 import dev.znci.rocket.scripting.globals.tables.LuaPlayers
-import dev.znci.rocket.scripting.globals.tables.SimpleTest
 import dev.znci.rocket.scripting.globals.values.TestValue
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -25,7 +24,6 @@ object GlobalInitializer {
         @Suppress("UNUSED")
         plugin: JavaPlugin
     ): Boolean {
-        ScriptManager.registerGlobal(SimpleTest())
         ScriptManager.registerGlobal(TestValue())
         ScriptManager.registerGlobal(LuaPlayers())
         ScriptManager.registerGlobal(LuaLocations())

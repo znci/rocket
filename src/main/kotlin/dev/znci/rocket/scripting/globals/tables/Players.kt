@@ -22,12 +22,10 @@ import dev.znci.twine.TwineNative
 import dev.znci.twine.TwineTable
 import dev.znci.twine.annotations.TwineNativeFunction
 import dev.znci.twine.annotations.TwineNativeProperty
-import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.title.Title
 import net.kyori.adventure.title.TitlePart
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
-import org.bukkit.Location
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 import java.time.Duration
@@ -193,94 +191,82 @@ class LuaPlayer(
     }
 
     @TwineNativeProperty
-    override var location: LuaLocation
+    override val location: LuaLocation
         get() {
             return LuaLocation.fromBukkit(player.location)
         }
-        set(value) { return }
+
 
     @TwineNativeProperty
-    override var name: String
+    override val name: String
         get() {
             return player.name
         }
-        set(value) { return }
 
     @TwineNativeProperty
-    var world: String
+    val world: String
         get() {
             return player.world.name
         }
-        set(value) { return }
 
     @TwineNativeProperty
-    var ip: String?
+    val ip: String?
         get() {
             return player.address?.hostString
         }
-        set(value) { return }
 
     @TwineNativeProperty
-    var isFlying: Boolean
+    val isFlying: Boolean
         get() {
             return player.isFlying
         }
-        set(value) { return }
 
     @TwineNativeProperty
-    var isSneaking: Boolean
+    val isSneaking: Boolean
         get() {
             return player.isSneaking
         }
-        set(value) { return }
 
     @TwineNativeProperty
-    var isSprinting: Boolean
+    val isSprinting: Boolean
         get() {
             return player.isSprinting
         }
-        set(value) { return }
 
     @TwineNativeProperty
-    var isBlocking: Boolean
+    val isBlocking: Boolean
         get() {
             return player.isBlocking
         }
-        set(value) { return }
 
     @TwineNativeProperty
-    var isSleeping: Boolean
+    val isSleeping: Boolean
         get() {
             return player.isSleeping
         }
-        set(value) { return }
 
-    private val block = player.getTargetBlockExact(100)
-
-    @TwineNativeProperty
-    var targetBlockType: String = ""
+    private val targetBlock
+        get() = player.getTargetBlockExact(100)
 
     @TwineNativeProperty
-    var targetBlockLocation: Location = Location(Bukkit.getWorld("world"), 0.0, 0.0, 0.0)
+    val targetBlockType
+        get() = targetBlock?.type.toString()
 
     @TwineNativeProperty
-    var targetBlockLightLevel: Double = 0.0
+    val targetBlockLocation
+        get() = LuaLocation.fromBukkit(targetBlock?.location!!)
 
     @TwineNativeProperty
-    var targetBlockTemperature: Double = 0.0
+    val targetBlockLightLevel
+        get() = targetBlock?.lightLevel?.toDouble()
 
     @TwineNativeProperty
-    var targetBlockHumidity: Double = 0.0
+    val targetBlockTemperature
+        get() = targetBlock?.temperature?.toDouble()
 
-    init {
-        block?.let {
-            targetBlockType = block.type.toString()
-            targetBlockLocation = block.location
-            targetBlockLightLevel = block.lightLevel.toDouble()
-            targetBlockTemperature = block.temperature
-            targetBlockHumidity = block.humidity
-        }
-    }
+    @TwineNativeProperty
+    val targetBlockHumidity
+        get() = targetBlock?.humidity?.toDouble()
 }
 
 @Suppress("unused")

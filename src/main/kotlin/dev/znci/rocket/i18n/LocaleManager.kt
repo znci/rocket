@@ -71,7 +71,6 @@ object LocaleManager {
      */
     fun loadLanguages() {
         val langFolder = File(plugin?.dataFolder, "locales")
-        if (!langFolder.exists()) langFolder.mkdirs()
 
         langFolder.listFiles()?.filter { it.extension == "yml" }?.forEach { file ->
             val langCode = file.nameWithoutExtension
@@ -122,7 +121,7 @@ object LocaleManager {
 
         val formattedMessage = try {
             message.format(*formatArgs.map { it.toString() }.toTypedArray())
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             message
         }
 

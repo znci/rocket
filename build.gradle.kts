@@ -1,3 +1,5 @@
+import org.jetbrains.dokka.gradle.DokkaTask
+
 /**
  * Copyright 2025 znci
  *
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import org.jetbrains.dokka.gradle.DokkaTask
 
 plugins {
     kotlin("jvm") version "2.1.20-RC"
@@ -44,6 +45,8 @@ dependencies {
     implementation("net.luckperms:api:5.4")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("dev.znci:twine:1.0.1")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
 }
 
 val targetJavaVersion = 21
@@ -69,7 +72,6 @@ tasks.withType<DokkaTask>().configureEach {
         named("main") {
             moduleName.set("Rocket Java API")
             includes.from("Rocket.md")
-
         }
     }
 }
