@@ -179,4 +179,10 @@ class LuaServer : TwineNative("server") {
         server.shutdown()
         return true
     }
+
+    @TwineNativeFunction
+    fun restart(): Boolean {
+        server.restart()
+        return true
+    }
 }
