@@ -102,7 +102,7 @@ class LuaServer : TwineNative("server") {
 
     @TwineNativeProperty
     val permissionMessage
-        get() = server.permissionMessage
+        get() = server.permissionMessage()
 
     // TODO: implement set functionality once enums are done
     @TwineNativeProperty
