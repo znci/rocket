@@ -24,9 +24,16 @@ import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 
 class Rocket : JavaPlugin() {
+    companion object {
+        lateinit var instance: Rocket
+            private set
+    }
+
     private var defaultLocale: String = "en_GB"
 
     override fun onEnable() {
+        instance = this
+
         // Create the plugin data folder
         saveDefaultConfig()
 
