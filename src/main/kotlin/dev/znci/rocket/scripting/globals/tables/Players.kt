@@ -28,8 +28,10 @@ import net.kyori.adventure.title.TitlePart
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Location
+import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 import java.time.Duration
+import java.util.UUID
 
 @Suppress("unused")
 class LuaPlayers : TwineNative("players") {
@@ -59,6 +61,32 @@ class LuaPlayers : TwineNative("players") {
     fun getAllPlayers(): List<LuaPlayer> {
         return Bukkit.getOnlinePlayers().map { LuaPlayer(it) }
     }
+
+    @TwineNativeFunction("getOfflinePlayer")
+    fun getOfflinePlayer(playerName: String): LuaOfflinePlayer {
+        return LuaOfflinePlayer(Bukkit.getOfflinePlayer(playerName))
+    }
+
+    @TwineNativeFunction("getOfflinePlayerByUUID")
+    fun getOfflinePlayerByUUID(playerUUID: String): LuaOfflinePlayer {
+        return LuaOfflinePlayer(Bukkit.getOfflinePlayer(UUID.fromString(playerUUID)))
+    }
+
+    @TwineNativeFunction("getCachedOfflinePlayer")
+    fun getCachedOfflinePlayer(playerName: String): LuaOfflinePlayer? {
+        val offlinePlayer = Bukkit.getOfflinePlayerIfCached(playerName)
+
+        return if (offlinePlayer == null) {
+            null
+        } else {
+            LuaOfflinePlayer(offlinePlayer)
+        }
+    }
+
+    @TwineNativeFunction("getAllOfflinePlayers")
+    fun getAllOfflinePlayers(): List<LuaOfflinePlayer> {
+        return Bukkit.getOfflinePlayers().map { LuaOfflinePlayer(it) }
+    }
 }
 
 data class TitleTimeTable(
@@ -69,8 +97,8 @@ data class TitleTimeTable(
 
 @Suppress("unused")
 class LuaPlayer(
-    val player: Player
-) : TwineNative("") {
+    override val player: Player
+) : LuaOfflinePlayer(player) {
     @TwineNativeFunction
     fun send(message: Any): Boolean {
         val messageComponent = MessageFormatter.formatMessage(message.toString())
@@ -165,23 +193,16 @@ class LuaPlayer(
     }
 
     @TwineNativeProperty
-    var location: LuaLocation
+    override var location: LuaLocation
         get() {
             return LuaLocation.fromBukkit(player.location)
         }
         set(value) { return }
 
     @TwineNativeProperty
-    var name: String
+    override var name: String
         get() {
             return player.name
-        }
-        set(value) { return }
-
-    @TwineNativeProperty
-    var uuid: String
-        get() {
-            return player.uniqueId.toString()
         }
         set(value) { return }
 
@@ -260,4 +281,73 @@ class LuaPlayer(
             targetBlockHumidity = block.humidity
         }
     }
+}
+
+@Suppress("unused")
+open class LuaOfflinePlayer(val offlinePlayer: OfflinePlayer) : TwineNative("") {
+    @TwineNativeProperty
+    val firstPlayed
+        get() = offlinePlayer.firstPlayed
+
+    @TwineNativeProperty
+    val lastDeathLocation
+        get() = offlinePlayer.lastDeathLocation
+
+    @TwineNativeProperty
+    val lastLogin
+        get() = offlinePlayer.lastLogin
+
+    @TwineNativeProperty
+    val lastSeen
+        get() = offlinePlayer.lastSeen
+
+    // location, name, and player are open because they are overridden in LuaPlayer with non-nullable values
+    // in the case of location and name and the actual player instance in the case of player
+    @TwineNativeProperty
+    open val location: LuaLocation?
+        get() {
+            val location = offlinePlayer.location
+            return if (location != null) {
+                LuaLocation.fromBukkit(location)
+            } else {
+                null
+            }
+        }
+
+    @TwineNativeProperty
+    open val name
+        get() = offlinePlayer.name
+
+    @TwineNativeProperty
+    open val player
+        get() = offlinePlayer.player
+
+    @TwineNativeProperty
+    val respawnLocation
+        get() = offlinePlayer.respawnLocation
+
+    @TwineNativeProperty
+    val uuid
+        get() = offlinePlayer.uniqueId.toString()
+
+    @TwineNativeProperty
+    val hasPlayedBefore
+        get() = offlinePlayer.hasPlayedBefore()
+
+    @TwineNativeProperty
+    val isBanned
+        get() = offlinePlayer.isBanned
+
+    @TwineNativeProperty
+    val isConnected
+        get() = offlinePlayer.isOnline
+
+    @TwineNativeProperty
+    val isOnline
+        get() = offlinePlayer.isOnline
+
+    @TwineNativeProperty
+    var whitelisted
+        get() = offlinePlayer.isWhitelisted
+        set(value) { offlinePlayer.isWhitelisted = value }
 }
