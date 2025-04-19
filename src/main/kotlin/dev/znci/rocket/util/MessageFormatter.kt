@@ -10,6 +10,12 @@ import net.kyori.adventure.text.minimessage.MiniMessage
  */
 object MessageFormatter {
     /**
+     * The minimessage instance for formatting.
+     * This is used to deserialize without creating a new instance every time it is called.
+     */
+    private val miniMessage = MiniMessage.miniMessage()
+
+    /**
      * Formats a message string into a `Component` object using the MiniMessage library.
      * The message can include special formatting syntax (e.g., color codes, placeholders).
      *
@@ -17,7 +23,6 @@ object MessageFormatter {
      * @return A `Component` object representing the formatted message.
      */
     fun formatMessage(message: String): Component {
-        val miniMessage = MiniMessage.miniMessage()
         val messageComponent = miniMessage.deserialize(message)
         return messageComponent
     }
