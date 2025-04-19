@@ -24,9 +24,16 @@ import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 
 class Rocket : JavaPlugin() {
+    companion object {
+        lateinit var instance: Rocket
+            private set
+    }
+
     private var defaultLocale: String = "en_GB"
 
     override fun onEnable() {
+        instance = this
+
         // Create the plugin data folder
         saveDefaultConfig()
 
@@ -62,12 +69,15 @@ class Rocket : JavaPlugin() {
         EventListener.registerAllEvents()
 
         // Register globals
-        val globalInitialized = GlobalInitializer.init()
+        val globalInitialized = GlobalInitializer.init(this)
         if (globalInitialized) {
             logger.info("Globals successfully initialized")
         } else {
             logger.severe("Globals failed to initialize")
         }
+
+        // Automatically load all scripts in the scripts folder
+        ScriptManager.loadScripts()
 
         logger.info("Rocket plugin enabled")
     }

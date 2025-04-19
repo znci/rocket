@@ -34,7 +34,7 @@ import org.luaj.vm2.lib.TwoArgFunction
  * @throws org.luaj.vm2.LuaError If the value provided to the setter is invalid according to the validator.
  */
 
-@Deprecated("RocketNative Kotlin should be used instead.", ReplaceWith("RocketNative"), DeprecationLevel.WARNING)
+@Deprecated("TwineNative Kotlin should be used instead.", ReplaceWith("TwineNative"), DeprecationLevel.WARNING)
 fun defineProperty(
     table: LuaTable,
     propertyName: String,

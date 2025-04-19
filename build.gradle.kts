@@ -27,6 +27,7 @@ group = "dev.znci"
 version = "1.0-SNAPSHOT"
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/") {
         name = "papermc-repo"
@@ -34,6 +35,7 @@ repositories {
     maven("https://oss.sonatype.org/content/groups/public/") {
         name = "sonatype"
     }
+    maven("https://jitpack.io")
 }
 
 dependencies {
@@ -42,6 +44,7 @@ dependencies {
     implementation("org.luaj:luaj-jse:3.0.1")
     implementation("net.luckperms:api:5.4")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("dev.znci:twine:1.0.2")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
 }
@@ -69,7 +72,6 @@ tasks.withType<DokkaTask>().configureEach {
         named("main") {
             moduleName.set("Rocket Java API")
             includes.from("Rocket.md")
-
         }
     }
 }

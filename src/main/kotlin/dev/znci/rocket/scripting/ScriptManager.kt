@@ -15,12 +15,12 @@
  */
 package dev.znci.rocket.scripting
 
-import dev.znci.rocket.scripting.api.RocketError
-import dev.znci.rocket.scripting.api.RocketLuaValue
-import dev.znci.rocket.scripting.api.RocketProperty
-import dev.znci.rocket.scripting.api.RocketTable
-import dev.znci.rocket.scripting.api.RocketValueBase
-import dev.znci.rocket.scripting.classes.Command
+import dev.znci.rocket.scripting.classes.CommandReference
+import dev.znci.twine.TwineError
+import dev.znci.twine.TwineLuaValue
+import dev.znci.twine.TwineProperty
+import dev.znci.twine.TwineTable
+import dev.znci.twine.TwineValueBase
 import org.bukkit.event.Event
 import java.io.File
 import org.luaj.vm2.Globals
@@ -40,13 +40,6 @@ object ScriptManager {
      * This is used to load and execute Lua code with a standard Lua environment.
      */
     private val globals: Globals = JsePlatform.standardGlobals()
-
-    /**
-     * A list of global values (properties and tables) that have been registered for Lua scripting.
-     * These globals are made available to Lua scripts during their execution.
-     */
-    private var enabledGlobals: MutableList<RocketValueBase> = mutableListOf()
-
     /**
      * The folder where scripts are located.
      * This can be set to a custom folder to load Lua scripts from a specific directory.
@@ -63,7 +56,13 @@ object ScriptManager {
      * A map of enabled commands by their names.
      * It associates command names with their respective command executors.
      */
-    val enabledCommands = mutableMapOf<String, Command>()
+    val enabledCommands = mutableMapOf<String, CommandReference>()
+
+    /**
+     * A list of global values (properties and tables) that have been registered for Lua scripting.
+     * These globals are made available to Lua scripts during their execution.
+     */
+    var enabledGlobals: MutableList<TwineValueBase> = mutableListOf()
 
     /**
      * Sets the folder where scripts are located.
@@ -84,8 +83,7 @@ object ScriptManager {
         scriptsFolder.walkTopDown().forEach { file ->
             if (file.isFile && !file.startsWith("-")) {
                 val content = file.readText()
-
-                println(content)
+                runScript(content)
             }
         }
     }
@@ -102,7 +100,7 @@ object ScriptManager {
         scriptsFolder.walkTopDown().forEach { file ->
             if (file.isFile) {
                 if (includeDisabled && file.startsWith("-")) return@forEach
-                list.add(file.path.removePrefix("plugins/rocket/scripts/"))
+                list.add(file.path.removePrefix("plugins/rocket/scripts/").removePrefix("plugins\\rocket\\scripts\\"))
             }
         }
         return list
@@ -121,8 +119,8 @@ object ScriptManager {
             val scriptResult = globals.load(text, "script", globals)
 
             scriptResult.call()
-        } catch (error: LuaError) {
-            return error.message
+        } catch (e: LuaError) {
+            return e.message
         }
 
         return ""
@@ -134,19 +132,19 @@ object ScriptManager {
      * @param valueName The name of the global value to retrieve.
      * @return The global value if found, or `null` if it is not registered.
      */
-    private fun getGlobalByTableName(valueName: String): RocketValueBase? {
-        return enabledGlobals.find { it.valueName == valueName }
+    private fun getGlobalByTableName(valueName: String): TwineValueBase? {
+        return enabledGlobals.find { it -> it.valueName == valueName }
     }
 
     /**
      * Registers a global value, making it available for use in Lua.
      *
      * @param global The global value to register.
-     * @throws RocketError If a global with the same table name is already registered.
+     * @throws TwineError If a global with the same table name is already registered.
      */
-    fun registerGlobal(global: RocketValueBase) {
+    fun registerGlobal(global: TwineValueBase) {
         if (getGlobalByTableName(global.valueName) != null) {
-            throw RocketError("A global of the same table name ('${global.valueName}') is already registered.")
+            throw TwineError("A global of the same table name ('${global.valueName}') is already registered.")
         }
 
         enabledGlobals.add(global)
@@ -156,12 +154,11 @@ object ScriptManager {
      * Unregisters a global value, making it unavailable for use in Lua.
      *
      * @param global The global value to unregister.
-     * @throws RocketError If no global with the given table name is registered.
+     * @throws TwineError If no global with the given table name is registered.
      */
-    @Suppress("unused") // TODO: more management of globals by the end-user
-    private fun unregisterGlobal(global: RocketValueBase) {
+    fun unregisterGlobal(global: TwineValueBase) {
         if (getGlobalByTableName(global.valueName) == null) {
-            throw RocketError("A global with the table name ('${global.valueName}') is not registered and cannot be unregistered.")
+            throw TwineError("A global with the table name ('${global.valueName}') is not registered and cannot be unregistered.")
         }
 
         enabledGlobals.remove(global)
@@ -173,15 +170,23 @@ object ScriptManager {
      *
      * @param table The Lua table to which the globals will be applied.
      */
-    private fun applyGlobals(table: LuaTable) {
-        enabledGlobals.forEach {
-            println("Processing: ${it::class.qualifiedName}")
+    fun applyGlobals(table: LuaTable) {
+        enabledGlobals.forEach { it ->
             when (it) {
-                is RocketTable -> {
+//                is TwineEnum -> {
+//                    try {
+//                        val luaTable = it.convertToLuaTable()
+//                        table.set(it.valueName, luaTable.table)
+//                    } catch (e: Exception) {
+//                        println("Error in TwineEnum case: ${e.message}")
+//                        e.printStackTrace()
+//                    }
+//                }
+                is TwineTable -> {
                     table.set(it.valueName, it.table)
                 }
-                is RocketProperty -> {
-                    table.set(it.valueName, RocketLuaValue.valueOf(it.value))
+                is TwineProperty -> {
+                    table.set(it.valueName, TwineLuaValue.valueOf(it.value))
                 }
             }
         }

@@ -15,8 +15,9 @@
  */
 package dev.znci.rocket.scripting.events
 
-import dev.znci.rocket.scripting.PlayerManager
 import dev.znci.rocket.scripting.ScriptManager
+import dev.znci.rocket.scripting.globals.tables.LuaPlayer
+import dev.znci.rocket.scripting.globals.tables.LuaPlayers
 import org.bukkit.Bukkit
 import org.bukkit.event.Cancellable
 import org.bukkit.event.Event
@@ -107,7 +108,7 @@ object EventListener : Listener {
         }
 
         if (player != null) {
-            luaTable.set("player", PlayerManager.getPlayerTable(player))
+            luaTable.set("player", LuaPlayer(player))
         }
 
         // Interaction event
