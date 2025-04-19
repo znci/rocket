@@ -23,7 +23,7 @@ import dev.znci.rocket.scripting.GlobalInitializer
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 
-class Rocket : JavaPlugin() {
+open class Rocket : JavaPlugin() {
     companion object {
         lateinit var instance: Rocket
             private set

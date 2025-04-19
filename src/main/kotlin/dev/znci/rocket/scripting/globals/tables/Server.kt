@@ -2,12 +2,10 @@ package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.Rocket
 import dev.znci.rocket.util.MessageFormatter
-import dev.znci.twine.TwineError
 import dev.znci.twine.TwineNative
 import dev.znci.twine.annotations.TwineNativeFunction
 import dev.znci.twine.annotations.TwineNativeProperty
-import java.text.MessageFormat
-import java.util.UUID
+
 
 @Suppress("unused")
 class LuaServer : TwineNative("server") {
@@ -179,12 +177,6 @@ class LuaServer : TwineNative("server") {
     @TwineNativeFunction
     fun shutdown(): Boolean {
         server.shutdown()
-        return true
-    }
-
-    @TwineNativeFunction
-    fun restart(): Boolean {
-        server.restart()
         return true
     }
 }

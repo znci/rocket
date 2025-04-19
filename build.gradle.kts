@@ -46,7 +46,10 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("dev.znci:twine:1.0.2")
 
+    testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
+    testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:4.45.1")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
 }
 
 val targetJavaVersion = 21
@@ -89,4 +92,8 @@ tasks.withType(xyz.jpenilla.runtask.task.AbstractRun::class) {
 tasks.runServer {
     minecraftVersion("1.21.4")
     jvmArgs("-Dcom.mojang.eula.agree=true")
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
