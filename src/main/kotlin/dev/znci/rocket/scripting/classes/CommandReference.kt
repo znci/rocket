@@ -15,6 +15,7 @@
  */
 package dev.znci.rocket.scripting.classes
 
+import dev.znci.rocket.Rocket
 import dev.znci.twine.TwineTable
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.TabCompleter
@@ -32,6 +33,7 @@ import org.bukkit.command.TabCompleter
  * @param permissionMessage The message shown when the user does not have the required permission to use the command.
  *                          The message should be in MiniMessage format.
  * @param aliases A list of alternative names for the command.
+ * @param fallbackPrefix The prefix used for the command to override the default command prefix defined in the config.
  * @param argCount The number of arguments that the command expects.
  * @param executor The `CommandExecutor` responsible for executing the command logic.
  * @param tabCompleter The `TabCompleter` responsible for tab completions.
@@ -43,6 +45,7 @@ data class CommandReference(
     var permission: String = "",
     var permissionMessage: String = "",
     var aliases: List<String> = listOf(),
+    var fallbackPrefix: String = Rocket.instance.config.getString("command-fallback-prefix") ?: "rocket",
     var argCount: Int = 0,
     var executor: CommandExecutor = CommandExecutor { _, _, _, _ -> true },
     var tabCompleter: TabCompleter = TabCompleter { _, _, _, _ -> listOf() }

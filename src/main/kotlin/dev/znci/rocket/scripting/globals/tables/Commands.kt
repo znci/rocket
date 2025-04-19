@@ -38,17 +38,7 @@ class LuaCommands : TwineNative("commands") {
 }
 
 class LuaCommand() : TwineNative("") {
-    val commandReference = CommandReference(
-        name = "",
-        description = "",
-        usage = "",
-        permission = "",
-        permissionMessage = "",
-        aliases = listOf(""),
-        argCount = 0,
-        executor = { _, _, _, _ -> true },
-        tabCompleter = { _, _, _, _ -> listOf() }
-    )
+    val commandReference = CommandReference()
 
     @TwineNativeFunction
     fun register(): LuaCommand {
@@ -104,7 +94,7 @@ class LuaCommand() : TwineNative("") {
                 isAccessible = true
             }.get(Bukkit.getServer()) as CommandMap
 
-            commandMap.register(commandReference.name, command)
+            commandMap.register(commandReference.fallbackPrefix, command)
 
             updateCommandsForAll()
         } catch (e: Exception) {
@@ -205,6 +195,12 @@ class LuaCommand() : TwineNative("") {
     @TwineNativeFunction
     fun argCount(value: Int): LuaCommand {
         commandReference.argCount = value
+        return this
+    }
+
+    @TwineNativeFunction
+    fun fallbackPrefix(value: String): LuaCommand {
+        commandReference.fallbackPrefix = value
         return this
     }
 }
