@@ -187,12 +187,4 @@ class LuaServer : TwineNative("server") {
         server.restart()
         return true
     }
-
-    @TwineNativeFunction
-    fun getEntity(uuid: String): Boolean {
-        server.getEntity(UUID.fromString(uuid))
-            ?: throw TwineError("No entity with UUID $uuid found")
-
-        return true
-    }
 }
