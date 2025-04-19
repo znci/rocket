@@ -100,7 +100,7 @@ object ScriptManager {
         scriptsFolder.walkTopDown().forEach { file ->
             if (file.isFile) {
                 if (includeDisabled && file.startsWith("-")) return@forEach
-                list.add(file.path.removePrefix("plugins/rocket/scripts/"))
+                list.add(file.path.removePrefix("plugins/rocket/scripts/").removePrefix("plugins\\rocket\\scripts\\"))
             }
         }
         return list
