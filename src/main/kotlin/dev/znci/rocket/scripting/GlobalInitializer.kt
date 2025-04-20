@@ -1,12 +1,32 @@
+/**
+ * Copyright 2025 znci
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package dev.znci.rocket.scripting
 
+import dev.znci.rocket.Rocket
+import dev.znci.rocket.scripting.annotations.Global
+import dev.znci.rocket.scripting.api.RocketError
 import dev.znci.rocket.scripting.globals.tables.LuaCommands
 import dev.znci.rocket.scripting.globals.tables.LuaHTTPClient
 import dev.znci.rocket.scripting.globals.tables.LuaLocations
 import dev.znci.rocket.scripting.globals.tables.LuaPlayers
 import dev.znci.rocket.scripting.globals.tables.LuaServer
 import dev.znci.rocket.scripting.globals.values.TestValue
+import dev.znci.twine.TwineValueBase
 import org.bukkit.plugin.java.JavaPlugin
+import org.reflections.Reflections
 
 /**
  * The `GlobalInitializer` object is responsible for initializing and registering global objects
@@ -15,24 +35,23 @@ import org.bukkit.plugin.java.JavaPlugin
  */
 object GlobalInitializer {
     /**
-     * Initializes the global objects and registers them with the `ScriptManager`.
+     * Uses reflection to find all classes marked with `@Global`.
      *
-     * It returns `true` upon successful registration of these objects.
-     *
-     * @return `true` if the global objects were successfully initialized and registered.
+     * If a non-TwineValueBase value is marked with `@Global`, it throws an error.
      */
-    fun init(
-        @Suppress("UNUSED")
-        plugin: JavaPlugin
-    ): Boolean {
-        ScriptManager.registerGlobal(TestValue())
-        ScriptManager.registerGlobal(LuaPlayers())
-        ScriptManager.registerGlobal(LuaLocations())
-        ScriptManager.registerGlobal(LuaHTTPClient())
-        ScriptManager.registerGlobal(LuaCommands())
-        ScriptManager.registerGlobal(LuaServer())
-        //ScriptManager.registerGlobal(GamemodeEnum())
+    fun registerAll() {
+        val reflections = Reflections("dev.znci.rocket")
+        val globalClasses = reflections.getTypesAnnotatedWith(Global::class.java)
 
-        return true
+        globalClasses.forEach { globalClass ->
+            if (TwineValueBase::class.java.isAssignableFrom(globalClass)) {
+                val instance = globalClass.getDeclaredConstructor().newInstance() as TwineValueBase
+                ScriptManager.registerGlobal(instance)
+            } else {
+                throw RocketError("@Global annotated class does not extend TwineValueBase.")
+            }
+        }
+
+        Rocket.instance.logger.info { "Successfully registered ${globalClasses.size} globals." }
     }
 }

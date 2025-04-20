@@ -17,6 +17,7 @@ package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.i18n.LocaleManager
 import dev.znci.rocket.scripting.PermissionsManager
+import dev.znci.rocket.scripting.annotations.Global
 import dev.znci.rocket.scripting.classes.CommandReference
 import dev.znci.rocket.util.MessageFormatter
 import dev.znci.twine.TwineNative
@@ -30,6 +31,7 @@ import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 import org.luaj.vm2.LuaTable
 
+@Global
 class LuaCommands : TwineNative("commands") {
     @TwineNativeFunction
     fun new(): LuaCommand {

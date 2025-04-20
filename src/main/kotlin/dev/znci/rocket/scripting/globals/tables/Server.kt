@@ -1,6 +1,7 @@
 package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.Rocket
+import dev.znci.rocket.scripting.annotations.Global
 import dev.znci.rocket.util.MessageFormatter
 import dev.znci.rocket.util.MessageFormatter.toMiniMessage
 import dev.znci.twine.TwineNative
@@ -9,6 +10,7 @@ import dev.znci.twine.annotations.TwineNativeProperty
 
 
 @Suppress("unused")
+@Global
 class LuaServer : TwineNative("server") {
     private val server = Rocket.instance.server
 

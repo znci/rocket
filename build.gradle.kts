@@ -45,6 +45,7 @@ dependencies {
     implementation("net.luckperms:api:5.4")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("dev.znci:twine:1.0.3")
+    implementation("org.reflections:reflections:0.10.2")
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")

@@ -20,7 +20,9 @@ import dev.znci.rocket.i18n.LocaleManager
 import dev.znci.rocket.scripting.ScriptManager
 import dev.znci.rocket.scripting.events.EventListener
 import dev.znci.rocket.scripting.GlobalInitializer
+import dev.znci.rocket.scripting.annotations.Global
 import org.bukkit.plugin.java.JavaPlugin
+import org.reflections.Reflections
 import java.io.File
 
 open class Rocket : JavaPlugin() {
@@ -69,12 +71,7 @@ open class Rocket : JavaPlugin() {
         EventListener.registerAllEvents()
 
         // Register globals
-        val globalInitialized = GlobalInitializer.init(this)
-        if (globalInitialized) {
-            logger.info("Globals successfully initialized")
-        } else {
-            logger.severe("Globals failed to initialize")
-        }
+        GlobalInitializer.registerAll()
 
         // Automatically load all scripts in the scripts folder
         ScriptManager.loadScripts()

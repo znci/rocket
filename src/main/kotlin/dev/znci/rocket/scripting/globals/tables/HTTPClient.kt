@@ -17,6 +17,7 @@ package dev.znci.rocket.scripting.globals.tables
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
+import dev.znci.rocket.scripting.annotations.Global
 import dev.znci.twine.TwineError
 import dev.znci.twine.TwineNative
 import dev.znci.twine.TwineTable
@@ -36,6 +37,7 @@ data class HTTPOptions(
 //    val body: Map<String, String>?
 ) : TwineTable("")
 
+@Global
 class LuaHTTPClient : TwineNative("http") {
     @TwineNativeFunction("get")
     fun sendGet(url: String, options: HTTPOptions): HTTPResponse {

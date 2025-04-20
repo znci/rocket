@@ -16,6 +16,7 @@
 package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.scripting.PermissionsManager
+import dev.znci.rocket.scripting.annotations.Global
 import dev.znci.rocket.util.MessageFormatter
 import dev.znci.twine.TwineError
 import dev.znci.twine.TwineNative
@@ -32,6 +33,7 @@ import java.time.Duration
 import java.util.UUID
 
 @Suppress("unused")
+@Global
 class LuaPlayers : TwineNative("players") {
     @TwineNativeFunction("get")
     fun getPlayerByName(playerName: String): LuaPlayer? {

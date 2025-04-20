@@ -15,6 +15,7 @@
  */
 package dev.znci.rocket.scripting.globals.tables
 
+import dev.znci.rocket.scripting.annotations.Global
 import dev.znci.rocket.scripting.util.getWorldByNameOrUUID
 import dev.znci.twine.TwineNative
 import dev.znci.twine.annotations.TwineNativeFunction
@@ -25,6 +26,7 @@ import org.bukkit.World
 import org.luaj.vm2.LuaValue
 import java.util.*
 
+@Global
 class LuaLocations : TwineNative("location") {
     @TwineNativeFunction
     fun new(x: Double, y: Double, z: Double, worldUUID: String, yaw: Float = 0f, pitch: Float = 0f): LuaLocation? {
