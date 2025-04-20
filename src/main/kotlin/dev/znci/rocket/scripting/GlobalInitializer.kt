@@ -3,6 +3,7 @@ package dev.znci.rocket.scripting
 import dev.znci.rocket.scripting.globals.tables.LuaCommands
 import dev.znci.rocket.scripting.globals.tables.LuaHTTPClient
 import dev.znci.rocket.scripting.globals.tables.LuaLocations
+import dev.znci.rocket.scripting.globals.tables.LuaPhysics
 import dev.znci.rocket.scripting.globals.tables.LuaPlayers
 import dev.znci.rocket.scripting.globals.tables.LuaServer
 import dev.znci.rocket.scripting.globals.values.TestValue
@@ -31,6 +32,7 @@ object GlobalInitializer {
         ScriptManager.registerGlobal(LuaHTTPClient())
         ScriptManager.registerGlobal(LuaCommands())
         ScriptManager.registerGlobal(LuaServer())
+        ScriptManager.registerGlobal(LuaPhysics())
         //ScriptManager.registerGlobal(GamemodeEnum())
 
         return true
