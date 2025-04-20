@@ -2,6 +2,7 @@ package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.Rocket
 import dev.znci.rocket.util.MessageFormatter
+import dev.znci.rocket.util.MessageFormatter.toMiniMessage
 import dev.znci.twine.TwineNative
 import dev.znci.twine.annotations.TwineNativeFunction
 import dev.znci.twine.annotations.TwineNativeProperty
@@ -100,7 +101,7 @@ class LuaServer : TwineNative("server") {
 
     @TwineNativeProperty
     val permissionMessage
-        get() = server.permissionMessage()
+        get() = server.permissionMessage().toMiniMessage()
 
     // TODO: implement set functionality once enums are done
     @TwineNativeProperty
@@ -133,56 +134,30 @@ class LuaServer : TwineNative("server") {
         get() = server.idleTimeout
 
     @TwineNativeFunction
-    fun allowPausing(value: Boolean): Boolean {
-        server.allowPausing(Rocket.instance, value)
-        return true
-    }
+    fun allowPausing(value: Boolean) = server.allowPausing(Rocket.instance, value)
 
     @TwineNativeFunction
-    fun broadcast(message: String): Boolean {
-        server.broadcast(MessageFormatter.formatMessage(message))
-        return true
-    }
+    fun broadcast(message: String) = server.broadcast(MessageFormatter.formatMessage(message))
 
     @TwineNativeFunction
-    fun reload(): Boolean {
-        server.reload()
-        return true
-    }
+    fun reload() = server.reload()
 
     @TwineNativeFunction
-    fun reloadMinecraftData(): Boolean {
-        server.reloadData()
-        return true
-    }
+    fun reloadMinecraftData() = server.reloadData()
 
     @TwineNativeFunction
-    fun reloadWhitelist(): Boolean {
-        server.reloadWhitelist()
-        return true
-    }
+    fun reloadWhitelist() = server.reloadWhitelist()
 
     @TwineNativeFunction
-    fun reloadPermissions(): Boolean {
-        server.reloadPermissions()
-        return true
-    }
+    fun reloadPermissions() = server.reloadPermissions()
 
     @TwineNativeFunction
-    fun reloadCommandAliases(): Boolean {
-        server.reloadCommandAliases()
-        return true
-    }
+    fun reloadCommandAliases() = server.reloadCommandAliases()
 
     @TwineNativeFunction
-    fun shutdown(): Boolean {
-        server.shutdown()
-        return true
-    }
+    fun shutdown() = server.shutdown()
 
     @TwineNativeFunction
-    fun restart(): Boolean {
-        server.restart()
-        return true
-    }
+    fun restart() = server.restart()
+
 }
