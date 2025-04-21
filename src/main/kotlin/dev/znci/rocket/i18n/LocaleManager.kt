@@ -121,7 +121,7 @@ object LocaleManager {
 
         val formattedMessage = try {
             message.format(*formatArgs.map { it.toString() }.toTypedArray())
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             message
         }
 

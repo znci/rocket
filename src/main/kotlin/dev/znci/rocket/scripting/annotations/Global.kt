@@ -1,4 +1,3 @@
-
 /**
  * Copyright 2025 znci
  *
@@ -14,13 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.znci.rocket.scripting.api.annotations
+package dev.znci.rocket.scripting.annotations
 
-/**
- * Annotation to mark a property as a native property in the Rocket framework.
- * This allows the property to be exposed to Lua, making it accessible for manipulation from Lua scripts.
- */
-@Target(AnnotationTarget.PROPERTY)
+@Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
-@Suppress("unused")
-annotation class RocketNativeProperty(val name: String = "INHERIT_FROM_DEFINITION")
+annotation class Global

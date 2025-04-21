@@ -20,13 +20,22 @@ import dev.znci.rocket.i18n.LocaleManager
 import dev.znci.rocket.scripting.ScriptManager
 import dev.znci.rocket.scripting.events.EventListener
 import dev.znci.rocket.scripting.GlobalInitializer
+import dev.znci.rocket.scripting.annotations.Global
 import org.bukkit.plugin.java.JavaPlugin
+import org.reflections.Reflections
 import java.io.File
 
-class Rocket : JavaPlugin() {
+open class Rocket : JavaPlugin() {
+    companion object {
+        lateinit var instance: Rocket
+            private set
+    }
+
     private var defaultLocale: String = "en_GB"
 
     override fun onEnable() {
+        instance = this
+
         // Create the plugin data folder
         saveDefaultConfig()
 
@@ -62,12 +71,10 @@ class Rocket : JavaPlugin() {
         EventListener.registerAllEvents()
 
         // Register globals
-        val globalInitialized = GlobalInitializer.init()
-        if (globalInitialized) {
-            logger.info("Globals successfully initialized")
-        } else {
-            logger.severe("Globals failed to initialize")
-        }
+        GlobalInitializer.registerAll()
+
+        // Automatically load all scripts in the scripts folder
+        ScriptManager.loadScripts()
 
         logger.info("Rocket plugin enabled")
     }

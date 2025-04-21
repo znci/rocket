@@ -26,4 +26,15 @@ object MessageFormatter {
         val messageComponent = miniMessage.deserialize(message)
         return messageComponent
     }
+
+    /**
+     * Serializes a `Component` object into a string using the MiniMessage library.
+     * This allows the formatted message to be sent to players or logged.
+     *
+     * @param component The `Component` object to serialize.
+     * @return A string representation of the `Component`, formatted with MiniMessage syntax.
+     */
+    fun Component.toMiniMessage(): String {
+        return miniMessage.serialize(this)
+    }
 }

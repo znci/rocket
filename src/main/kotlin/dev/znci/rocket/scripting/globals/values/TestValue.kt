@@ -1,8 +1,8 @@
 package dev.znci.rocket.scripting.globals.values
 
-import dev.znci.rocket.scripting.api.RocketProperty
+import dev.znci.twine.TwineProperty
 
-class TestValue : RocketProperty("testValue") {
+class TestValue : TwineProperty("testValue") {
     init {
         this.value = "test"
     }
