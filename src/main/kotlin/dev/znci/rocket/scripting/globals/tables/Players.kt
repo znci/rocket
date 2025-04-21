@@ -275,7 +275,7 @@ open class LuaOfflinePlayer(val offlinePlayer: OfflinePlayer) : TwineNative("") 
 
     @TwineNativeProperty
     val lastDeathLocation
-        get() = offlinePlayer.lastDeathLocation
+        get() = offlinePlayer.lastDeathLocation?.let { LuaLocation.fromBukkit(it) }
 
     @TwineNativeProperty
     val lastLogin
@@ -308,7 +308,7 @@ open class LuaOfflinePlayer(val offlinePlayer: OfflinePlayer) : TwineNative("") 
 
     @TwineNativeProperty
     val respawnLocation
-        get() = offlinePlayer.respawnLocation
+        get() = offlinePlayer.respawnLocation?.let { LuaLocation.fromBukkit(it) }
 
     @TwineNativeProperty
     val uuid
@@ -324,7 +324,7 @@ open class LuaOfflinePlayer(val offlinePlayer: OfflinePlayer) : TwineNative("") 
 
     @TwineNativeProperty
     val isConnected
-        get() = offlinePlayer.isOnline
+        get() = offlinePlayer.isConnected
 
     @TwineNativeProperty
     val isOnline
