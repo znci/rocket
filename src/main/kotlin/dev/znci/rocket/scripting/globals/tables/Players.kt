@@ -311,15 +311,15 @@ open class LuaOfflinePlayer(val offlinePlayer: OfflinePlayer) : TwineNative("") 
         get() = offlinePlayer.hasPlayedBefore()
 
     @TwineNativeProperty
-    val isBanned
+    val banned
         get() = offlinePlayer.isBanned
 
     @TwineNativeProperty
-    val isConnected
+    val connected
         get() = offlinePlayer.isConnected
 
     @TwineNativeProperty
-    val isOnline
+    val online
         get() = offlinePlayer.isOnline
 
     @TwineNativeProperty
