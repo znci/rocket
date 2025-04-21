@@ -17,8 +17,8 @@ package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.scripting.PermissionsManager
 import dev.znci.rocket.scripting.annotations.Global
+import dev.znci.rocket.scripting.api.RocketError
 import dev.znci.rocket.util.MessageFormatter
-import dev.znci.twine.TwineError
 import dev.znci.twine.TwineNative
 import dev.znci.twine.TwineTable
 import dev.znci.twine.annotations.TwineNativeFunction
@@ -47,11 +47,11 @@ class LuaPlayers : TwineNative("players") {
     }
 
     @TwineNativeFunction("getByUUID")
-    fun getPlayerByUUID(playerUUID: String): LuaPlayer {
+    fun getPlayerByUUID(playerUUID: String): LuaPlayer? {
         val player = Bukkit.getPlayer(playerUUID)
 
         if (player == null) {
-            throw TwineError("Player not found")
+            return null
         }
 
         return LuaPlayer(player)
@@ -184,10 +184,6 @@ class LuaPlayer(
 
     @TwineNativeFunction
     fun setGamemode(value: String): Boolean {
-        if (false) { // TODO: enum
-            throw TwineError("Invalid gamemode")
-        }
-
         player.gameMode = GameMode.valueOf(value)
         return true
     }

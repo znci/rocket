@@ -15,8 +15,8 @@
  */
 package dev.znci.rocket.scripting
 
+import dev.znci.rocket.scripting.api.RocketError
 import dev.znci.rocket.scripting.classes.CommandReference
-import dev.znci.twine.TwineError
 import dev.znci.twine.TwineLuaValue
 import dev.znci.twine.TwineProperty
 import dev.znci.twine.TwineTable
@@ -140,11 +140,11 @@ object ScriptManager {
      * Registers a global value, making it available for use in Lua.
      *
      * @param global The global value to register.
-     * @throws TwineError If a global with the same table name is already registered.
+     * @throws RocketError If a global with the same table name is already registered.
      */
     fun registerGlobal(global: TwineValueBase) {
         if (getGlobalByTableName(global.valueName) != null) {
-            throw TwineError("A global of the same table name ('${global.valueName}') is already registered.")
+            throw RocketError("A global of the same table name ('${global.valueName}') is already registered.")
         }
 
         enabledGlobals.add(global)
@@ -154,11 +154,11 @@ object ScriptManager {
      * Unregisters a global value, making it unavailable for use in Lua.
      *
      * @param global The global value to unregister.
-     * @throws TwineError If no global with the given table name is registered.
+     * @throws RocketError If no global with the given table name is registered.
      */
     fun unregisterGlobal(global: TwineValueBase) {
         if (getGlobalByTableName(global.valueName) == null) {
-            throw TwineError("A global with the table name ('${global.valueName}') is not registered and cannot be unregistered.")
+            throw RocketError("A global with the table name ('${global.valueName}') is not registered and cannot be unregistered.")
         }
 
         enabledGlobals.remove(global)

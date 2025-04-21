@@ -18,7 +18,7 @@ package dev.znci.rocket.scripting.globals.tables
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import dev.znci.rocket.scripting.annotations.Global
-import dev.znci.twine.TwineError
+import dev.znci.rocket.scripting.api.RocketError
 import dev.znci.twine.TwineNative
 import dev.znci.twine.TwineTable
 import dev.znci.twine.annotations.TwineNativeFunction
@@ -63,7 +63,7 @@ class LuaHTTPClient : TwineNative("http") {
                 jsonContent = jsonElement
             )
         } catch (e: HttpConnectTimeoutException) {
-            throw TwineError(getTimeoutMessage(options.timeout))
+            throw RocketError(getTimeoutMessage(options.timeout))
         }
     }
 
