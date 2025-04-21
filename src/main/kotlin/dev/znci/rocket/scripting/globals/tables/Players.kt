@@ -97,7 +97,7 @@ data class TitleTimeTable(
 
 @Suppress("unused")
 class LuaPlayer(
-    override val player: Player
+    val player: Player
 ) : LuaOfflinePlayer(player) {
     @TwineNativeFunction
     fun send(message: Any): Boolean {
@@ -289,22 +289,15 @@ open class LuaOfflinePlayer(val offlinePlayer: OfflinePlayer) : TwineNative("") 
     // in the case of location and name and the actual player instance in the case of player
     @TwineNativeProperty
     open val location: LuaLocation?
-        get() {
-            val location = offlinePlayer.location
-            return if (location != null) {
-                LuaLocation.fromBukkit(location)
-            } else {
-                null
-            }
-        }
+        get() = offlinePlayer.location?.let { LuaLocation.fromBukkit(it) }
 
     @TwineNativeProperty
     open val name
         get() = offlinePlayer.name
 
-    @TwineNativeProperty
-    open val player
-        get() = offlinePlayer.player
+    @TwineNativeProperty("player")
+    open val playerLuaProperty
+        get() = offlinePlayer.player?.let { LuaPlayer(it) }
 
     @TwineNativeProperty
     val respawnLocation
