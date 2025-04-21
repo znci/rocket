@@ -17,7 +17,6 @@ package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.scripting.PermissionsManager
 import dev.znci.rocket.scripting.annotations.Global
-import dev.znci.rocket.scripting.api.RocketError
 import dev.znci.rocket.util.MessageFormatter
 import dev.znci.twine.TwineNative
 import dev.znci.twine.TwineTable
@@ -288,7 +287,7 @@ open class LuaOfflinePlayer(val offlinePlayer: OfflinePlayer) : TwineNative("") 
     // location, name, and player are open because they are overridden in LuaPlayer with non-nullable values
     // in the case of location and name and the actual player instance in the case of player
     @TwineNativeProperty
-    open val location: LuaLocation?
+    open val location
         get() = offlinePlayer.location?.let { LuaLocation.fromBukkit(it) }
 
     @TwineNativeProperty
