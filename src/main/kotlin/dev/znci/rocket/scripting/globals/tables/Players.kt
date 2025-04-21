@@ -17,7 +17,6 @@ package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.scripting.PermissionsManager
 import dev.znci.rocket.scripting.annotations.Global
-import dev.znci.rocket.scripting.api.RocketError
 import dev.znci.rocket.util.MessageFormatter
 import dev.znci.twine.TwineNative
 import dev.znci.twine.TwineTable
@@ -97,7 +96,7 @@ data class TitleTimeTable(
 
 @Suppress("unused")
 class LuaPlayer(
-    override val player: Player
+    val player: Player
 ) : LuaOfflinePlayer(player) {
     @TwineNativeFunction
     fun send(message: Any): Boolean {
@@ -275,7 +274,7 @@ open class LuaOfflinePlayer(val offlinePlayer: OfflinePlayer) : TwineNative("") 
 
     @TwineNativeProperty
     val lastDeathLocation
-        get() = offlinePlayer.lastDeathLocation
+        get() = offlinePlayer.lastDeathLocation?.let { LuaLocation.fromBukkit(it) }
 
     @TwineNativeProperty
     val lastLogin
@@ -288,27 +287,20 @@ open class LuaOfflinePlayer(val offlinePlayer: OfflinePlayer) : TwineNative("") 
     // location, name, and player are open because they are overridden in LuaPlayer with non-nullable values
     // in the case of location and name and the actual player instance in the case of player
     @TwineNativeProperty
-    open val location: LuaLocation?
-        get() {
-            val location = offlinePlayer.location
-            return if (location != null) {
-                LuaLocation.fromBukkit(location)
-            } else {
-                null
-            }
-        }
+    open val location
+        get() = offlinePlayer.location?.let { LuaLocation.fromBukkit(it) }
 
     @TwineNativeProperty
     open val name
         get() = offlinePlayer.name
 
-    @TwineNativeProperty
-    open val player
-        get() = offlinePlayer.player
+    @TwineNativeProperty("player")
+    open val playerLuaProperty
+        get() = offlinePlayer.player?.let { LuaPlayer(it) }
 
     @TwineNativeProperty
     val respawnLocation
-        get() = offlinePlayer.respawnLocation
+        get() = offlinePlayer.respawnLocation?.let { LuaLocation.fromBukkit(it) }
 
     @TwineNativeProperty
     val uuid
@@ -319,15 +311,15 @@ open class LuaOfflinePlayer(val offlinePlayer: OfflinePlayer) : TwineNative("") 
         get() = offlinePlayer.hasPlayedBefore()
 
     @TwineNativeProperty
-    val isBanned
+    val banned
         get() = offlinePlayer.isBanned
 
     @TwineNativeProperty
-    val isConnected
-        get() = offlinePlayer.isOnline
+    val connected
+        get() = offlinePlayer.isConnected
 
     @TwineNativeProperty
-    val isOnline
+    val online
         get() = offlinePlayer.isOnline
 
     @TwineNativeProperty
