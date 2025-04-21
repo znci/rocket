@@ -133,7 +133,7 @@ object ScriptManager {
      * @return The global value if found, or `null` if it is not registered.
      */
     private fun getGlobalByTableName(valueName: String): TwineValueBase? {
-        return enabledGlobals.find { it -> it.valueName == valueName }
+        return enabledGlobals.find { it.valueName == valueName }
     }
 
     /**
@@ -171,17 +171,8 @@ object ScriptManager {
      * @param table The Lua table to which the globals will be applied.
      */
     fun applyGlobals(table: LuaTable) {
-        enabledGlobals.forEach { it ->
+        enabledGlobals.forEach {
             when (it) {
-//                is TwineEnum -> {
-//                    try {
-//                        val luaTable = it.convertToLuaTable()
-//                        table.set(it.valueName, luaTable.table)
-//                    } catch (e: Exception) {
-//                        println("Error in TwineEnum case: ${e.message}")
-//                        e.printStackTrace()
-//                    }
-//                }
                 is TwineTable -> {
                     table.set(it.valueName, it.table)
                 }

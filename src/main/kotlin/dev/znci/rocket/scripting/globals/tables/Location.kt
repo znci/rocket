@@ -16,6 +16,7 @@
 package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.scripting.annotations.Global
+import dev.znci.rocket.scripting.api.RocketError
 import dev.znci.rocket.scripting.util.getWorldByNameOrUUID
 import dev.znci.twine.TwineNative
 import dev.znci.twine.annotations.TwineNativeFunction
@@ -131,7 +132,7 @@ class LuaLocation(
             val worldUUID = try {
                 UUID.fromString(worldUUIDStr)
             } catch (e: IllegalArgumentException) {
-                kotlin.error("Invalid 'worldUUID': Not a valid UUID (value: $worldUUIDStr)")
+                Bukkit.getWorld("world")?.uid ?: throw RocketError("Default world \"world\" does not exist.")
             }
 
             val world = Bukkit.getWorld(worldUUID)
@@ -141,7 +142,7 @@ class LuaLocation(
 
             Location(world, x, y, z, yaw, pitch)
         } catch (e: Exception) {
-            kotlin.error("LuaTable does not represent a valid location: ${e.message}")
+            throw RocketError("Invalid location provided.")
         }
     }
 }

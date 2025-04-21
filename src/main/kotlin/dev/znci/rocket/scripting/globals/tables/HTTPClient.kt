@@ -30,6 +30,8 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
 
+// TODO: Add map support, and come back to HTTPClient later.
+
 data class HTTPOptions(
     val timeout: Int? = 30000,
     val followRedirects: Boolean? = true,
@@ -46,42 +48,6 @@ class LuaHTTPClient : TwineNative("http") {
 
             val requestBuilder = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .GET()
-
-//            applyHeaders(requestBuilder, options)
-
-            val request = requestBuilder.build()
-
-            val response = client.send(request, HttpResponse.BodyHandlers.ofString())
-            val responseBody = response.body()
-            val jsonElement = JsonParser.parseString(responseBody)
-
-            HTTPResponse(
-                textContent = responseBody.toString(),
-                jsonContent = jsonElement
-            )
-        } catch (e: HttpConnectTimeoutException) {
-            throw TwineError(getTimeoutMessage(options.timeout))
-        }
-    }
-
-    @TwineNativeFunction("test")
-    fun test(callback: (string: String) -> Void): Boolean {
-        println("CALLING FUNCTION")
-        println(callback("hello"))
-        return true
-    }
-
-    @TwineNativeFunction("post")
-    fun sendPost(url: String, options: HTTPOptions): HTTPResponse {
-        return try {
-            val client = getClient(options)
-
-            val requestBuilder = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-//                .POST(
-//                    HttpRequest.BodyPublishers.ofString(options.body.toString())
-//                )
                 .GET()
 
 //            applyHeaders(requestBuilder, options)
@@ -131,19 +97,17 @@ class HTTPResponse(
     val jsonContent: JsonElement?
 ) : TwineNative("") {
     @TwineNativeProperty
-    var text: String
+    val text: String
         get() {
             return textContent
         }
-        set(value) { return }
 
     @TwineNativeProperty
-    var json: TwineTable?
+    val json: TwineTable?
         get() {
             if (jsonContent == null) {
                 return null
             }
             return fromJSON(jsonContent) as TwineTable?
         }
-        set(value) { return }
 }
