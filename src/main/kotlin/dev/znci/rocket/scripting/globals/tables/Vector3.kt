@@ -10,7 +10,6 @@ import org.bukkit.util.Vector
 @Global
 class LuaVectors3 : TwineNative("vector3") {
     @TwineNativeFunction
-    @TwineOverload
     fun new(x: Double, y: Double, z: Double): LuaVector3 {
         return LuaVector3(x, y, z)
     }
@@ -24,14 +23,30 @@ class LuaVector3(
     private var bukkitVector = Vector(x, y, z)
 
     @TwineNativeFunction
+    @TwineOverload
     fun add(vector3: LuaVector3): LuaVector3 {
         bukkitVector.add(vector3.bukkitVector)
         return this
     }
 
     @TwineNativeFunction
+    @TwineOverload
+    fun add(x: Double, y: Double, z: Double): LuaVector3 {
+        bukkitVector.add(Vector(x, y, z))
+        return this
+    }
+
+    @TwineNativeFunction
+    @TwineOverload
     fun set(vector3: LuaVector3): LuaVector3 {
         bukkitVector = vector3.bukkitVector
+        return this
+    }
+
+    @TwineNativeFunction
+    @TwineOverload
+    fun set(x: Double, y: Double, z: Double): LuaVector3 {
+        bukkitVector = Vector(x, y, z)
         return this
     }
 
@@ -61,6 +76,7 @@ class LuaVector3(
     }
 
     @TwineNativeFunction
+    @TwineOverload
     fun divide(comparedVector: LuaVector3): LuaVector3 {
         return bukkitVector.divide(
             comparedVector.bukkitVector
@@ -68,11 +84,25 @@ class LuaVector3(
     }
 
     @TwineNativeFunction
+    @TwineOverload
+    fun divide(x: Double, y: Double, z: Double): LuaVector3 {
+        return bukkitVector.divide(Vector(x, y, z)).toLuaVector3()
+    }
+
+    @TwineNativeFunction
+    @TwineOverload
     fun div(comparedVector: LuaVector3): LuaVector3 {
         return divide(comparedVector)
     }
 
     @TwineNativeFunction
+    @TwineOverload
+    fun div(x: Double, y: Double, z: Double): LuaVector3 {
+        return divide(x, y, z)
+    }
+
+    @TwineNativeFunction
+    @TwineOverload
     fun multiply(comparedVector: LuaVector3): LuaVector3 {
         return bukkitVector.multiply(
             comparedVector.bukkitVector
@@ -80,11 +110,25 @@ class LuaVector3(
     }
 
     @TwineNativeFunction
+    @TwineOverload
+    fun multiply(x: Double, y: Double, z: Double): LuaVector3 {
+        return bukkitVector.multiply(Vector(x, y, z)).toLuaVector3()
+    }
+
+    @TwineNativeFunction
+    @TwineOverload
     fun mul(comparedVector: LuaVector3): LuaVector3 {
         return multiply(comparedVector)
     }
 
     @TwineNativeFunction
+    @TwineOverload
+    fun mul(x: Double, y: Double, z: Double): LuaVector3 {
+        return multiply(x, y, z)
+    }
+
+    @TwineNativeFunction
+    @TwineOverload
     fun subtract(comparedVector: LuaVector3): LuaVector3 {
         return bukkitVector.subtract(
             comparedVector.bukkitVector
@@ -92,8 +136,21 @@ class LuaVector3(
     }
 
     @TwineNativeFunction
+    @TwineOverload
+    fun subtract(x: Double, y: Double, z: Double): LuaVector3 {
+        return bukkitVector.subtract(Vector(x, y, z)).toLuaVector3()
+    }
+
+    @TwineNativeFunction
+    @TwineOverload
     fun sub(comparedVector: LuaVector3): LuaVector3 {
         return subtract(comparedVector)
+    }
+
+    @TwineNativeFunction
+    @TwineOverload
+    fun sub(x: Double, y: Double, z: Double): LuaVector3 {
+        return subtract(x, y, z)
     }
 
     @TwineNativeFunction
