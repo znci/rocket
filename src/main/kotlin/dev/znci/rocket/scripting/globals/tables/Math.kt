@@ -119,14 +119,12 @@ class Math : TwineNative("math") {
         )
     }
 
-//    @TwineNativeFunction
-//    @TwineOverload
-//    fun max(vararg values: Double): Double {
-//        return values.maxOrNull() ?: 0.0
-//    }
+    @TwineNativeFunction
+    @TwineOverload
+    fun max(vararg values: Double): Double {
+        return values.maxOrNull() ?: 0.0
+    }
 
-    // TODO: Add overload for max with vararg
-    // TODO: Fix max and min
     @TwineNativeFunction
     @TwineOverload
     fun max(vector3: LuaVector3): Double {
@@ -136,11 +134,11 @@ class Math : TwineNative("math") {
         )
     }
 
-//    @TwineNativeFunction
-//    @TwineOverload
-//    fun min(vararg values: Double): Double {
-//        return values.minOrNull() ?: 0.0
-//    }
+    @TwineNativeFunction
+    @TwineOverload
+    fun min(vararg values: Double): Double {
+        return values.minOrNull() ?: 0.0
+    }
 
     @TwineNativeFunction
     @TwineOverload

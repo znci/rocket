@@ -189,6 +189,11 @@ class LuaVector3(
         ).toLuaVector3()
     }
 
+    @TwineNativeFunction
+    fun normalize(): LuaVector3 {
+        return bukkitVector.normalize().toLuaVector3()
+    }
+
     @TwineNativeProperty("magnitude")
     val magnitude: Double
         get() = bukkitVector.length()
