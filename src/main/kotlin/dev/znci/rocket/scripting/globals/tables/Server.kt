@@ -79,7 +79,7 @@ class LuaServer : TwineNative("server") {
     @TwineNativeProperty
     var whitelistEnforced
         get() = server.isWhitelistEnforced
-        set(value) { server.setWhitelistEnforced(value) }
+        set(value) { server.isWhitelistEnforced = value }
 
     @TwineNativeProperty
     val acceptingTransfers

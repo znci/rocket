@@ -20,11 +20,7 @@ import dev.znci.rocket.i18n.LocaleManager
 import dev.znci.rocket.scripting.AddonManager
 import dev.znci.rocket.scripting.ScriptManager
 import dev.znci.rocket.scripting.events.EventListener
-import dev.znci.rocket.scripting.GlobalInitializer
-import dev.znci.rocket.scripting.annotations.Global
 import dev.znci.rocket.scripting.api.RocketAddon
-import org.bukkit.plugin.java.JavaPlugin
-import org.reflections.Reflections
 import java.io.File
 
 open class Rocket : RocketAddon() {

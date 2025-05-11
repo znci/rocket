@@ -17,7 +17,6 @@ package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.scripting.PermissionsManager
 import dev.znci.rocket.scripting.annotations.Global
-import dev.znci.rocket.scripting.api.RocketError
 import dev.znci.rocket.util.MessageFormatter
 import dev.znci.twine.TwineNative
 import dev.znci.twine.TwineTable
@@ -37,24 +36,7 @@ import java.util.UUID
 class LuaPlayers : TwineNative("players") {
     @TwineNativeFunction("get")
     fun getPlayerByName(playerName: String): LuaPlayer? {
-        val player = Bukkit.getPlayer(playerName)
-
-        if (player == null) {
-            return null
-        }
-
-        return LuaPlayer(player)
-    }
-
-    @TwineNativeFunction("getByUUID")
-    fun getPlayerByUUID(playerUUID: String): LuaPlayer? {
-        val player = Bukkit.getPlayer(playerUUID)
-
-        if (player == null) {
-            return null
-        }
-
-        return LuaPlayer(player)
+        return Bukkit.getPlayer(playerName)?.let { LuaPlayer(it) }
     }
 
     @TwineNativeFunction("getAll")
@@ -256,19 +238,21 @@ class LuaPlayer(
 
     @TwineNativeProperty
     val targetBlockLightLevel
-        get() = targetBlock?.lightLevel?.toDouble()
+        get() = targetBlock?.lightLevel
 
     @TwineNativeProperty
     val targetBlockTemperature
-        get() = targetBlock?.temperature?.toDouble()
+        get() = targetBlock?.temperature
 
     @TwineNativeProperty
     val targetBlockHumidity
-        get() = targetBlock?.humidity?.toDouble()
+        get() = targetBlock?.humidity
 }
 
 @Suppress("unused")
-open class LuaOfflinePlayer(val offlinePlayer: OfflinePlayer) : TwineNative("") {
+open class LuaOfflinePlayer(
+    private val offlinePlayer: OfflinePlayer
+) : TwineNative("") {
     @TwineNativeProperty
     val firstPlayed
         get() = offlinePlayer.firstPlayed

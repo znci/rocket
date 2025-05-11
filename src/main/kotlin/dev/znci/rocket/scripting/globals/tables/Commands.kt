@@ -39,7 +39,7 @@ class LuaCommands : TwineNative("commands") {
     }
 }
 
-class LuaCommand() : TwineNative("") {
+class LuaCommand : TwineNative("") {
     val commandReference = CommandReference()
 
     @TwineNativeFunction
@@ -151,13 +151,8 @@ class LuaCommand() : TwineNative("") {
     fun tabCompleter(callback: (sender: LuaPlayer, args: Array<String>) -> Any): LuaCommand {
         commandReference.tabCompleter = TabCompleter { commandSender, _, _, commandArgs ->
             val result = callback(LuaPlayer(commandSender as Player), commandArgs)
-            when (result) {
-                is LuaTable -> {
-                    val list = List(result.rawlen()) { i ->
-                        result.get(i + 1).tojstring()
-                    }
-                    list
-                }
+            return@TabCompleter when (result) {
+                is LuaTable -> List(result.rawlen()) { i -> result.get(i + 1).tojstring() }
                 else -> emptyList()
             }
         }

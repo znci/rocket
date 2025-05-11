@@ -67,7 +67,7 @@ class LuaHTTPClient : TwineNative("http") {
         }
     }
 
-    fun getClient(options: HTTPOptions): HttpClient {
+    private fun getClient(options: HTTPOptions): HttpClient {
         return HttpClient.newBuilder().apply {
             options.timeout?.let {
                 connectTimeout(Duration.ofMillis(it.toLong()))
@@ -87,7 +87,7 @@ class LuaHTTPClient : TwineNative("http") {
 //        }
 //    }
 
-    fun getTimeoutMessage(timeout: Int?): String {
+    private fun getTimeoutMessage(timeout: Int?): String {
         return "HTTP Client request timed out after ${timeout}ms. Maybe your timeout threshold is too low."
     }
 }
@@ -108,6 +108,6 @@ class HTTPResponse(
             if (jsonContent == null) {
                 return null
             }
-            return fromJSON(jsonContent) as TwineTable?
+            return fromJSON(jsonContent)
         }
 }

@@ -25,7 +25,6 @@ import org.bukkit.event.Event
 import java.io.File
 import org.luaj.vm2.Globals
 import org.luaj.vm2.LuaError
-import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.jse.JsePlatform
 import java.util.ArrayList
@@ -56,6 +55,7 @@ object ScriptManager {
      * A map of enabled commands by their names.
      * It associates command names with their respective command executors.
      */
+    @Suppress("unused")
     val enabledCommands = mutableMapOf<String, CommandReference>()
 
     /**
@@ -115,7 +115,7 @@ object ScriptManager {
      */
     fun runScript(text: String): String? {
         try {
-            applyGlobals(globals)
+            applyGlobals()
             val scriptResult = globals.load(text, "script", globals)
 
             scriptResult.call()
@@ -160,6 +160,8 @@ object ScriptManager {
      * @param global The global value to unregister.
      * @throws RocketError If no global with the given table name is registered.
      */
+
+    @Suppress("unused")
     fun unregisterGlobal(global: TwineValueBase) {
         if (getGlobalByTableName(global.valueName) == null) {
             throw RocketError("A global with the table name ('${global.valueName}') is not registered and cannot be unregistered.")
@@ -169,19 +171,17 @@ object ScriptManager {
     }
 
     /**
-     * Applies the registered global values to a Lua table.
-     * This makes all registered globals available to Lua scripts via the provided Lua table.
-     *
-     * @param table The Lua table to which the globals will be applied.
+     * Applies the registered global values to the Lua environment.
+     * This makes all registered globals available to Lua scripts.
      */
-    fun applyGlobals(table: LuaTable) {
+    private fun applyGlobals() {
         enabledGlobals.forEach {
             when (it) {
                 is TwineTable -> {
-                    table.set(it.valueName, it.table)
+                    globals.set(it.valueName, it.table)
                 }
                 is TwineProperty -> {
-                    table.set(it.valueName, TwineLuaValue.valueOf(it.value))
+                    globals.set(it.valueName, TwineLuaValue.valueOf(it.value))
                 }
             }
         }
