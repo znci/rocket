@@ -17,6 +17,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
  */
 
 plugins {
+    `maven-publish`
     kotlin("jvm") version "2.1.20-RC"
     id("org.jetbrains.dokka") version "2.0.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
@@ -24,7 +25,7 @@ plugins {
 }
 
 group = "dev.znci"
-version = "1.0-SNAPSHOT"
+version = "1.0.1"
 
 repositories {
     mavenLocal()
@@ -97,4 +98,20 @@ tasks.runServer {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+
+            group
+            artifactId = "rocket"
+            version
+        }
+    }
+
+    repositories {
+        mavenLocal()
+    }
 }

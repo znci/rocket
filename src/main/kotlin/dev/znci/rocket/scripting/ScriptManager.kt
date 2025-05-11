@@ -147,6 +147,10 @@ object ScriptManager {
             throw RocketError("A global of the same table name ('${global.valueName}') is already registered.")
         }
 
+        if (global.valueName.isEmpty()) {
+            throw RocketError("Global table name cannot be empty.")
+        }
+
         enabledGlobals.add(global)
     }
 

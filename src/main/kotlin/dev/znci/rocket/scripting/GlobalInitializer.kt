@@ -39,8 +39,8 @@ object GlobalInitializer {
      *
      * If a non-TwineValueBase value is marked with `@Global`, it throws an error.
      */
-    fun registerAll() {
-        val reflections = Reflections("dev.znci.rocket")
+    fun registerAll(fromClass: String = "dev.znci.rocket") {
+        val reflections = Reflections(fromClass)
         val globalClasses = reflections.getTypesAnnotatedWith(Global::class.java)
 
         globalClasses.forEach { globalClass ->
