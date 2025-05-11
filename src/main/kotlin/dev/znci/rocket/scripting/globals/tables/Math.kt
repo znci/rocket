@@ -5,7 +5,6 @@ import dev.znci.rocket.scripting.api.RocketError
 import dev.znci.twine.TwineNative
 import dev.znci.twine.annotations.TwineNativeFunction
 import dev.znci.twine.annotations.TwineOverload
-import java.lang.Math
 import kotlin.math.roundToInt
 
 @Global
