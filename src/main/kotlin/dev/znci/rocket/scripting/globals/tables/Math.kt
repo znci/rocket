@@ -9,7 +9,7 @@ import java.lang.Math
 import kotlin.math.roundToInt
 
 @Global
-class Math : TwineNative("math") {
+class LuaMath : TwineNative("math") {
     @TwineNativeFunction
     @TwineOverload
     fun random(min: Double, max: Double): Double {
