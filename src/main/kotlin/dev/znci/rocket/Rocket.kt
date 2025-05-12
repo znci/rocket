@@ -17,15 +17,13 @@ package dev.znci.rocket
 
 import dev.znci.rocket.commands.RocketCommand
 import dev.znci.rocket.i18n.LocaleManager
+import dev.znci.rocket.scripting.AddonManager
 import dev.znci.rocket.scripting.ScriptManager
 import dev.znci.rocket.scripting.events.EventListener
-import dev.znci.rocket.scripting.GlobalInitializer
-import dev.znci.rocket.scripting.annotations.Global
-import org.bukkit.plugin.java.JavaPlugin
-import org.reflections.Reflections
+import dev.znci.rocket.scripting.api.RocketAddon
 import java.io.File
 
-open class Rocket : JavaPlugin() {
+open class Rocket : RocketAddon() {
     companion object {
         lateinit var instance: Rocket
             private set
@@ -70,8 +68,14 @@ open class Rocket : JavaPlugin() {
         // Register all events
         EventListener.registerAllEvents()
 
-        // Register globals
-        GlobalInitializer.registerAll()
+        // Enable the base Rocket methods and globals
+        this.onAddonEnable()
+
+        // Load addons after Rocket, but before loading scripts
+        val addons = AddonManager.getAddons()
+        addons.forEach {
+            it.onAddonEnable()
+        }
 
         // Automatically load all scripts in the scripts folder
         ScriptManager.loadScripts()

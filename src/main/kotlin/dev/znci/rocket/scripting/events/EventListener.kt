@@ -17,7 +17,6 @@ package dev.znci.rocket.scripting.events
 
 import dev.znci.rocket.scripting.ScriptManager
 import dev.znci.rocket.scripting.globals.tables.LuaPlayer
-import dev.znci.rocket.scripting.globals.tables.LuaPlayers
 import org.bukkit.Bukkit
 import org.bukkit.event.Cancellable
 import org.bukkit.event.Event
@@ -153,7 +152,7 @@ object EventListener : Listener {
             luaTable.set("cancel", object : ZeroArgFunction() {
                 override fun call(): LuaValue {
                     event.isCancelled = true
-                    return LuaBoolean.valueOf(event.isCancelled)
+                    return valueOf(event.isCancelled)
                 }
             })
         }

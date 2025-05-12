@@ -30,7 +30,7 @@ import java.util.*
 @Global
 class LuaLocations : TwineNative("location") {
     @TwineNativeFunction
-    fun new(x: Double, y: Double, z: Double, worldUUID: String, yaw: Float = 0f, pitch: Float = 0f): LuaLocation? {
+    fun new(x: Double, y: Double, z: Double, worldUUID: String, yaw: Float = 0f, pitch: Float = 0f): LuaLocation {
         return LuaLocation(x, y, z, worldUUID, yaw, pitch)
     }
 }

@@ -198,7 +198,7 @@ class LuaVector3(
     val magnitude: Double
         get() = bukkitVector.length()
 
-    fun Vector.toLuaVector3(): LuaVector3 {
+    private fun Vector.toLuaVector3(): LuaVector3 {
         return LuaVector3(
             this.x,
             this.y,
