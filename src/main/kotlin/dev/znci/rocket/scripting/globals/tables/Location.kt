@@ -15,20 +15,21 @@
  */
 package dev.znci.rocket.scripting.globals.tables
 
-import dev.znci.rocket.scripting.api.RocketNative
-import dev.znci.rocket.scripting.api.RocketTable
-import dev.znci.rocket.scripting.api.annotations.RocketNativeFunction
-import dev.znci.rocket.scripting.api.annotations.RocketNativeProperty
+import dev.znci.rocket.scripting.annotations.Global
+import dev.znci.rocket.scripting.api.RocketError
 import dev.znci.rocket.scripting.util.getWorldByNameOrUUID
+import dev.znci.twine.TwineNative
+import dev.znci.twine.annotations.TwineNativeFunction
+import dev.znci.twine.annotations.TwineNativeProperty
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.World
-import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import java.util.*
 
-class LuaLocations : RocketNative("location") {
-    @RocketNativeFunction
+@Global
+class LuaLocations : TwineNative("location") {
+    @TwineNativeFunction
     fun new(x: Double, y: Double, z: Double, worldUUID: String, yaw: Float = 0f, pitch: Float = 0f): LuaLocation {
         return LuaLocation(x, y, z, worldUUID, yaw, pitch)
     }
@@ -42,53 +43,53 @@ class LuaLocation(
     worldUUID: String,
     yaw: Float = 0f,
     pitch: Float = 0f
-) : RocketNative("") {
+) : TwineNative("") {
     private var world: World? = getWorldByNameOrUUID(worldUUID)
     private var location: Location = Location(world, x, y, z, yaw, pitch)
 
-    @RocketNativeProperty("x")
+    @TwineNativeProperty("x")
     var xProperty: Double
         get() = location.x
         set(value) {
             location.x = value
         }
 
-    @RocketNativeProperty("y")
+    @TwineNativeProperty("y")
     var yProperty: Double
         get() = location.y
         set(value) {
             location.y = value
         }
 
-    @RocketNativeProperty("z")
+    @TwineNativeProperty("z")
     var zProperty: Double
         get() = location.z
         set(value) {
             location.z = value
         }
 
-    @RocketNativeProperty("world")
+    @TwineNativeProperty("world")
     var worldProperty: String
         get() = location.world.name
         set(value) {
             location.world = getWorldByNameOrUUID(value)
         }
 
-    @RocketNativeProperty("worldUUID")
+    @TwineNativeProperty("worldUUID")
     var worldUUIDProperty: String
         get() = location.world.uid.toString()
         set(value) {
             location.world = getWorldByNameOrUUID(value)
         }
 
-    @RocketNativeProperty("yaw")
+    @TwineNativeProperty("yaw")
     var yawProperty: Float
         get() = location.yaw
         set(value) {
             location.yaw = value
         }
 
-    @RocketNativeProperty("pitch")
+    @TwineNativeProperty("pitch")
     var pitchProperty: Float
         get() = location.pitch
         set(value) {
@@ -109,7 +110,7 @@ class LuaLocation(
     }
 
     companion object {
-        fun fromBukkit(location: Location): RocketTable {
+        fun fromBukkit(location: Location): LuaLocation {
             return LuaLocation(
                 location.x,
                 location.y,
@@ -120,69 +121,28 @@ class LuaLocation(
             )
         }
     }
-}
 
+    fun toBukkitLocation(): Location {
+        return try {
+            val x = this.xProperty
+            val y = this.yProperty
+            val z = this.zProperty
+            val worldUUIDStr = this.worldUUIDProperty
 
-//
-//class LuaLocation(
-//    x: Double,
-//    y: Double,
-//    z: Double,
-//    worldUUID: String,
-//    yaw: Float = 0f,
-//    pitch: Float = 0f
-//) : LuaTable() {
-//    private var world: World? = Bukkit.getWorld(UUID.fromString(worldUUID))
-//    private var location: Location = Location(world, x, y, z, yaw, pitch)
-//
-//    companion object {
-//        fun fromBukkit(location: Location): LuaTable {
-//            return LuaLocation(
-//                location.x,
-//                location.y,
-//                location.z,
-//                location.world.uid.toString(),
-//                location.yaw,
-//                location.pitch
-//            ).getLocationTable()
-//        }
-//    }
-//
-//    fun getLocationTable(): LuaTable {
-//        val table = LuaTable()
-//
-//        defineProperty(table, "x", { valueOf(location.x) }, { value -> location.x = value.todouble() })
-//        defineProperty(table, "y", { valueOf(location.y) }, { value -> location.y = value.todouble() })
-//        defineProperty(table, "z", { valueOf(location.z) }, { value -> location.z = value.todouble() })
-//        defineProperty(table, "world", { valueOf(location.world.name) }, { value -> location.world = Bukkit.getWorld(UUID.fromString(value.tojstring())) })
-//        defineProperty(table, "worldUUID", { valueOf(location.world.uid.toString()) }, { value -> location.world = Bukkit.getWorld(UUID.fromString(value.tojstring())) })
-//        defineProperty(table, "yaw", { valueOf(location.yaw.toDouble()) }, { value -> location.yaw = value.tofloat() })
-//        defineProperty(table, "pitch", { valueOf(location.pitch.toDouble()) }, { value -> location.pitch = value.tofloat() })
-//
-//        return table
-//    }
-//}
+            val worldUUID = try {
+                UUID.fromString(worldUUIDStr)
+            } catch (e: IllegalArgumentException) {
+                Bukkit.getWorld("world")?.uid ?: throw RocketError("Default world \"world\" does not exist.")
+            }
 
-fun LuaValue.toBukkitLocation(): Location {
-    if (this !is LuaTable) {
-        error("Expected a LuaTable, got ${this.typename()} (value: ${this.tojstring()})")
-    }
+            val world = Bukkit.getWorld(worldUUID)
 
-    return try {
-        val x = this.get("x").todouble()
-        val y = this.get("y").todouble()
-        val z = this.get("z").todouble()
-        val worldUUIDStr = this.get("worldUUID").tojstring()
-        val worldUUID = try {
-            UUID.fromString(worldUUIDStr)
-        } catch (e: IllegalArgumentException) {
-            error("Invalid 'worldUUID': Not a valid UUID (value: $worldUUIDStr)")
+            val yaw = this.yawProperty
+            val pitch = this.pitchProperty
+
+            Location(world, x, y, z, yaw, pitch)
+        } catch (e: Exception) {
+            throw RocketError("Invalid location provided.")
         }
-        val world = Bukkit.getWorld(worldUUID)
-        val yaw = this.get("yaw").tofloat()
-        val pitch = this.get("pitch").tofloat()
-        Location(world, x, y, z, yaw, pitch)
-    } catch (e: Exception) {
-        error("LuaTable does not represent a valid location: ${e.message}")
     }
 }

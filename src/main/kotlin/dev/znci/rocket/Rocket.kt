@@ -17,16 +17,23 @@ package dev.znci.rocket
 
 import dev.znci.rocket.commands.RocketCommand
 import dev.znci.rocket.i18n.LocaleManager
+import dev.znci.rocket.scripting.AddonManager
 import dev.znci.rocket.scripting.ScriptManager
 import dev.znci.rocket.scripting.events.EventListener
-import dev.znci.rocket.scripting.GlobalInitializer
-import org.bukkit.plugin.java.JavaPlugin
+import dev.znci.rocket.scripting.api.RocketAddon
 import java.io.File
 
-class Rocket : JavaPlugin() {
+open class Rocket : RocketAddon() {
+    companion object {
+        lateinit var instance: Rocket
+            private set
+    }
+
     private var defaultLocale: String = "en_GB"
 
     override fun onEnable() {
+        instance = this
+
         // Create the plugin data folder
         saveDefaultConfig()
 
@@ -36,6 +43,12 @@ class Rocket : JavaPlugin() {
         // Set the plugin and the default locale
         LocaleManager.setPlugin(this)
         LocaleManager.setLocale(defaultLocale)
+
+        // Copy locale files from resources to the locales plugin data folder
+        val defaultLocales = arrayOf("en_GB")
+        defaultLocales.forEach {
+            saveResource("locales/$it.yml", false)
+        }
 
         LocaleManager.loadLanguages()
 
@@ -56,13 +69,17 @@ class Rocket : JavaPlugin() {
         logger.info("Rocket plugin enabled")
         EventListener.cacheEvents()
 
-        // Register globals
-        val globalInitialized = GlobalInitializer.init()
-        if (globalInitialized) {
-            logger.info("Globals successfully initialized")
-        } else {
-            logger.severe("Globals failed to initialize")
+        // Enable the base Rocket methods and globals
+        this.onAddonEnable()
+
+        // Load addons after Rocket, but before loading scripts
+        val addons = AddonManager.getAddons()
+        addons.forEach {
+            it.onAddonEnable()
         }
+
+        // Automatically load all scripts in the scripts folder
+        ScriptManager.loadScripts()
 
         logger.info("Rocket plugin enabled")
     }

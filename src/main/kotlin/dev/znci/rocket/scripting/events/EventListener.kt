@@ -20,6 +20,7 @@ import dev.znci.rocket.scripting.PlayerManager
 import dev.znci.rocket.scripting.ScriptManager
 import dev.znci.rocket.scripting.api.RocketTable
 import dev.znci.rocket.scripting.globals.tables.LuaLocation
+import dev.znci.rocket.scripting.globals.tables.LuaPlayer
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Location
@@ -154,9 +155,9 @@ object EventListener : Listener {
                     "player" -> {
                         val player: Player? = getValueFromEvent(event, "player", "getPlayer")
                         if (player != null) {
-                            return PlayerManager.getPlayerTable(player)
+                            return LuaPlayer(player)
                         }
-                        return LuaValue.NIL.also {
+                        return NIL.also {
                             error("No player in a '${event.eventName}' event!")
                         }
                     }
@@ -164,9 +165,9 @@ object EventListener : Listener {
                     "hand" -> {
                         val hand: EquipmentSlot? = getValueFromEvent(event, "hand")
                         if (hand != null) {
-                            return LuaValue.valueOf(hand.toString())
+                            return valueOf(hand.toString())
                         }
-                        return LuaValue.NIL.also {
+                        return NIL.also {
                             error("No hand in a '${event.eventName}' event!")
                         }
                     }
@@ -182,26 +183,26 @@ object EventListener : Listener {
                             "getKickMessage"
                         )
                         if (message != null) {
-                            if (message is String || message is Component) return LuaValue.valueOf(message.toString())
-                            return LuaValue.NIL.also {
+                            if (message is String || message is Component) return valueOf(message.toString())
+                            return NIL.also {
                                 error("Non-string/component object found in place of a message. Found '$message'")
                             }
                         }
-                        return LuaValue.NIL.also {
+                        return NIL.also {
                             error("No message in a '${event.eventName}' event!")
                         }
                     }
 
                     "from" -> {
                         val location: Location? = getValueFromEvent(event, "from", "getFrom")
-                        return LuaLocation.fromBukkit(location?:return LuaValue.NIL.also {
+                        return LuaLocation.fromBukkit(location?:return NIL.also {
                             error("Value 'from' of a '${event.eventName}' event returned null")
                         })
                     }
 
                     "to" -> {
                         val location: Location? = getValueFromEvent(event, "to", "getTo")
-                        return LuaLocation.fromBukkit(location?:return LuaValue.NIL.also {
+                        return LuaLocation.fromBukkit(location?:return NIL.also {
                             error("Value 'to' of a '${event.eventName}' event returned null")
                         })
                     }
@@ -212,11 +213,11 @@ object EventListener : Listener {
                                 return object : ZeroArgFunction() {
                                     override fun call(): LuaValue {
                                         event.isCancelled = true
-                                        return LuaBoolean.valueOf(event.isCancelled)
+                                        return valueOf(event.isCancelled)
                                     }
                                 }
                             }
-                            else -> LuaValue.NIL.also {
+                            else -> NIL.also {
                                 error("Cannot access or modify 'cancel' field in an uncancellable '${event.eventName}' event")
                             }
                         }
@@ -229,9 +230,9 @@ object EventListener : Listener {
                                 key.tojstring()
                                     .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
                             }")
-                        if (value != null) return LuaValue.valueOf(value.toString())
+                        if (value != null) return valueOf(value.toString())
 
-                        indexFunction?.call(table, key) ?: LuaValue.NIL.also {
+                        indexFunction?.call(table, key) ?: NIL.also {
                             error("A '${event.eventName}' event has no member '${key.tojstring()}'")
                         }
                     }

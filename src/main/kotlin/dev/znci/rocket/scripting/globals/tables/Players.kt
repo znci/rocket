@@ -16,39 +16,58 @@
 package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.scripting.PermissionsManager
-import dev.znci.rocket.scripting.api.RocketError
-import dev.znci.rocket.scripting.api.RocketNative
-import dev.znci.rocket.scripting.api.RocketTable
-import dev.znci.rocket.scripting.api.annotations.RocketNativeFunction
-import dev.znci.rocket.scripting.api.annotations.RocketNativeProperty
+import dev.znci.rocket.scripting.annotations.Global
 import dev.znci.rocket.util.MessageFormatter
+import dev.znci.twine.TwineNative
+import dev.znci.twine.TwineTable
+import dev.znci.twine.annotations.TwineNativeFunction
+import dev.znci.twine.annotations.TwineNativeProperty
 import net.kyori.adventure.title.Title
 import net.kyori.adventure.title.TitlePart
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
-import org.bukkit.Location
+import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 import java.time.Duration
+import java.util.UUID
 
 @Suppress("unused")
-class LuaPlayers : RocketNative("players") {
-    @RocketNativeFunction("get")
-    fun getPlayerByName(playerName: String): LuaPlayer {
-        val player = Bukkit.getPlayer(playerName) ?: throw RocketError("Player not found")
-
-        return LuaPlayer(player)
+@Global
+class LuaPlayers : TwineNative("players") {
+    @TwineNativeFunction("get")
+    fun getPlayerByName(playerName: String): LuaPlayer? {
+        return Bukkit.getPlayer(playerName)?.let { LuaPlayer(it) }
     }
 
-    @RocketNativeFunction("getByUUID")
-    fun getPlayerByUUID(playerUUID: String): LuaPlayer {
-        val player = Bukkit.getPlayer(playerUUID) ?: throw RocketError("Player not found")
-
-        return LuaPlayer(player)
-    }
-
-    @RocketNativeFunction("getAll")
+    @TwineNativeFunction("getAll")
     fun getAllPlayers(): List<LuaPlayer> {
         return Bukkit.getOnlinePlayers().map { LuaPlayer(it) }
+    }
+
+    @TwineNativeFunction("getOfflinePlayer")
+    fun getOfflinePlayer(playerName: String): LuaOfflinePlayer {
+        return LuaOfflinePlayer(Bukkit.getOfflinePlayer(playerName))
+    }
+
+    @TwineNativeFunction("getOfflinePlayerByUUID")
+    fun getOfflinePlayerByUUID(playerUUID: String): LuaOfflinePlayer {
+        return LuaOfflinePlayer(Bukkit.getOfflinePlayer(UUID.fromString(playerUUID)))
+    }
+
+    @TwineNativeFunction("getCachedOfflinePlayer")
+    fun getCachedOfflinePlayer(playerName: String): LuaOfflinePlayer? {
+        val offlinePlayer = Bukkit.getOfflinePlayerIfCached(playerName)
+
+        return if (offlinePlayer == null) {
+            null
+        } else {
+            LuaOfflinePlayer(offlinePlayer)
+        }
+    }
+
+    @TwineNativeFunction("getAllOfflinePlayers")
+    fun getAllOfflinePlayers(): List<LuaOfflinePlayer> {
+        return Bukkit.getOfflinePlayers().map { LuaOfflinePlayer(it) }
     }
 }
 
@@ -56,27 +75,27 @@ data class TitleTimeTable(
     val fadeIn: Long,
     val stay: Long,
     val fadeOut: Long
-) : RocketTable("")
+) : TwineTable("")
 
 @Suppress("unused")
 class LuaPlayer(
-    val player: Player
-) : RocketNative("") {
-    @RocketNativeFunction
+    override val player: Player
+) : LuaOfflinePlayer(player) {
+    @TwineNativeFunction
     fun send(message: Any): Boolean {
         val messageComponent = MessageFormatter.formatMessage(message.toString())
         player.sendMessage(messageComponent)
         return true
     }
 
-    @RocketNativeFunction
+    @TwineNativeFunction
     fun sendActionbar(message: String): Boolean {
         val messageComponent = MessageFormatter.formatMessage(message)
         player.sendActionBar(messageComponent)
         return true
     }
 
-    @RocketNativeFunction
+    @TwineNativeFunction
     fun sendTitle(message: String, timeTable: TitleTimeTable): Boolean {
         val messageComponent = MessageFormatter.formatMessage(message)
 
@@ -90,7 +109,7 @@ class LuaPlayer(
         return true
     }
 
-    @RocketNativeFunction
+    @TwineNativeFunction
     fun sendSubtitle(message: String, timeTable: TitleTimeTable): Boolean {
         val messageComponent = MessageFormatter.formatMessage(message)
         val times = Title.Times.times(
@@ -103,138 +122,200 @@ class LuaPlayer(
         return true
     }
 
-    @RocketNativeFunction
+    @TwineNativeFunction
     fun setPlayerTime(value: Long, relative: Boolean): Boolean {
         player.setPlayerTime(value, relative)
         return true
     }
 
-    @RocketNativeFunction
+    @TwineNativeFunction
     fun addPermission(value: String): Boolean {
         player.addAttachment(
-            Bukkit.getPluginManager().getPlugin("Rocket")!!
+            Bukkit.getPluginManager().getPlugin("Twine")!!
         ).setPermission(value, true)
         return true
     }
 
-    @RocketNativeFunction
+    @TwineNativeFunction
     fun op(): Boolean {
         player.isOp = true
         return true
     }
 
-    @RocketNativeFunction
+    @TwineNativeFunction
     fun deop(): Boolean {
         player.isOp = false
         return true
     }
 
-    @RocketNativeFunction
+    @TwineNativeFunction
     fun teleport(location: LuaLocation): Boolean {
         player.teleport(location.toBukkitLocation())
         return true
     }
 
-    @RocketNativeFunction
+    @TwineNativeFunction
     fun hasPermission(value: String): Boolean {
-        println(PermissionsManager.hasPermission(player, value))
         return PermissionsManager.hasPermission(player, value)
     }
 
-    @RocketNativeFunction
+    @TwineNativeFunction
     fun isInGroup(value: String): Boolean {
         return PermissionsManager.isPlayerInGroup(player, value)
     }
 
-    @RocketNativeFunction
+    @TwineNativeFunction
     fun setGamemode(value: String): Boolean {
-        if (false) { // TODO: enum
-            throw RocketError("Invalid gamemode")
-        }
-
         player.gameMode = GameMode.valueOf(value)
         return true
     }
 
-    @RocketNativeProperty
-    val name: String
+    @TwineNativeProperty
+    override val location: LuaLocation
+        get() {
+            return LuaLocation.fromBukkit(player.location)
+        }
+
+
+    @TwineNativeProperty
+    override val name: String
         get() {
             return player.name
         }
 
-
-    @RocketNativeProperty
-    val uuid: String
-        get() {
-            return player.uniqueId.toString()
-        }
-
-    @RocketNativeProperty
+    @TwineNativeProperty
     val world: String
         get() {
             return player.world.name
         }
 
-    @RocketNativeProperty
+    @TwineNativeProperty
     val ip: String?
         get() {
             return player.address?.hostString
         }
 
-    @RocketNativeProperty
+    @TwineNativeProperty
     val isFlying: Boolean
         get() {
             return player.isFlying
         }
 
-    @RocketNativeProperty
+    @TwineNativeProperty
     val isSneaking: Boolean
         get() {
             return player.isSneaking
         }
 
-    @RocketNativeProperty
+    @TwineNativeProperty
     val isSprinting: Boolean
         get() {
             return player.isSprinting
         }
 
-    @RocketNativeProperty
+    @TwineNativeProperty
     val isBlocking: Boolean
         get() {
             return player.isBlocking
         }
 
-    @RocketNativeProperty
+    @TwineNativeProperty
     val isSleeping: Boolean
         get() {
             return player.isSleeping
         }
 
-    private val block = player.getTargetBlockExact(100)
+    private val targetBlock
+        get() = player.getTargetBlockExact(100)
 
-    @RocketNativeProperty
-    var targetBlockType: String = ""
+    @TwineNativeProperty
+    val targetBlockType
+        get() = targetBlock?.type.toString()
 
-    @RocketNativeProperty
-    var targetBlockLocation: Location = Location(Bukkit.getWorld("world"), 0.0, 0.0, 0.0)
+    @TwineNativeProperty
+    val targetBlockLocation
+        get() = LuaLocation.fromBukkit(targetBlock?.location!!)
 
-    @RocketNativeProperty
-    var targetBlockLightLevel: Double = 0.0
+    @TwineNativeProperty
+    val targetBlockLightLevel
+        get() = targetBlock?.lightLevel
 
-    @RocketNativeProperty
-    var targetBlockTemperature: Double = 0.0
+    @TwineNativeProperty
+    val targetBlockTemperature
+        get() = targetBlock?.temperature
 
-    @RocketNativeProperty
-    var targetBlockHumidity: Double = 0.0
+    @TwineNativeProperty
+    val targetBlockHumidity
+        get() = targetBlock?.humidity
+}
 
-    init {
-        block?.let {
-            targetBlockType = block.type.toString()
-            targetBlockLocation = block.location
-            targetBlockLightLevel = block.lightLevel.toDouble()
-            targetBlockTemperature = block.temperature
-            targetBlockHumidity = block.humidity
+@Suppress("unused")
+open class LuaOfflinePlayer(
+    private val offlinePlayer: OfflinePlayer
+) : TwineNative("") {
+    @TwineNativeProperty
+    val firstPlayed
+        get() = offlinePlayer.firstPlayed
+
+    @TwineNativeProperty
+    val lastDeathLocation
+        get() = offlinePlayer.lastDeathLocation
+
+    @TwineNativeProperty
+    val lastLogin
+        get() = offlinePlayer.lastLogin
+
+    @TwineNativeProperty
+    val lastSeen
+        get() = offlinePlayer.lastSeen
+
+    // location, name, and player are open because they are overridden in LuaPlayer with non-nullable values
+    // in the case of location and name and the actual player instance in the case of player
+    @TwineNativeProperty
+    open val location: LuaLocation?
+        get() {
+            val location = offlinePlayer.location
+            return if (location != null) {
+                LuaLocation.fromBukkit(location)
+            } else {
+                null
+            }
         }
-    }
+
+    @TwineNativeProperty
+    open val name
+        get() = offlinePlayer.name
+
+    @TwineNativeProperty
+    open val player
+        get() = offlinePlayer.player
+
+    @TwineNativeProperty
+    val respawnLocation
+        get() = offlinePlayer.respawnLocation
+
+    @TwineNativeProperty
+    val uuid
+        get() = offlinePlayer.uniqueId.toString()
+
+    @TwineNativeProperty
+    val hasPlayedBefore
+        get() = offlinePlayer.hasPlayedBefore()
+
+    @TwineNativeProperty
+    val isBanned
+        get() = offlinePlayer.isBanned
+
+    @TwineNativeProperty
+    val isConnected
+        get() = offlinePlayer.isOnline
+
+    @TwineNativeProperty
+    val isOnline
+        get() = offlinePlayer.isOnline
+
+    @TwineNativeProperty
+    var whitelisted
+        get() = offlinePlayer.isWhitelisted
+        set(value) { offlinePlayer.isWhitelisted = value }
 }

@@ -16,14 +16,17 @@
 package dev.znci.rocket.scripting
 
 import dev.znci.rocket.scripting.api.RocketError
-import dev.znci.rocket.scripting.api.RocketLuaValue
-import dev.znci.rocket.scripting.api.RocketProperty
-import dev.znci.rocket.scripting.api.RocketTable
-import dev.znci.rocket.scripting.api.RocketValueBase
-import dev.znci.rocket.scripting.classes.Command
+import dev.znci.rocket.scripting.classes.CommandReference
+import dev.znci.twine.TwineLuaValue
+import dev.znci.twine.TwineProperty
+import dev.znci.twine.TwineTable
+import dev.znci.twine.TwineValueBase
 import org.bukkit.event.Event
 import org.luaj.vm2.*
 import java.io.File
+import org.luaj.vm2.Globals
+import org.luaj.vm2.LuaError
+import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.jse.JsePlatform
 import java.util.ArrayList
 
@@ -37,13 +40,6 @@ object ScriptManager {
      * This is used to load and execute Lua code with a standard Lua environment.
      */
     private val globals: Globals = JsePlatform.standardGlobals()
-
-    /**
-     * A list of global values (properties and tables) that have been registered for Lua scripting.
-     * These globals are made available to Lua scripts during their execution.
-     */
-    private var enabledGlobals: MutableList<RocketValueBase> = mutableListOf()
-
     /**
      * The folder where scripts are located.
      * This can be set to a custom folder to load Lua scripts from a specific directory.
@@ -71,7 +67,14 @@ object ScriptManager {
      * A map of enabled commands by their names.
      * It associates command names with their respective command executors.
      */
-    val enabledCommands = mutableMapOf<String, Command>()
+    @Suppress("unused")
+    val enabledCommands = mutableMapOf<String, CommandReference>()
+
+    /**
+     * A list of global values (properties and tables) that have been registered for Lua scripting.
+     * These globals are made available to Lua scripts during their execution.
+     */
+    var enabledGlobals: MutableList<TwineValueBase> = mutableListOf()
 
     /**
      * Sets the folder where scripts are located.
@@ -90,8 +93,7 @@ object ScriptManager {
         scriptsFolder.walkTopDown().forEach { file ->
             if (file.isFile && !file.startsWith("-")) {
                 val content = file.readText()
-
-                println(content)
+                runScript(content)
             }
         }
     }
@@ -108,7 +110,7 @@ object ScriptManager {
         scriptsFolder.walkTopDown().forEach { file ->
             if (file.isFile) {
                 if (includeDisabled && file.startsWith("-")) return@forEach
-                list.add(file.path.removePrefix(if (file.path.startsWith("plugins/rocket/scripts/")) "plugins/rocket/scripts/" else "plugins\\rocket\\scripts\\"))
+                list.add(file.path.removePrefix("plugins/rocket/scripts/").removePrefix("plugins\\rocket\\scripts\\"))
             }
         }
         return list
@@ -169,8 +171,8 @@ object ScriptManager {
         val content = scriptFile.readText()
 
         try {
-            applyGlobals(globals)
-            val scriptResult = globals.load(content, "::${scriptFile.absolutePath}::", globals)
+            applyGlobals()
+			val scriptResult = globals.load(content, "::${scriptFile.absolutePath}::", globals)
 
             scriptResult.call()
         } catch (error: LuaError) {
@@ -186,7 +188,7 @@ object ScriptManager {
      * @param valueName The name of the global value to retrieve.
      * @return The global value if found, or `null` if it is not registered.
      */
-    private fun getGlobalByTableName(valueName: String): RocketValueBase? {
+    private fun getGlobalByTableName(valueName: String): TwineValueBase? {
         return enabledGlobals.find { it.valueName == valueName }
     }
 
@@ -196,9 +198,13 @@ object ScriptManager {
      * @param global The global value to register.
      * @throws RocketError If a global with the same table name is already registered.
      */
-    fun registerGlobal(global: RocketValueBase) {
+    fun registerGlobal(global: TwineValueBase) {
         if (getGlobalByTableName(global.valueName) != null) {
             throw RocketError("A global of the same table name ('${global.valueName}') is already registered.")
+        }
+
+        if (global.valueName.isEmpty()) {
+            throw RocketError("Global table name cannot be empty.")
         }
 
         enabledGlobals.add(global)
@@ -210,8 +216,9 @@ object ScriptManager {
      * @param global The global value to unregister.
      * @throws RocketError If no global with the given table name is registered.
      */
-    @Suppress("unused") // TODO: more management of globals by the end-user
-    private fun unregisterGlobal(global: RocketValueBase) {
+
+    @Suppress("unused")
+    fun unregisterGlobal(global: TwineValueBase) {
         if (getGlobalByTableName(global.valueName) == null) {
             throw RocketError("A global with the table name ('${global.valueName}') is not registered and cannot be unregistered.")
         }
@@ -220,20 +227,17 @@ object ScriptManager {
     }
 
     /**
-     * Applies the registered global values to a Lua table.
-     * This makes all registered globals available to Lua scripts via the provided Lua table.
-     *
-     * @param table The Lua table to which the globals will be applied.
+     * Applies the registered global values to the Lua environment.
+     * This makes all registered globals available to Lua scripts.
      */
-    private fun applyGlobals(table: LuaTable) {
+    private fun applyGlobals() {
         enabledGlobals.forEach {
-            println("Processing: ${it::class.qualifiedName}")
             when (it) {
-                is RocketTable -> {
-                    table.set(it.valueName, it.table)
+                is TwineTable -> {
+                    globals.set(it.valueName, it.table)
                 }
-                is RocketProperty -> {
-                    table.set(it.valueName, RocketLuaValue.valueOf(it.value))
+                is TwineProperty -> {
+                    globals.set(it.valueName, TwineLuaValue.valueOf(it.value))
                 }
             }
         }

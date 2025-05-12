@@ -15,37 +15,99 @@
  */
 package dev.znci.rocket.scripting.globals.tables
 
-import org.luaj.vm2.LuaTable
-import org.luaj.vm2.LuaValue
-import org.luaj.vm2.lib.OneArgFunction
+import com.google.gson.JsonElement
+import com.google.gson.JsonParser
+import dev.znci.rocket.scripting.annotations.Global
+import dev.znci.rocket.scripting.api.RocketError
+import dev.znci.twine.TwineNative
+import dev.znci.twine.TwineTable
+import dev.znci.twine.annotations.TwineNativeFunction
+import dev.znci.twine.annotations.TwineNativeProperty
 import java.net.URI
 import java.net.http.HttpClient
+import java.net.http.HttpConnectTimeoutException
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.time.Duration
 
-class LuaHTTPClient : LuaTable() {
-    init {
-        set("get", object : OneArgFunction() {
-            override fun call(url: LuaValue): LuaValue {
-                return try {
-                    val response = httpGet(url.tojstring())
+// TODO: Add map support, and come back to HTTPClient later.
 
-                    valueOf(response)
-                } catch (e: Exception) {
-                    NIL
-                }
+data class HTTPOptions(
+    val timeout: Int? = 30000,
+    val followRedirects: Boolean? = true,
+//    val headers: Map<String, String>?,
+//    val body: Map<String, String>?
+) : TwineTable("")
+
+@Global
+class LuaHTTPClient : TwineNative("http") {
+    @TwineNativeFunction("get")
+    fun sendGet(url: String, options: HTTPOptions): HTTPResponse {
+        return try {
+            val client = getClient(options)
+
+            val requestBuilder = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .GET()
+
+//            applyHeaders(requestBuilder, options)
+
+            val request = requestBuilder.build()
+
+            val response = client.send(request, HttpResponse.BodyHandlers.ofString())
+            val responseBody = response.body()
+            val jsonElement = JsonParser.parseString(responseBody)
+
+            HTTPResponse(
+                textContent = responseBody.toString(),
+                jsonContent = jsonElement
+            )
+        } catch (e: HttpConnectTimeoutException) {
+            throw RocketError(getTimeoutMessage(options.timeout))
+        }
+    }
+
+    private fun getClient(options: HTTPOptions): HttpClient {
+        return HttpClient.newBuilder().apply {
+            options.timeout?.let {
+                connectTimeout(Duration.ofMillis(it.toLong()))
             }
-        })
+            followRedirects(
+                if (options.followRedirects == true)
+                    HttpClient.Redirect.NORMAL
+                else
+                    HttpClient.Redirect.NEVER
+            )
+        }.build()
     }
 
-    private fun httpGet(url: String): String {
-        val client = HttpClient.newHttpClient()
-        val request = HttpRequest.newBuilder()
-            .uri(URI.create(url))
-            .build()
+//    fun applyHeaders(requestBuilder: HttpRequest.Builder, options: HTTPOptions) {
+//        options.headers?.forEach { (key, value) ->
+//            requestBuilder.header(key, value.toString())
+//        }
+//    }
 
-        val response = client.send(request, HttpResponse.BodyHandlers.ofString())
-
-        return response.body()
+    private fun getTimeoutMessage(timeout: Int?): String {
+        return "HTTP Client request timed out after ${timeout}ms. Maybe your timeout threshold is too low."
     }
+}
+
+class HTTPResponse(
+    val textContent: String,
+    val jsonContent: JsonElement?
+) : TwineNative("") {
+    @TwineNativeProperty
+    val text: String
+        get() {
+            return textContent
+        }
+
+    @TwineNativeProperty
+    val json: TwineTable?
+        get() {
+            if (jsonContent == null) {
+                return null
+            }
+            return fromJSON(jsonContent)
+        }
 }

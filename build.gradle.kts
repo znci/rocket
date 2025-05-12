@@ -17,6 +17,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
  */
 
 plugins {
+    `maven-publish`
     kotlin("jvm") version "2.1.20-RC"
     id("org.jetbrains.dokka") version "2.0.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
@@ -24,9 +25,10 @@ plugins {
 }
 
 group = "dev.znci"
-version = "1.0-SNAPSHOT"
+version = "1.0.1"
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/") {
         name = "papermc-repo"
@@ -34,6 +36,7 @@ repositories {
     maven("https://oss.sonatype.org/content/groups/public/") {
         name = "sonatype"
     }
+    maven("https://jitpack.io")
 }
 
 dependencies {
@@ -42,7 +45,15 @@ dependencies {
     implementation("org.luaj:luaj-jse:3.0.1")
     implementation("net.luckperms:api:5.4")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    // TODO check if needed
+    implementation("dev.znci:twine:1.0.9")
+    implementation("org.reflections:reflections:0.10.2")
+
+    testImplementation(kotlin("test"))
+    testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
+    testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:4.45.1")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+
+	// TODO check if needed
     implementation("com.google.guava:guava:32.0.1-jre")
 }
 
@@ -69,7 +80,6 @@ tasks.withType<DokkaTask>().configureEach {
         named("main") {
             moduleName.set("Rocket Java API")
             includes.from("Rocket.md")
-
         }
     }
 }
@@ -87,4 +97,24 @@ tasks.withType(xyz.jpenilla.runtask.task.AbstractRun::class) {
 tasks.runServer {
     minecraftVersion("1.21.4")
     jvmArgs("-Dcom.mojang.eula.agree=true")
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+
+            group
+            artifactId = "rocket"
+            version
+        }
+    }
+
+    repositories {
+        mavenLocal()
+    }
 }
