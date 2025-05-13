@@ -29,7 +29,7 @@ import org.bukkit.GameMode
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 import java.time.Duration
-import java.util.UUID
+import java.util.*
 
 @Suppress("unused")
 @Global

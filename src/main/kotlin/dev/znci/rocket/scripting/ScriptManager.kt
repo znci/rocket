@@ -22,12 +22,11 @@ import dev.znci.twine.TwineProperty
 import dev.znci.twine.TwineTable
 import dev.znci.twine.TwineValueBase
 import org.bukkit.event.Event
-import java.io.File
 import org.luaj.vm2.Globals
 import org.luaj.vm2.LuaError
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.jse.JsePlatform
-import java.util.ArrayList
+import java.io.File
 
 /**
  * The `ScriptManager` object is responsible for managing Lua scripts, global values, and event handling in the plugin.
