@@ -188,8 +188,15 @@ class LuaVector3(
     }
 
     @TwineNativeFunction
+    @TwineOverload
     fun inAABB(min: LuaVector3, max: LuaVector3): Boolean {
         return bukkitVector.isInAABB(min.bukkitVector, max.bukkitVector)
+    }
+
+    @TwineNativeFunction
+    @TwineOverload
+    fun inAABB(aabb: LuaAABB): Boolean {
+        return aabb.contains(this)
     }
 
     @TwineNativeFunction
@@ -212,14 +219,6 @@ class LuaVector3(
     @TwineNativeProperty("magnitude")
     val magnitude: Double
         get() = bukkitVector.length()
-
-    private fun Vector.toLuaVector3(): LuaVector3 {
-        return LuaVector3(
-            this.x,
-            this.y,
-            this.z
-        )
-    }
 
     @TwineNativeProperty("x")
     var xProperty: Double
@@ -246,4 +245,12 @@ class LuaVector3(
     override fun toString(): String {
         return "vector3($xProperty, $yProperty, $zProperty)"
     }
+
+    fun toBukkitVector(): Vector {
+        return bukkitVector
+    }
+}
+
+fun Vector.toLuaVector3(): LuaVector3 {
+    return LuaVector3(this.x, this.y, this.z)
 }
