@@ -190,6 +190,12 @@ class LuaPlayer(
         }
 
     @TwineNativeProperty
+    val aabb: LuaAABB
+        get() {
+            return LuaAABB(player.boundingBox)
+        }
+
+    @TwineNativeProperty
     val ip: String?
         get() {
             return player.address?.hostString
