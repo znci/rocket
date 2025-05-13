@@ -16,9 +16,7 @@
 package dev.znci.rocket.scripting.events
 
 import com.google.common.reflect.ClassPath
-import dev.znci.rocket.scripting.PlayerManager
 import dev.znci.rocket.scripting.ScriptManager
-import dev.znci.rocket.scripting.api.RocketTable
 import dev.znci.rocket.scripting.globals.tables.LuaLocation
 import dev.znci.rocket.scripting.globals.tables.LuaPlayer
 import dev.znci.twine.TwineTable
@@ -32,13 +30,11 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.plugin.Plugin
-import org.luaj.vm2.LuaBoolean
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.TwoArgFunction
 import org.luaj.vm2.lib.ZeroArgFunction
 import java.util.*
-import kotlin.collections.HashSet
 
 object EventListener : Listener {
     private val plugin: Plugin? = Bukkit.getPluginManager().getPlugin("rocket")
