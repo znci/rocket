@@ -66,7 +66,8 @@ open class Rocket : RocketAddon() {
         this.getCommand("rocket")?.setExecutor(RocketCommand(this))
 
         // Register all events
-        EventListener.registerAllEvents()
+        logger.info("Rocket plugin enabled")
+        EventListener.cacheEvents()
 
         // Enable the base Rocket methods and globals
         this.onAddonEnable()
@@ -86,4 +87,5 @@ open class Rocket : RocketAddon() {
     override fun onDisable() {
         logger.info("Rocket plugin disabled")
     }
+
 }

@@ -52,6 +52,9 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
     testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:4.45.1")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+
+	// TODO check if needed
+    implementation("com.google.guava:guava:32.0.1-jre")
 }
 
 val targetJavaVersion = 21
