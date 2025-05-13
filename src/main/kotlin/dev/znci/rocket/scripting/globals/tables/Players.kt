@@ -79,7 +79,7 @@ data class TitleTimeTable(
 
 @Suppress("unused")
 class LuaPlayer(
-    override val player: Player
+    val player: Player
 ) : LuaOfflinePlayer(player) {
     @TwineNativeFunction
     fun send(message: Any): Boolean {
@@ -259,7 +259,7 @@ open class LuaOfflinePlayer(
 
     @TwineNativeProperty
     val lastDeathLocation
-        get() = offlinePlayer.lastDeathLocation
+        get() = offlinePlayer.lastDeathLocation?.let { LuaLocation.fromBukkit(it) }
 
     @TwineNativeProperty
     val lastLogin
@@ -272,27 +272,20 @@ open class LuaOfflinePlayer(
     // location, name, and player are open because they are overridden in LuaPlayer with non-nullable values
     // in the case of location and name and the actual player instance in the case of player
     @TwineNativeProperty
-    open val location: LuaLocation?
-        get() {
-            val location = offlinePlayer.location
-            return if (location != null) {
-                LuaLocation.fromBukkit(location)
-            } else {
-                null
-            }
-        }
+    open val location
+        get() = offlinePlayer.location?.let { LuaLocation.fromBukkit(it) }
 
     @TwineNativeProperty
     open val name
         get() = offlinePlayer.name
 
-    @TwineNativeProperty
-    open val player
-        get() = offlinePlayer.player
+    @TwineNativeProperty("player")
+    open val playerLuaProperty
+        get() = offlinePlayer.player?.let { LuaPlayer(it) }
 
     @TwineNativeProperty
     val respawnLocation
-        get() = offlinePlayer.respawnLocation
+        get() = offlinePlayer.respawnLocation?.let { LuaLocation.fromBukkit(it) }
 
     @TwineNativeProperty
     val uuid
@@ -303,15 +296,15 @@ open class LuaOfflinePlayer(
         get() = offlinePlayer.hasPlayedBefore()
 
     @TwineNativeProperty
-    val isBanned
+    val banned
         get() = offlinePlayer.isBanned
 
     @TwineNativeProperty
-    val isConnected
-        get() = offlinePlayer.isOnline
+    val connected
+        get() = offlinePlayer.isConnected
 
     @TwineNativeProperty
-    val isOnline
+    val online
         get() = offlinePlayer.isOnline
 
     @TwineNativeProperty
