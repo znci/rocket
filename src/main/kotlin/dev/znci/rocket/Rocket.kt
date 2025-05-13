@@ -19,8 +19,8 @@ import dev.znci.rocket.commands.RocketCommand
 import dev.znci.rocket.i18n.LocaleManager
 import dev.znci.rocket.scripting.AddonManager
 import dev.znci.rocket.scripting.ScriptManager
-import dev.znci.rocket.scripting.events.EventListener
 import dev.znci.rocket.scripting.api.RocketAddon
+import dev.znci.rocket.scripting.events.EventListener
 import java.io.File
 
 open class Rocket : RocketAddon() {
