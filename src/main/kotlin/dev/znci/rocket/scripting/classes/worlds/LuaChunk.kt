@@ -1,5 +1,6 @@
 package dev.znci.rocket.scripting.classes.worlds
 
+import dev.znci.rocket.scripting.classes.LuaPersistentDataContainer
 import dev.znci.rocket.scripting.globals.tables.LuaPlayer
 import dev.znci.rocket.scripting.globals.tables.LuaWorld
 import dev.znci.twine.TwineNative
@@ -63,6 +64,10 @@ class LuaChunk(val chunk: Chunk) : TwineNative("") {
     @TwineNativeProperty
     val loadLevel
         get() = chunk.loadLevel.toString()
+
+    @TwineNativeProperty
+    val pdc
+        get() = LuaPersistentDataContainer(chunk.persistentDataContainer)
 
     @TwineNativeFunction
     @TwineOverload

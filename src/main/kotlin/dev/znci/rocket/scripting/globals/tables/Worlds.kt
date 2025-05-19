@@ -102,6 +102,9 @@ class LuaWorld(val world: World) : TwineNative("") {
     val chunkCount
         get() = world.chunkCount
 
+    @TwineNativeProperty
+    val pdc
+        get() = world.persistentDataContainer
 
     @TwineNativeFunction
     fun keepChunkLoaded(x: Int, z: Int, keepLoaded: Boolean) {
