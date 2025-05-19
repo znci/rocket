@@ -22,6 +22,7 @@ import dev.znci.rocket.util.MessageFormatter.toMiniMessage
 import dev.znci.twine.TwineNative
 import dev.znci.twine.annotations.TwineNativeFunction
 import dev.znci.twine.annotations.TwineNativeProperty
+import org.bukkit.GameMode
 
 
 @Suppress("unused")
@@ -120,10 +121,10 @@ class LuaServer : TwineNative("server") {
     val permissionMessage
         get() = server.permissionMessage().toMiniMessage()
 
-    // TODO: implement set functionality once enums are done
     @TwineNativeProperty
-    val defaultGamemode
+    var defaultGamemode // TODO: Change to enum
         get() = server.defaultGameMode.toString()
+        set(value) { server.defaultGameMode = GameMode.valueOf(value) }
 
     @TwineNativeProperty
     val paused
@@ -174,4 +175,5 @@ class LuaServer : TwineNative("server") {
     @TwineNativeFunction
     fun shutdown() = server.shutdown()
 
+    // TODO: Add BossBar creation now that BossBar is a thing
 }
