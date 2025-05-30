@@ -17,52 +17,84 @@ package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.scripting.ScriptManager
 import dev.znci.rocket.scripting.events.EventListener
+import dev.znci.twine.TwineNative
+import dev.znci.twine.TwineTable
+import dev.znci.twine.annotations.TwineNativeFunction
 import org.luaj.vm2.LuaFunction
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.lib.TwoArgFunction
 
-class LuaEvents : LuaTable() {
-    init {
-        set("on", object : TwoArgFunction() {
-            override fun call(eventName: LuaValue, callback: LuaValue): LuaValue {
-                val eventClass = EventListener.getEventByName(eventName.tojstring())
+class LuaEvents : TwineNative("event") {
 
-                if (eventClass != null) {
-                    if (!EventListener.SUPPORTED_EVENTS.contains(eventClass)) return LuaValue.NIL.also { println("Not contained") }
+    @TwineNativeFunction("on")
+    fun registerEvent(eventName: String, callback: (TwineTable) -> Unit) {
+        val eventClass = EventListener.getEventByName(eventName)
 
-                    if (ScriptManager.usedEvents[eventClass] == null) EventListener.registerEvent(eventClass)
+        if (eventClass != null) {
+            if (!EventListener.SUPPORTED_EVENTS.contains(eventClass)) return
 
-                    // Cache all information about the loaded script
-                    // Ensures that we can retrieve the relevant information when dealing with unloading
+            if (ScriptManager.usedEvents[eventClass] == null) EventListener.registerEvent(eventClass)
 
-                    if (ScriptManager.usedEvents[eventClass] == null) {
-                        ScriptManager.usedEvents[eventClass] = mutableListOf()
-                    }
-                    val function = callback.checkfunction()
-                    ScriptManager.usedEvents[eventClass]!!.add(function)
+            // Cache all information about the loaded script
+            // Ensures that we can retrieve the relevant information when dealing with unloading
 
-                    ScriptManager.eventScript[function] = eventClass
-
-                    val fileName = getFileNameFromLuaFunction(function)
-
-                    if (ScriptManager.loadedScriptFiles[fileName] == null) {
-                        ScriptManager.loadedScriptFiles[fileName] = mutableListOf()
-                    }
-                    ScriptManager.loadedScriptFiles[fileName]!!.add(function)
-                }
-
-                return NIL
+            if (ScriptManager.usedEvents[eventClass] == null) {
+                ScriptManager.usedEvents[eventClass] = mutableListOf()
             }
-        })
+            ScriptManager.usedEvents[eventClass]!!.add(callback)
+
+            ScriptManager.eventScript[callback] = eventClass
+
+            val fileName = getFileNameFromLuaFunction(callback)
+
+            if (ScriptManager.loadedScriptFiles[fileName] == null) {
+                ScriptManager.loadedScriptFiles[fileName] = mutableListOf()
+            }
+            ScriptManager.loadedScriptFiles[fileName]!!.add(callback)
+        }
     }
+
+//    init {
+//        set("on", object : TwoArgFunction() {
+//            override fun call(eventName: LuaValue, callback: LuaValue): LuaValue {
+//                val eventClass = EventListener.getEventByName(eventName.tojstring())
+//
+//                if (eventClass != null) {
+//                    if (!EventListener.SUPPORTED_EVENTS.contains(eventClass)) return LuaValue.NIL.also { println("Not contained") }
+//
+//                    if (ScriptManager.usedEvents[eventClass] == null) EventListener.registerEvent(eventClass)
+//
+//                    // Cache all information about the loaded script
+//                    // Ensures that we can retrieve the relevant information when dealing with unloading
+//
+//                    if (ScriptManager.usedEvents[eventClass] == null) {
+//                        ScriptManager.usedEvents[eventClass] = mutableListOf()
+//                    }
+//                    val function = callback.checkfunction()
+//                    ScriptManager.usedEvents[eventClass]!!.add(function)
+//
+//                    ScriptManager.eventScript[function] = eventClass
+//
+//                    val fileName = getFileNameFromLuaFunction(function)
+//
+//                    if (ScriptManager.loadedScriptFiles[fileName] == null) {
+//                        ScriptManager.loadedScriptFiles[fileName] = mutableListOf()
+//                    }
+//                    ScriptManager.loadedScriptFiles[fileName]!!.add(function)
+//                }
+//
+//                return NIL
+//            }
+//        })
+//        }
 
     /**
      * Scuffed stuff, let's find a better way if we can
      * @see ScriptManager.runScript
      */
 
-    private fun getFileNameFromLuaFunction(function: LuaFunction?): String {
+    private fun getFileNameFromLuaFunction(function: Function1<TwineTable, Unit>?): String {
         var fileName = ""
         var previousChar: Char? = null
         var record = false

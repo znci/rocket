@@ -69,7 +69,7 @@ object EventListener : Listener {
         val eventCallbacks = ScriptManager.usedEvents[getEventByName(event.eventName)] ?: return
         eventCallbacks.forEach { callback ->
             val luaTable = convertEventToLua(event)
-            callback.call(luaTable)
+            callback(luaTable)
             println(callback)
         }
     }

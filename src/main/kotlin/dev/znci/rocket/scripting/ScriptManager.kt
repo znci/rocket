@@ -49,19 +49,19 @@ object ScriptManager {
     /**
      * A map of loaded scripts associated by file path
      */
-    val loadedScriptFiles = mutableMapOf<String, MutableList<LuaFunction>>()
+    val loadedScriptFiles = mutableMapOf<String, MutableList<Function1<TwineTable, Unit>>>()
 
     /**
      * A map associating Lua event sections with a class.
      * This mainly helps with disabling scripts
      */
-    val eventScript = mutableMapOf<LuaFunction, Class<out Event>>()
+    val eventScript = mutableMapOf<Function1<TwineTable, Unit>, Class<out Event>>()
 
     /**
      * A map of events and their associated Lua handlers.
      * It stores the events triggered in the system and the corresponding Lua functions that handle them.
      */
-    val usedEvents = mutableMapOf<Class<out Event>, MutableList<LuaFunction>>()
+    val usedEvents = mutableMapOf<Class<out Event>, MutableList<Function1<TwineTable, Unit>>>()
 
     /**
      * A map of enabled commands by their names.
@@ -92,8 +92,7 @@ object ScriptManager {
     fun loadScripts() {
         scriptsFolder.walkTopDown().forEach { file ->
             if (file.isFile && !file.startsWith("-")) {
-                val content = file.readText()
-                runScript(content)
+                runScript(file)
             }
         }
     }
