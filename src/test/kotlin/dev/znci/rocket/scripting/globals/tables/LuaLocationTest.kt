@@ -10,15 +10,6 @@ import org.mockbukkit.mockbukkit.ServerMock
 import kotlin.test.assertEquals
 
 class LuaLocationTest {
-    private lateinit var mockServer: ServerMock
-    private lateinit var plugin: Rocket
-
-    @BeforeEach
-    fun setUp() {
-        mockServer = MockBukkit.mock()
-        plugin = MockBukkit.load(Rocket::class.java)
-        mockServer.worlds.add(mockServer.addSimpleWorld("world"))
-    }
 
     fun run(script: String): Any {
         val globals: Globals = JsePlatform.standardGlobals()
