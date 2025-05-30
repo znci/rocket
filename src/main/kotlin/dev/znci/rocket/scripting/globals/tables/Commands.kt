@@ -23,11 +23,7 @@ import dev.znci.rocket.util.MessageFormatter
 import dev.znci.twine.TwineNative
 import dev.znci.twine.annotations.TwineNativeFunction
 import org.bukkit.Bukkit
-import org.bukkit.command.Command
-import org.bukkit.command.CommandExecutor
-import org.bukkit.command.CommandMap
-import org.bukkit.command.CommandSender
-import org.bukkit.command.TabCompleter
+import org.bukkit.command.*
 import org.bukkit.entity.Player
 import org.luaj.vm2.LuaTable
 
