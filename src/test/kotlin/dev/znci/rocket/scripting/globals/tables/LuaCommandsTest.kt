@@ -14,14 +14,6 @@ import org.mockbukkit.mockbukkit.ServerMock
  * a new instance of `LuaCommand`.
  */
 class LuaCommandsTest {
-    private lateinit var mockServer: ServerMock
-    private lateinit var plugin: Rocket
-
-    @BeforeEach
-    fun setUp() {
-        mockServer = MockBukkit.mock()
-        plugin = MockBukkit.load(Rocket::class.java)
-    }
 
     @Test
     fun `test new function returns new LuaCommand instance`() {
