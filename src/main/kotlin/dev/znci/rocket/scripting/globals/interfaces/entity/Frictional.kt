@@ -1,4 +1,4 @@
-package dev.znci.rocket.scripting.globals.interfaces.entities
+package dev.znci.rocket.scripting.globals.interfaces.entity
 
 import org.bukkit.entity.LivingEntity
 

@@ -1,4 +1,4 @@
-package dev.znci.rocket.scripting.globals.interfaces.entities
+package dev.znci.rocket.scripting.globals.interfaces.entity
 
 import dev.znci.rocket.scripting.globals.tables.LuaLocation
 import dev.znci.rocket.scripting.globals.tables.LuaVector3
@@ -222,8 +222,8 @@ interface Entity<T> where T : Entity {
     }
 
     @TwineNativeProperty
-    val vehicle: dev.znci.rocket.scripting.globals.interfaces.entities.Entity<T>?
-        get() = entity.vehicle as? dev.znci.rocket.scripting.globals.interfaces.entities.Entity<T>
+    val vehicle: dev.znci.rocket.scripting.globals.interfaces.entity.Entity<T>?
+        get() = entity.vehicle as? dev.znci.rocket.scripting.globals.interfaces.entity.Entity<T>
 
     @TwineNativeFunction
     fun setNameTagVisible(visible: Boolean) {
@@ -332,8 +332,8 @@ interface Entity<T> where T : Entity {
     // TODO: Implement EntitySnapshot
 
     @TwineNativeFunction
-    fun copy(): dev.znci.rocket.scripting.globals.interfaces.entities.Entity<T> {
-        return entity.copy() as dev.znci.rocket.scripting.globals.interfaces.entities.Entity<T>
+    fun copy(): dev.znci.rocket.scripting.globals.interfaces.entity.Entity<T> {
+        return entity.copy() as dev.znci.rocket.scripting.globals.interfaces.entity.Entity<T>
     }
 
     // TODO: Implement Component
