@@ -18,7 +18,7 @@ package dev.znci.rocket.scripting.globals.tables
 import dev.znci.rocket.scripting.annotations.Global
 import dev.znci.rocket.scripting.api.RocketError
 import dev.znci.rocket.scripting.util.getWorldByNameOrUUID
-import dev.znci.twine.TwineNative
+import dev.znci.twine.nativex.TwineNative
 import dev.znci.twine.annotations.TwineNativeFunction
 import dev.znci.twine.annotations.TwineNativeProperty
 import org.bukkit.Bukkit
@@ -122,7 +122,7 @@ class LuaLocation(
         }
     }
 
-    fun toBukkitLocation(): Location {
+    fun toBukkit(): Location {
         return try {
             val x = this.xProperty
             val y = this.yProperty

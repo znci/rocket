@@ -119,6 +119,7 @@ object ScriptManager {
 
             scriptResult.call()
         } catch (e: LuaError) {
+            e.printStackTrace()
             return e.message
         }
 

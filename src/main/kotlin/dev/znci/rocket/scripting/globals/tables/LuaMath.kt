@@ -17,11 +17,12 @@ package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.scripting.annotations.Global
 import dev.znci.rocket.scripting.api.RocketError
-import dev.znci.twine.TwineNative
+import dev.znci.twine.nativex.TwineNative
 import dev.znci.twine.annotations.TwineNativeFunction
 import dev.znci.twine.annotations.TwineOverload
 import kotlin.math.roundToInt
 
+@Suppress("unused")
 @Global
 class LuaMath : TwineNative("math") {
     @TwineNativeFunction

@@ -19,7 +19,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import dev.znci.rocket.scripting.annotations.Global
 import dev.znci.rocket.scripting.api.RocketError
-import dev.znci.twine.TwineNative
+import dev.znci.twine.nativex.TwineNative
 import dev.znci.twine.TwineTable
 import dev.znci.twine.annotations.TwineNativeFunction
 import dev.znci.twine.annotations.TwineNativeProperty
@@ -39,6 +39,7 @@ data class HTTPOptions(
 //    val body: Map<String, String>?
 ) : TwineTable("")
 
+@Suppress("unused")
 @Global
 class LuaHTTPClient : TwineNative("http") {
     @TwineNativeFunction("get")

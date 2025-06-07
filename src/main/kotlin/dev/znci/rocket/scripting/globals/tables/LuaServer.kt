@@ -19,7 +19,7 @@ import dev.znci.rocket.Rocket
 import dev.znci.rocket.scripting.annotations.Global
 import dev.znci.rocket.util.MessageFormatter
 import dev.znci.rocket.util.MessageFormatter.toMiniMessage
-import dev.znci.twine.TwineNative
+import dev.znci.twine.nativex.TwineNative
 import dev.znci.twine.annotations.TwineNativeFunction
 import dev.znci.twine.annotations.TwineNativeProperty
 

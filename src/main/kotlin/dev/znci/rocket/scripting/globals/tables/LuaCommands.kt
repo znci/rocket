@@ -20,7 +20,7 @@ import dev.znci.rocket.scripting.PermissionsManager
 import dev.znci.rocket.scripting.annotations.Global
 import dev.znci.rocket.scripting.classes.CommandReference
 import dev.znci.rocket.util.MessageFormatter
-import dev.znci.twine.TwineNative
+import dev.znci.twine.nativex.TwineNative
 import dev.znci.twine.annotations.TwineNativeFunction
 import org.bukkit.Bukkit
 import org.bukkit.command.*
@@ -35,6 +35,7 @@ class LuaCommands : TwineNative("commands") {
     }
 }
 
+@Suppress("unused")
 class LuaCommand : TwineNative("") {
     val commandReference = CommandReference()
 

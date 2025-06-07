@@ -18,7 +18,7 @@ package dev.znci.rocket.scripting.globals.tables
 import dev.znci.rocket.scripting.PermissionsManager
 import dev.znci.rocket.scripting.annotations.Global
 import dev.znci.rocket.util.MessageFormatter
-import dev.znci.twine.TwineNative
+import dev.znci.twine.nativex.TwineNative
 import dev.znci.twine.TwineTable
 import dev.znci.twine.annotations.TwineNativeFunction
 import dev.znci.twine.annotations.TwineNativeProperty
@@ -81,6 +81,13 @@ data class TitleTimeTable(
 class LuaPlayer(
     override val player: Player
 ) : LuaOfflinePlayer(player) {
+
+    @TwineNativeFunction
+    fun test(tplayer: LuaPlayer) {
+        val player = tplayer.player
+        player.sendMessage("Hello from LuaPlayer")
+    }
+
     @TwineNativeFunction
     fun send(message: Any): Boolean {
         val messageComponent = MessageFormatter.formatMessage(message.toString())
@@ -150,7 +157,7 @@ class LuaPlayer(
 
     @TwineNativeFunction
     fun teleport(location: LuaLocation): Boolean {
-        player.teleport(location.toBukkitLocation())
+        player.teleport(location.toBukkit())
         return true
     }
 

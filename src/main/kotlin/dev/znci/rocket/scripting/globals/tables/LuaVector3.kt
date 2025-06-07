@@ -16,7 +16,7 @@
 package dev.znci.rocket.scripting.globals.tables
 
 import dev.znci.rocket.scripting.annotations.Global
-import dev.znci.twine.TwineNative
+import dev.znci.twine.nativex.TwineNative
 import dev.znci.twine.annotations.TwineNativeFunction
 import dev.znci.twine.annotations.TwineNativeProperty
 import dev.znci.twine.annotations.TwineOverload
@@ -30,6 +30,7 @@ class LuaVectors3 : TwineNative("vector3") {
     }
 }
 
+@Suppress("unused")
 class LuaVector3(
     x: Double,
     y: Double,
@@ -213,12 +214,8 @@ class LuaVector3(
     val magnitude: Double
         get() = bukkitVector.length()
 
-    private fun Vector.toLuaVector3(): LuaVector3 {
-        return LuaVector3(
-            this.x,
-            this.y,
-            this.z
-        )
+    fun toBukkit(): Vector {
+        return bukkitVector
     }
 
     @TwineNativeProperty("x")
@@ -245,5 +242,19 @@ class LuaVector3(
     @TwineNativeFunction
     override fun toString(): String {
         return "vector3($xProperty, $yProperty, $zProperty)"
+    }
+
+    companion object {
+        fun fromBukkit(vector: Vector): LuaVector3 {
+            return LuaVector3(
+                vector.x,
+                vector.y,
+                vector.z
+            )
+        }
+
+        fun Vector.toLuaVector3(): LuaVector3 {
+            return LuaVector3.fromBukkit(this)
+        }
     }
 }
