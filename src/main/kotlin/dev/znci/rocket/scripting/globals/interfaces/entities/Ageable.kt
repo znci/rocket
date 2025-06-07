@@ -2,10 +2,9 @@ package dev.znci.rocket.scripting.globals.interfaces.entities
 
 import dev.znci.twine.annotations.TwineNativeFunction
 import dev.znci.twine.annotations.TwineNativeProperty
-import org.bukkit.entity.LivingEntity
 
 @Suppress("unused")
-interface Ageable<T>: Creature<T> where T : LivingEntity, T: org.bukkit.entity.Ageable {
+interface Ageable<T>: Creature<T> where T: org.bukkit.entity.Ageable {
     @TwineNativeProperty
     val age: Int
         get() = entity.age

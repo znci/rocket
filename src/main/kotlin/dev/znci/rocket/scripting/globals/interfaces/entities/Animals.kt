@@ -2,11 +2,10 @@ package dev.znci.rocket.scripting.globals.interfaces.entities
 
 import dev.znci.twine.annotations.TwineNativeFunction
 import dev.znci.twine.annotations.TwineNativeProperty
-import org.bukkit.entity.LivingEntity
 import java.util.UUID
 
 @Suppress("unused")
-interface Animals<T> : Breedable<T> where T : LivingEntity, T: org.bukkit.entity.Animals {
+interface Animals<T> : Breedable<T> where T: org.bukkit.entity.Animals {
     @TwineNativeFunction
     fun setBreedCause(entityUUID: String) {
         entity.breedCause = UUID.fromString(entityUUID)

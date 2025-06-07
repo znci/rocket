@@ -2,10 +2,9 @@ package dev.znci.rocket.scripting.globals.interfaces.entities
 
 import dev.znci.twine.annotations.TwineNativeFunction
 import dev.znci.twine.annotations.TwineNativeProperty
-import org.bukkit.entity.LivingEntity
 
 @Suppress("unused")
-interface Breedable<T> : Ageable<T> where T : LivingEntity, T: org.bukkit.entity.Breedable {
+interface Breedable<T> : Ageable<T> where T: org.bukkit.entity.Breedable {
     @TwineNativeFunction
     fun setAgeLock(locked: Boolean) {
         entity.ageLock = locked

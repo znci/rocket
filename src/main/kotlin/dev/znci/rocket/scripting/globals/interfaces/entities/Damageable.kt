@@ -3,10 +3,9 @@ package dev.znci.rocket.scripting.globals.interfaces.entities
 import dev.znci.twine.annotations.TwineNativeFunction
 import dev.znci.twine.annotations.TwineNativeProperty
 import org.bukkit.entity.Damageable
-import org.bukkit.entity.LivingEntity
 
 @Suppress("unused")
-interface Damageable<T> where T : LivingEntity, T: Damageable {
+interface Damageable<T> where T: Damageable {
     val entity: T
 
     @TwineNativeFunction
