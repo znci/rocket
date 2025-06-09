@@ -3,7 +3,6 @@ package dev.znci.rocket.scripting.globals.interfaces.entity
 import dev.znci.twine.annotations.TwineNativeFunction
 import dev.znci.twine.annotations.TwineNativeProperty
 
-@Suppress("unused")
 interface Breedable<T> : Ageable<T> where T: org.bukkit.entity.Breedable {
     @TwineNativeFunction
     fun setAgeLock(locked: Boolean) {

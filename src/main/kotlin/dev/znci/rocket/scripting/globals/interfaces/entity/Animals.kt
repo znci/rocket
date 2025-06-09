@@ -1,8 +1,13 @@
 package dev.znci.rocket.scripting.globals.interfaces.entity
 
+import dev.znci.rocket.scripting.classes.BaseLuaEntity
 import dev.znci.twine.annotations.TwineNativeFunction
 import dev.znci.twine.annotations.TwineNativeProperty
 import java.util.UUID
+
+abstract class BaseAnimalEntity<T : org.bukkit.entity.Animals>(entity: T) :
+    BaseLuaEntity<T>(entity),
+    Animals<T>
 
 @Suppress("unused")
 interface Animals<T> : Breedable<T> where T: org.bukkit.entity.Animals {

@@ -18,6 +18,7 @@ package dev.znci.rocket
 import dev.znci.rocket.commands.RocketCommand
 import dev.znci.rocket.i18n.LocaleManager
 import dev.znci.rocket.scripting.AddonManager
+import dev.znci.rocket.scripting.EntityRegistry
 import dev.znci.rocket.scripting.ScriptManager
 import dev.znci.rocket.scripting.api.RocketAddon
 import dev.znci.rocket.scripting.events.EventListener
@@ -70,6 +71,10 @@ open class Rocket : RocketAddon() {
 
         // Enable the base Rocket methods and globals
         this.onAddonEnable()
+
+        // Register Entities
+        EntityRegistry.autoRegisterEntities()
+        println(EntityRegistry.registry)
 
         // Load addons after Rocket, but before loading scripts
         val addons = AddonManager.getAddons()

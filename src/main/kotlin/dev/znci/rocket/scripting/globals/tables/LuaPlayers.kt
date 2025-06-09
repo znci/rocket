@@ -81,13 +81,6 @@ data class TitleTimeTable(
 class LuaPlayer(
     override val player: Player
 ) : LuaOfflinePlayer(player) {
-
-    @TwineNativeFunction
-    fun test(tplayer: LuaPlayer) {
-        val player = tplayer.player
-        player.sendMessage("Hello from LuaPlayer")
-    }
-
     @TwineNativeFunction
     fun send(message: Any): Boolean {
         val messageComponent = MessageFormatter.formatMessage(message.toString())
